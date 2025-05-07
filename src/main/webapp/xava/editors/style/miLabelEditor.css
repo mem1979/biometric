@@ -1,0 +1,83 @@
+/* Tamaños de fuente aplicados directamente a los campos */
+.mi-label-medida-chica input,
+.mi-label-medida-chica textarea,
+.mi-label-medida-chica select {
+    font-size: 1em !important;
+}
+
+.mi-label-medida-mediana input,
+.mi-label-medida-mediana textarea,
+.mi-label-medida-mediana select {
+    font-size: 1.2em !important;
+}
+
+.mi-label-medida-grande input,
+.mi-label-medida-grande textarea,
+.mi-label-medida-grande select {
+    font-size: 1.6em !important;
+}
+
+.mi-label-medida-extra input,
+.mi-label-medida-extra textarea,
+.mi-label-medida-extra select {
+    font-size: 1.8em !important;
+}
+
+/* Negrita aplicada al texto de entrada */
+.mi-label-negrita input,
+.mi-label-negrita textarea,
+.mi-label-negrita select {
+    font-weight: bold !important;
+}
+
+/* Estilo para ocultar borde y fondo del campo */
+.mi-label-sin-recuadro input.editor[type="text"],
+.mi-label-sin-recuadro input.editor[type="password"],
+.mi-label-sin-recuadro textarea,
+.mi-label-sin-recuadro select {
+    border: none !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    padding: 0 !important;
+}
+
+/* Estética moderna si recuadro = true */
+.mi-label-con-recuadro {
+    display: inline-flex;
+    align-items: self-end;
+    padding: 0.75em 1em;
+    border-radius: 0.75em;
+    background-color: transparent !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    transition: all 0.2s ease-in-out;
+    gap: 0.5em;
+    flex-wrap: nowrap;
+}
+
+/* Asegurar que el input ocupe correctamente el espacio sin bordes */
+.mi-label-con-recuadro input,
+.mi-label-con-recuadro textarea,
+.mi-label-con-recuadro select {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: none;
+    outline: none;
+    box-shadow: none;
+}
+
+/* Ícono del editor (leve contraste y tamaño fijo) */
+.mi-label-con-recuadro i.mdi,
+.mi-label-sin-recuadro i.mdi {
+    font-size: 1.8em;
+    opacity: 0.6;
+    line-height: 1;
+}
+
+/* Quitar fondo en campos deshabilitados (solo para MiLabel) */
+.mi-label-con-recuadro input.editor[type="text"]:disabled,
+.mi-label-sin-recuadro input.editor[type="text"]:disabled {
+    background: transparent !important;
+}
