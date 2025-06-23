@@ -59,14 +59,15 @@ import lombok.*;
 	    "porcentajeHoraExtra, valorHoraExtra," +
 	    "porcentajeHoraEspecial, valorHoraEspecial;" +
 	"]; " +
-
-        "jornadasAsignadas;" +
-//    "]; " +
+	"JORNADAS[" +
+        "jornadasAsignadas;crearNuevoTurnoLaboral;" +
+        "]; " +
 "}; " +
 
 "LICENCIAS { " +
-    "licencias, licenciasResumenAnual;" +
+    "licencias, licenciasResumenAnual; " +
 "}; " +
+    
 
 "informes { " +
     "desde, hasta;" +
@@ -78,6 +79,10 @@ import lombok.*;
 
 @View(name= "VerMapa",
 members = "direccion"
+)
+
+@View(name= "VerCalendario",
+members = "eventos"
 )
 
 @View(name = "simple", members = "nombreCompleto, sucursal, puesto;")
@@ -237,8 +242,32 @@ public class Personal extends Identifiable {
     private String foto;
     
     
+    @Editor("yearCalendarEditor")
+    public Collection<DtoLicenciasFeriados> getEventos() {
+
+        EntityManager em =org.openxava.jpa.XPersistence.getManager();
+
+        List<DtoLicenciasFeriados> out = new ArrayList<>();
+
+        /* 1. Todos los feriados ------------------------------------------------- */
+        em.createQuery("select f from Feriados f", Feriados.class)
+          .getResultList()
+          .forEach(f -> out.add(DtoLicenciasFeriados.of(f)));
+
+        /* 2. Licencias del empleado actual (this) ------------------------------ */
+        em.createQuery(
+            "select l from Licencia l where l.empleado = :yo", Licencia.class)
+          .setParameter("yo", this)             // si el método está en Empleado
+          .getResultList()
+          .forEach(l -> out.add(DtoLicenciasFeriados.of(l)));
+
+      return out;
+    }
     
- 
+    
+   
+    @ListAction("Licencia.VerCalendario")
+    @ListAction("Licencia.crearLista")
     @DeleteSelectedAction("")
     @NewAction("Licencia.AsignarLicencia")
     @EditAction("Licencia.editarCondicional")
@@ -246,9 +275,10 @@ public class Personal extends Identifiable {
     @NoDefaultActions
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL)
     @ListProperties("tipo, fechaInicio, fechaFin, dias")
-    @OrderBy("tipo, fechaInicio asc")
+    @OrderBy("fechaInicio desc")
     @org.hibernate.annotations.Where(clause = "YEAR(fechaInicio) = YEAR(CURDATE())")
     private Collection<Licencia> licencias;
+  
     
     @NoCreate
     @SimpleList
@@ -288,6 +318,10 @@ public class Personal extends Identifiable {
         return resultado;
     }
     
+    
+    
+    
+    
     @Money
     private BigDecimal valorHora;
 
@@ -326,11 +360,15 @@ public class Personal extends Identifiable {
 
     
     
-   
+    
     @ElementCollection
     @ListProperties("turno.codigo, turno.detalleJornadaHoras, fechaInicio, fechaFin")
     @OrderBy("fechaInicio")
     private List<JornadaAsignada> jornadasAsignadas = new ArrayList<>();
+    
+    @Editor("BoldLabel")
+    @Action("TurnosHorarios.CrearTurno")
+    String crearNuevoTurnoLaboral;
 
     @Transient
     public LocalDate desde;

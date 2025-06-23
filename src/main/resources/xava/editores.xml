@@ -16,6 +16,9 @@ https://www.openxava.org/OpenXavaDoc/docs/customizing_en.html
  	<editor nombre="TuEditor" url="tuEditor.jsp"/>
  	-->
  	
+ 	<editor nombre="yearCalendarEditor" url="yearCalendarEditor.jsp">
+			   <para-anotacion anotacion="com.sta.biometric.anotaciones.Calendarizado"/>
+		</editor>
 
 	<editor nombre="miLabel" url="miLabelEditor.jsp" formato-etiqueta-defecto="sin-etiqueta">
 		<formateador clase="org.openxava.formatters.UpperCaseFormatter"/>

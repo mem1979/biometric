@@ -115,14 +115,31 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         clase="com.sta.biometric.acciones.CrearLicenciaAction"
         icono="calendar-plus">
     </accion>
+    
+    <accion nombre="VerCalendario"
+        clase="com.sta.biometric.acciones.LicenciasVerCalendarioAction"
+        icono="calendar-month">
+    </accion>
+    <accion nombre="crearLista"
+        clase="com.sta.biometric.acciones.LicenciasGenerateReportAction"
+        icono="file-pdf">
+        <poner propiedad="type" valor="pdf" />
+    </accion>   
      <accion nombre="Guardar"
         clase="com.sta.biometric.acciones.LicenciaSaveAction">
     </accion>
  </controlador> 
 
  <controlador nombre="TurnosHorarios">
- <hereda-de controlador="MiTypicalNoResetNoNavNoImport"/>
-    
+  <hereda-de controlador="MiTypicalNoResetNoNavNoImport"/>
+  <accion nombre="CrearTurno" oculta="true"
+        clase="com.sta.biometric.acciones.TurnosHorariosNuevo"
+        icono="timetable">
+    </accion>
+</controlador>
+
+<controlador nombre="TurnosHorariosCreation">
+  <hereda-de controlador="NewCreation"/>
 </controlador>
 
     

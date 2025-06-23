@@ -17,11 +17,6 @@
 		<controlador nombre="InitModelWithNewInstance"/>
 	</modulo>
 	
-	<modulo nombre="FeriadosLaborales">
-		<modelo nombre="Feriados"/>
-		<tab nombre="feriadosAnuales"/>
-		<controlador nombre="Feriados"/>
-	</modulo>
 	
 	<!--
 	

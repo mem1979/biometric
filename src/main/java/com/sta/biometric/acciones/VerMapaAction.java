@@ -20,12 +20,12 @@ public class VerMapaAction extends ViewBaseAction {
         try {
             direccionObj = obj.getClass().getMethod("getDireccion").invoke(obj);
         } catch (Exception e) {
-            addError("No se pudo acceder a la direcci√≥n embebida.");
+            addError("No se pudo acceder a la direcciÛn embebida.");
             return;
         }
 
         if (!(direccionObj instanceof Direccion)) {
-            addError("La direcci√≥n embebida no es v√°lida.");
+            addError("La direcciÛn embebida no es v·lida.");
             return;
         }
 

@@ -8,7 +8,7 @@
     padding: 15px;
     box-sizing: border-box;
     justify-items: center; /* Centrar horizontalmente cada mes */
-    transition: all 0.3s ease-in-out; /* Animación suave al ajustar el tamaño */
+    transition: all 0.3s ease-in-out; /* Animaciï¿½n suave al ajustar el tamaï¿½o */
 }
 
 /* Estilo base para los contenedores de los meses */
@@ -24,7 +24,7 @@
 
 .calendar .month-container:hover {
     transform: scale(1.05); /* Escala suave al pasar el cursor */
-    box-shadow: 5px 8px 16px rgba(0, 0, 0, 0.5); /* Sombra más profunda */
+    box-shadow: 5px 8px 16px rgba(0, 0, 0, 0.5); /* Sombra mï¿½s profunda */
 }
 
 /* Asegurar que la tabla se distribuya correctamente */
@@ -50,10 +50,10 @@
     vertical-align: middle;
     padding: 5px;
     box-sizing: border-box;
-    transition: background-color 0.2s ease, color 0.2s ease; /* Animación suave */
+    transition: background-color 0.2s ease, color 0.2s ease; /* Animaciï¿½n suave */
 }
 
-/* Ajustar el contenido de los días */
+/* Ajustar el contenido de los dias */
 .calendar table.month td.day .day-content {
     width: 100%;
     height: 100%;
@@ -65,13 +65,14 @@
 
 /* Tooltip para eventos */
 .custom-tooltip {
-    position: absolute;
+
+    position: fixed;
     background-color: rgba(0, 0, 0, 0.8);
     color: white;
     padding: 8px;
     border-radius: 4px;
     font-size: 12px;
-    z-index: 10;
+    z-index: 12000 !important;
     pointer-events: none;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     opacity: 0;
@@ -82,37 +83,37 @@
     opacity: 1; /* Mostrar el tooltip al pasar el mouse */
 }
 
-/* Estilo en negrita para sábados y domingos */
+/* Estilo en negrita para  sabados y domingos */
 .calendar table.month td.day:nth-child(7), /* Domingo */
-.calendar table.month td.day:nth-child(6) { /* Sábado */
+.calendar table.month td.day:nth-child(6) { /* Sï¿½bado */
     font-weight: bold;
     color: #d9534f; /* Rojo suave para diferenciarlos */
 }
 
-/* Encabezado del año */
+/* Encabezado del  aÃ±o*/
 .calendar .calendar-header {
     display: flex;
-    justify-content: center; /* Centrar el año */
+    justify-content: center; /* Centrar el aï¿½o */
     align-items: center;
-    font-size: 2rem; /* Tamaño de fuente más grande */
+    font-size: 2rem; /* Tamano de fuente  mas grande */
     font-weight: bold;
     color: var(--action-color); /* Color de resalte */
     border-radius: 8px; /* Bordes redondeados */
-    margin-bottom: 5px; /* Separación del calendario */
+    margin-bottom: 5px; /* Separaciï¿½n del calendario */
     border: 1px solid rgba(0, 0, 0, 0.1); /* Borde muy fino */
     box-shadow: 6px 7px 3px 1px rgba(0, 0, 0, 0.2); /* Sombra que aparece a la derecha e inferior */
 }
 
 /* Estilo para el texto adicional */
 .calendar .calendar-header .header-text {
-    font-size: 1.5rem; /* Tamaño de fuente del texto adicional */
+    font-size: 1.5rem; /* Tamaï¿½o de fuente del texto adicional */
     font-weight: normal;
     color: var(--text-color); /* Color del texto adicional */
-    margin-left: 10px; /* Espacio entre el año y el texto adicional */
+    margin-left: 10px; /* Espacio entre el aï¿½o y el texto adicional */
 }
 
-/* Ocultar los años vecinos */
+/* Ocultar los aÃ±os vecinos */
 .calendar .year-neighbor, 
 .calendar .year-neighbor2 {
-    display: none; /* Oculta los años no deseados */
+    display: none; /* Oculta los anos no deseados */
 }

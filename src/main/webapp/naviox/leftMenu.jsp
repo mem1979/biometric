@@ -24,6 +24,7 @@ List<String> modulosOcultos = Arrays.asList(
 		"biometric/TurnosNombres",
 		"biometric/Feriados",
 		"biometric/ColeccionRegistros",
+		"biometric/TurnosHorarios",
 		"biometric/Licencia"
 	
 		);

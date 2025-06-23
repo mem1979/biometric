@@ -49,7 +49,7 @@ public class TurnosHorarios extends Identifiable {
     @Column(length = 6, unique = true)
     private String codigo;
 
-    @Required
+    
     @LabelFormat(LabelFormatType.SMALL)
     @Enumerated(EnumType.STRING)
     private Turnos turnoNombre;

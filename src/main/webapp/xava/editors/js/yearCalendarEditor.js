@@ -62,6 +62,7 @@ openxava.addEditorInitFunction(() => {
 
           mouseOnDay: e => {
               if (e.events.length === 0) return;
+              
 
               let tip = document.getElementById('ox-cal-tooltip');
               if (!tip) {
