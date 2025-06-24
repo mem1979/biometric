@@ -53,10 +53,12 @@ Jersey	2.35	Endpoints REST
 JJWT	0.9.1	Tokens JWT
 H2 integrado (modo dev)	–	Base de datos por defecto
 
-Estructura del proyecto
+Estructura del proyecto:
+
 less
 Copiar
 Editar
+
 biometric-master/
 ├── pom.xml
 ├── prompt.txt
