@@ -1,0 +1,179 @@
+<?xml version = "1.0" encoding = "ISO-8859-1"?>
+
+<!DOCTYPE controladores SYSTEM "dtds/controladores.dtd">
+
+<!-- 
+Documentación sobre controladores: 
+https://www.openxava.org/OpenXavaDoc/docs/controllers_es.html
+
+Controladores por defecto, incluidos en OpenXava (puedes extender de ellos):
+https://github.com/openxava/openxava/blob/master/openxava/src/main/resources/xava/default-controllers.xml
+ 
+Ejemplos de controladores (de la aplicación de pruebas):
+https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources/xava/controllers.xml
+-->
+
+<controladores>
+    
+    <!-- Variable de entorno: 
+    <var-entorno nombre="biometric_ANYO_DEFECTO" valor="2015"/>
+    -->
+    
+    <!-- Objeto de sesión:
+    <Objeto nombre="biometric_anyoActivo" clase="java.lang.Integer" valor="2025" 
+            ambito="global"/>
+    -->
+    
+    <!-- Controlador:
+    <controlador nombre="Profesor">
+        <hereda-de controlador="Typical"/>
+        <accion nombre="new" icono="library-plus" atajo-de-teclado="Control N" 
+                clase="acciones.CrearProfesor"/>        
+    </controlador>
+    -->
+    
+<controlador nombre="MiTypical">
+		<hereda-de controlador="CRUD"/>
+		<hereda-de controlador="Print"/>
+</controlador>
+
+
+
+<controlador nombre="MiTypicalNoResetNoNavNoImport">
+  <hereda-de controlador="MiTypical" acciones-excluidas="refresh"/>
+       
+       	<accion nombre="new" 
+       			 clase="org.openxava.actions.NewAction"
+		         imagen="new.gif"
+		         icono="library-plus"
+		         atajo-de-teclado="Control N"
+		         disponible-en-nuevo="false"
+		         por-defecto="nunca"
+		         pierde-datos-cambiados="true">
+		         <poner propiedad="restoreModel" valor="true"/>			
+		</accion>
+		
+		<accion nombre="delete" 
+	            modo="detail" confirmar="true" 
+	            clase="org.openxava.actions.DeleteAction"
+	            imagen="delete.gif"
+	            disponible-en-nuevo="false"
+	            icono="delete"
+	            por-defecto="nunca"
+	            atajo-de-teclado="Control D">
+        </accion>
+		
+		<accion nombre="save" 
+	            modo="detail" confirmar="true" 
+	            clase="org.openxava.actions.SaveAction"
+	            icono="content-save"
+	            disponible-en-nuevo="true"
+	            por-defecto="nunca"
+	            atajo-de-teclado="Control S">
+	        	<poner propiedad="resetAfter" valor="false" />
+        </accion>
+</controlador>
+    
+    
+    
+    
+ <controlador nombre="Personal">
+ <hereda-de controlador="MiTypicalNoResetNoNavNoImport"/>
+    <accion nombre="borrarContrasena" oculta="true"
+    		clase="com.sta.biometric.acciones.BlanquearContrasenaAction" 
+    		icono="lock-reset" confirmar="true">
+    </accion>
+    <accion nombre="borrarDeviceId" oculta="true"
+    		clase="com.sta.biometric.acciones.BlanquearDeviceIdAction" 
+    		icono="lock-reset" confirmar="true">
+    </accion>
+ 
+</controlador>  
+
+ <controlador nombre="Feriados">
+ <hereda-de controlador="MiTypicalNoResetNoNavNoImport"/>
+ 
+    <accion nombre="new" icono="library-plus" modo="list" atajo-de-teclado="Control N" 
+                clase="com.sta.biometric.acciones.FeriadoAgregarNuevoFeriado">
+    </accion>
+    <accion nombre="save" icono="library-plus" modo="detail" atajo-de-teclado="Control N" 
+                clase="com.sta.biometric.acciones.FeriadoGuardarVolverLista">
+    </accion>
+    <accion nombre="actualizarFeriados" modo="list"
+    		clase="com.sta.biometric.acciones.ImportarFeriadosAnioActualAction" 
+    		icono="calendar-check" confirmar="true">
+    </accion>
+ </controlador>
+ 
+ <controlador nombre="Licencia">
+ <hereda-de controlador="MiTypicalNoResetNoNavNoImport"/>
+    <accion nombre="editarCondicional"
+        clase="com.sta.biometric.acciones.EditarLicenciaCondicional"
+        imagen="images/edit.gif" >
+    </accion>
+    <accion nombre="AsignarLicencia"
+        clase="com.sta.biometric.acciones.CrearLicenciaAction"
+        icono="calendar-plus">
+    </accion>
+    
+    <accion nombre="VerCalendario"
+        clase="com.sta.biometric.acciones.LicenciasVerCalendarioAction"
+        icono="calendar-month">
+    </accion>
+    <accion nombre="crearLista"
+        clase="com.sta.biometric.acciones.LicenciasGenerateReportAction"
+        icono="file-pdf">
+        <poner propiedad="type" valor="pdf" />
+    </accion>   
+     <accion nombre="Guardar"
+        clase="com.sta.biometric.acciones.LicenciaSaveAction">
+    </accion>
+ </controlador> 
+
+ <controlador nombre="TurnosHorarios">
+  <hereda-de controlador="MiTypicalNoResetNoNavNoImport"/>
+  <accion nombre="CrearTurno" oculta="true"
+        clase="com.sta.biometric.acciones.TurnosHorariosNuevo"
+        icono="timetable">
+    </accion>
+</controlador>
+
+<controlador nombre="TurnosHorariosCreation">
+  <hereda-de controlador="NewCreation"/>
+</controlador>
+
+    
+    <controlador nombre="AuditoriaRegistros">
+ <hereda-de controlador="Print"/>
+    <accion nombre="importarFichadas"
+    		clase="com.sta.biometric.acciones.ImportarFichadasAction" 
+    		icono="calendar-import"  modo="list">
+    </accion>
+    
+</controlador>
+
+<controlador nombre="ImportarRegistros">
+    <accion nombre="importarRegistros"
+    		clase="com.sta.biometric.acciones.ImportarRegistrosAction" 
+    		icono="calendar-import">
+   	</accion>
+    <accion nombre="cancel" 
+			 clase="org.openxava.actions.CancelDialogAction">
+	</accion>
+</controlador>
+    
+  <controlador nombre="Coordenadas">
+	 <accion nombre="OptenerCP" oculta="true"  icono="home-map-marker"
+		 clase="com.sta.biometric.acciones.ObtenerCPGenericaAction">
+	 </accion>
+	 <accion nombre="verDireccion" oculta="true" icono="map-check-outline" 
+	  	clase="com.sta.biometric.acciones.VerMapaAction">
+	  </accion>
+	 <accion nombre="ObtenerCoordenadas" oculta="true"
+	  	clase="com.sta.biometric.acciones.ObtenerCoordenadasGenericaAction">
+	  </accion>
+  </controlador>
+    
+
+    
+</controladores>

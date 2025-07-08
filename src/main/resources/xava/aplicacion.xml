@@ -1,0 +1,33 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+
+<!DOCTYPE aplicacion SYSTEM "dtds/aplicacion.dtd">
+
+<aplicacion nombre="biometric"> 
+	
+	<!--
+	Un módulo por defecto se asume para cada
+	controlador en <modulo-defecto/> 
+	-->
+	<modulo-defecto>		  
+		<controlador nombre="Typical"/>		
+	</modulo-defecto>
+	
+	<modulo nombre="DashboardAsistencia">
+		<modelo nombre="DashboardAsistencia"/>
+		<controlador nombre="InitModelWithNewInstance"/>
+	</modulo>
+	
+	
+	<!--
+	
+
+	
+	Podemos definir módulos adicionales, por ejemplo: 	
+	<modulo nombre="ProfesorSoloLectura">
+		<modelo nombre="Profesor"/>
+		<controlador nombre="Print"/>
+	</modulo>		
+	-->	  
+		
+</aplicacion>
+

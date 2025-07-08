@@ -1,0 +1,217 @@
+#beta {
+    position: absolute;
+    right: -31px; /* Ajusta la posici�n horizontal */
+    top: -10px; /* Ajusta la posici�n vertical */
+    color: white;
+    font-size: 110%; /* Reduce el tama�o del texto */
+    font-weight: bold;
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+    background: red;
+    padding: 25px 25px 5px 25px; /* Reduce el tama�o general del cuadro */
+    z-index: 9999; /* Asegura que siempre est� por encima de otros elementos */
+    pointer-events: none; /* Evita interferencias con la interacci�n del usuario */
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5); /* Opcional: Agrega un efecto de sombra para mejorar la visibilidad */
+}
+
+/**********************************************************************/
+.ox-active-section {
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Agrega sombra */
+    padding: 5px; /* A�ade algo de padding */
+}
+
+/* separacion de los campos margen Izquierdo */
+.ox-detail {
+    margin: 8px 10px 0px 20px;
+    padding-top: 2px;
+}
+.ox-sections {
+    margin-left: 5px; /* Ajusta el valor seg�n el espacio deseado */
+} 
+
+@keyframes scale-up-horizontal-left {
+  0% {
+    transform: scaleX(0.4);
+    transform-origin: left center;
+  }
+  100% {
+    transform: scaleX(1);
+    transform-origin: left center;
+  }
+}
+
+/* Aplicaci�n de la animaci�n a #modules_list .selected */
+#modules_list .selected {
+  /* Aqu� aplicamos la clase con la animaci�n */
+  animation: scale-up-horizontal-left 0.5s;
+}
+
+
+/* Icono de cerrar con efectos de hover y pulsado */
+.ox-message-box .mdi-close {
+    text-shadow: 3px 2px 3px black;
+    color: #efdede;
+    float: right;
+    margin-left: 10px;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease; /* Transici�n suave */
+}
+
+.ox-message-box .mdi-close:hover {
+    color: #ff6f6f; /* Cambia el color al pasar el cursor */
+    transform: scale(2.0); /* Agranda ligeramente el icono */
+}
+
+.ox-message-box .mdi-close:active {
+    transform: scale(0.9); /* Reduce el tama�o al hacer clic */
+    color: #ffffff; /* Cambia el color al hacer clic */
+}
+
+.ox-message-box {
+    font-size: medium;
+    font-weight: normal;
+    color: var(--message-box-color);
+    padding: 10px;
+    border: 0px;
+    margin-bottom: 12px;
+    border-radius: 15px;
+    box-shadow: 1px 2px 8px var(--message-box-shadow);
+ }
+ 
+.ox-active .ox-section-tab {
+    color: var(--active-section-tab-color);
+    border-bottom-color: var(--active-section-tab-bottom-color);
+    font-size: 1.2em; /* Aumenta un poco el tama�o de la tipograf�a */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3); /* Leve sombreado en la tipograf�a */
+    border: 2px solid var(--active-section-tab-border-color); /* Aplica un borde */
+    box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.3); /* Sombra alrededor del borde */
+}
+/* Animaci�n proporcionada 
+.blur-in-expand {
+  animation: blur-in-expand 0.3s linear both;
+}
+
+@keyframes blur-in-expand {
+  0% {
+    transform: scale(0);
+    filter: blur(12px);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    filter: blur(0);
+    opacity: 1;
+  }
+}
+
+/* Estilos de .ox-section */
+.ox-section {
+  position: relative;
+  margin: 8px -10px 10px -10px;
+  padding: 3px 10px 0px 0px;
+  /* Degradado que mezcla el color claro con la transparencia */
+  background: linear-gradient(rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.3)), var(--section-background);
+  
+  /* Aplicaci�n de la animaci�n solo al box-shadow */
+  animation: box-shadow-in 0.5s linear both;
+}
+
+/* Animaci�n para el box-shadow */
+@keyframes box-shadow-in {
+  0% {
+    box-shadow: 0 0px 0px -2px rgba(0, 0, 0, 0); /* Sin sombra al inicio */
+  }
+  100% {
+    box-shadow: 0 4px 4px -2px rgba(0, 0, 0, 0.2); /* L�nea sombreada al final */
+  }
+}
+
+/* Personal inactivo visual */
+tr.empleadoInactivo td,
+.ox-list-pair.empleadoInactivo {
+    opacity: 0.5;
+}
+
+/* estados de Auditoria Registros  */
+
+/*VERDE pastel */
+.estilo-verde-claro {
+    background-color: #e2f5e9; /* Verde menta pastel */
+    color: #2f6f46;
+}
+
+.estilo-verde-intenso {
+    background-color: #a3d9b1; /* Verde pastel más fuerte */
+    color: #0f3d25;
+ }
+
+/*AMARILLO pastel */
+.estilo-amarillo-claro {
+    background-color: #fff9d6; /* Amarillo crema pastel */
+    color: #a08700;
+}
+
+.estilo-amarillo-intenso {
+    background-color: #ffe8a1; /* Amarillo pastel más fuerte */
+    color: #665200;
+    font-weight: bold;
+}
+
+/* ZUL pastel */
+.estilo-azul-claro {
+    background-color: #d6eafc; /* Azul cielo pastel */
+    color: #27648c;
+}
+
+.estilo-azul-intenso {
+    background-color: #a6d2f3; /* Azul pastel fuerte */
+    color: #154763;
+    font-weight: bold;
+}
+
+/*ROJO pastel */
+.estilo-rojo-claro {
+    background-color: #fbe2e5; /* Rosa pastel claro */
+    color: #912b37;
+    ;
+}
+
+.estilo-rojo-intenso {
+    background-color: #f5b3ba; /* Rosa pastel fuerte */
+    color: #721c24;
+    font-weight: bold;
+}
+
+/*GRIS pastel */
+.estilo-gris-claro {
+    background-color: #f2f2f2; /* Gris perla */
+    color: #4f4f4f;
+}
+
+.estilo-gris-intenso {
+    background-color: #d6d8db; /* Gris humo */
+    color: #2e2e2e;
+    font-weight: bold;
+}
+
+/* Estilos para Feriados */
+.fc-nextYear-button {
+    display: none !important;
+}
+
+.fc-prevYear-button {
+    display: none !important;
+}
+
+.ox-list-title {
+	display: none;
+}
+
+.xava_calendar_date_preferences {
+	display: none;
+}
+
+#xava_calendar {
+	margin-top: 20px;
+}
+

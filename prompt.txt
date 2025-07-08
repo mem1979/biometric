@@ -1,0 +1,38 @@
+El proyecto es una aplicación web Java basada en OpenXava, configurada mediante Maven en pom.xml. Allí se definen dependencias como OpenXava, Quartz (para tareas programadas) y Jersey para los servicios REST.
+
+Para arrancar la aplicación se utiliza la clase biometric, que inicia la base de datos integrada y el servidor de aplicaciones de OpenXava.
+
+El código fuente está organizado por paquetes dentro de src/main/java/com/sta/biometric:
+
+modelo: entidades JPA como Personal, que incluye lógica de negocio (por ejemplo, cálculo del turno activo y operaciones previas al guardar).
+
+embebidas y auxiliares: componentes reutilizables (por ejemplo, JornadaAsignada, Direccion, TurnosHorarios).
+
+acciones: acciones de interfaz de OpenXava.
+
+servicios: lógica de negocio adicional; destaca ResumenAsistenciaHoyService para calcular el estado diario de cada empleado.
+
+rest: puntos de acceso RESTful. AsistenciaEndpoint registra la asistencia validando el token y el dispositivo del usuario, mientras que AuthEndpoint gestiona el login y genera tokens JWT.
+
+util: utilidades generales, por ejemplo JWTUtil para generación y validación de tokens.
+
+qartzJobs: tareas programadas con Quartz, inicializadas al arrancar la aplicación.
+
+dashboard: clases que arman vistas de resumen y métricas de asistencia.
+
+Los recursos se ubican en src/main/resources y la configuración del servlet Jersey se define en web.xml, exponiendo los servicios REST bajo /api/*.
+
+Recomendaciones para aprender
+OpenXava: comprender la filosofía de este framework (anotaciones, módulos, vistas y acciones) facilitará entender la capa de presentación.
+
+JPA/Hibernate: las entidades del paquete modelo usan JPA; es clave manejar anotaciones como @Entity, @Embedded, @ManyToOne, etc.
+
+Jersey y REST: revisar cómo se construyen los endpoints y el uso de HTTP con JSON.
+
+Quartz: para tareas programadas que automatizan el cálculo de asistencia diaria.
+
+JWT: el sistema de autenticación usa tokens; aprender su generación y validación resultará útil.
+
+Maven: conocer el ciclo de build y cómo configurar dependencias.
+
+Con estos conceptos será posible desenvolverse mejor dentro del proyecto y contribuir a nuevas funcionalidades o mantenimiento.

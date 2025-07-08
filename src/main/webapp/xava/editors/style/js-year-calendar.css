@@ -1,0 +1,119 @@
+/* Contenedor de los meses en 4 columnas y 3 filas */
+.calendar .months-container {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr); /* 4 columnas */
+    grid-template-rows: repeat(3, auto);   /* 3 filas */
+    gap: 15px; /* Espacio entre los meses */
+    width: 100%;
+    padding: 15px;
+    box-sizing: border-box;
+    justify-items: center; /* Centrar horizontalmente cada mes */
+    transition: all 0.3s ease-in-out; /* Animaci�n suave al ajustar el tama�o */
+}
+
+/* Estilo base para los contenedores de los meses */
+.calendar .month-container {
+    padding: 15px;
+    border: 1px solid #ddd;
+    text-align: center;
+    box-shadow: 3px 4px 12px rgba(0, 0, 0, 0.2); /* Sombra sutil */
+    border-radius: 8px; /* Bordes redondeados */
+    box-sizing: border-box;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out; /* Animaciones suaves */
+}
+
+.calendar .month-container:hover {
+    transform: scale(1.05); /* Escala suave al pasar el cursor */
+    box-shadow: 5px 8px 16px rgba(0, 0, 0, 0.5); /* Sombra m�s profunda */
+}
+
+/* Asegurar que la tabla se distribuya correctamente */
+.calendar table.month {
+    width: 100%;
+    table-layout: fixed; /* Distribuye equitativamente las celdas */
+    border-collapse: collapse;
+}
+
+/* Encabezado del mes */
+.calendar th.month-title {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: var(--action-color); /* Mantener el color del tema */
+    letter-spacing: 1px;
+}
+
+/* Estilo para las celdas */
+.calendar table.month th, 
+.calendar table.month td {
+    width: 14.28%;
+    text-align: center;
+    vertical-align: middle;
+    padding: 5px;
+    box-sizing: border-box;
+    transition: background-color 0.2s ease, color 0.2s ease; /* Animaci�n suave */
+}
+
+/* Ajustar el contenido de los dias */
+.calendar table.month td.day .day-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative; /* Para el tooltip */
+}
+
+/* Tooltip para eventos */
+.custom-tooltip {
+
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 12000 !important;
+    pointer-events: none;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.calendar table.month td.day .day-content:hover .custom-tooltip {
+    opacity: 1; /* Mostrar el tooltip al pasar el mouse */
+}
+
+/* Estilo en negrita para  sabados y domingos */
+.calendar table.month td.day:nth-child(7), /* Domingo */
+.calendar table.month td.day:nth-child(6) { /* S�bado */
+    font-weight: bold;
+    color: #d9534f; /* Rojo suave para diferenciarlos */
+}
+
+/* Encabezado del  año*/
+.calendar .calendar-header {
+    display: flex;
+    justify-content: center; /* Centrar el a�o */
+    align-items: center;
+    font-size: 2rem; /* Tamano de fuente  mas grande */
+    font-weight: bold;
+    color: var(--action-color); /* Color de resalte */
+    border-radius: 8px; /* Bordes redondeados */
+    margin-bottom: 5px; /* Separaci�n del calendario */
+    border: 1px solid rgba(0, 0, 0, 0.1); /* Borde muy fino */
+    box-shadow: 6px 7px 3px 1px rgba(0, 0, 0, 0.2); /* Sombra que aparece a la derecha e inferior */
+}
+
+/* Estilo para el texto adicional */
+.calendar .calendar-header .header-text {
+    font-size: 1.5rem; /* Tama�o de fuente del texto adicional */
+    font-weight: normal;
+    color: var(--text-color); /* Color del texto adicional */
+    margin-left: 10px; /* Espacio entre el a�o y el texto adicional */
+}
+
+/* Ocultar los años vecinos */
+.calendar .year-neighbor, 
+.calendar .year-neighbor2 {
+    display: none; /* Oculta los anos no deseados */
+}
