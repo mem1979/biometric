@@ -13,85 +13,107 @@ import com.sta.biometric.util.*;
 
 /**
  * Endpoint de autenticación biométrica.
- * <p>
- * Flujo:
- * <ol>
- *   <li>Busca al usuario por login y contraseña.</li>
- *   <li>Si no tiene dispositivo asociado, registra el recibido en la cabecera {@code X-Device-ID}.</li>
- *   <li>Si ya tiene dispositivo y difiere, devuelve 401 con mensaje claro.</li>
- *   <li>Si todo es correcto, emite token JWT.</li>
- * </ol>
+ *
+ * 1. Login
+ * 2. Cambio de contraseña por defecto
  */
 @Path("/auth")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 public class AuthEndpoint {
 
-    @POST
-    @Path("/login")
-    public Response login(@FormParam("usuario") String usuario,
-                          @FormParam("contrasena") String contrasena,
-                          @HeaderParam("X-Device-ID") String deviceId) {
+    /* ---------- LOGIN ---------- */
+	@POST @Path("/login")
+	public Response login(@FormParam("usuario") String usuario,
+	                      @FormParam("contrasena") String contrasena,
+	                      @HeaderParam("X-Device-ID") String deviceId) {
 
-        // Validaciones básicas de entrada
-        if (usuario == null || contrasena == null || deviceId == null || deviceId.isBlank()) {
-            return error(Response.Status.BAD_REQUEST,
-                         "Se requieren usuario, contraseña y encabezado X-Device-ID.");
-        }
+	    if (deviceId == null || deviceId.isBlank())
+	        return error(Response.Status.BAD_REQUEST, "Falta X-Device-ID");
 
-        try {
-            Personal empleado = buscarEmpleado(usuario, contrasena);
-            if (empleado == null) {
-                return error(Response.Status.UNAUTHORIZED, "Credenciales inválidas.");
-            }
+	    /* Autenticamos usuario + contraseña */
+	    Personal p = buscarEmpleado(usuario, contrasena);
+	    if (p == null)
+	        return error(Response.Status.UNAUTHORIZED, "Credenciales inválidas");
 
-            // --- Verificación / registro de dispositivo ---
-            if (empleado.getDeviceId() == null || empleado.getDeviceId().isBlank()) {
-                // Primera vez: asociamos este deviceId y persistimos
-                empleado.setDeviceId(deviceId);
-                XPersistence.getManager().merge(empleado);
-            } else if (!empleado.getDeviceId().equals(deviceId)) {
-                return error(Response.Status.UNAUTHORIZED,
-                        "Dispositivo no autorizado. Este usuario ya está vinculado al dispositivo "
-                        + empleado.getDeviceId() + ".");
-            }
+	    /* Verificamos / registramos el dispositivo */
+	    if (p.getDeviceId() == null || p.getDeviceId().isBlank()) {
+	        // Primer login desde un dispositivo nuevo lo asociamos
+	        p.setDeviceId(deviceId);
+	        XPersistence.getManager().merge(p);
+	    } else if (!deviceId.equals(p.getDeviceId())) {
+	        // Ya tenía uno distinto lo rechazamos
+	        return error(Response.Status.UNAUTHORIZED,
+	                     "Dispositivo no autorizado para este usuario");
+	    }
 
-            // --- Generar token y responder ---
-            String token = JWTUtil.generarToken(usuario);
-            return Response.ok(Map.of("token", token,
-                                      "usuario", usuario,
-                                      "deviceId", deviceId))
-                           .build();
+	    /* Generamos token y respuesta */
+	    boolean passPorDefecto = "1234".equals(contrasena);
+	    String token = JWTUtil.generarToken(usuario);
 
-        } catch (Exception e) {
-            e.printStackTrace(); //  Log framework en producción
-            return error(Response.Status.INTERNAL_SERVER_ERROR, "Error al autenticar.");
-        }
+	    return Response.ok(Map.of(
+	            "token",           token,
+	            "usuario",         usuario,
+	            "deviceId",        deviceId,
+	            "passwordDefault", passPorDefecto))
+	         .build();
+	}
+
+    /* ---------- CAMBIAR CLAVE ---------- */
+    @POST @Path("/cambiarClave")
+    public Response changePassword(@HeaderParam("Authorization") String authHeader,
+                                   @FormParam("nueva") String nuevaClave) {
+
+        if (authHeader == null || !authHeader.startsWith("Bearer "))
+            return error(Response.Status.UNAUTHORIZED, "Falta token");
+
+        String usuario = JWTUtil.validarTokenYObtenerUsuario(authHeader.substring(7));
+        if (usuario == null)
+            return error(Response.Status.UNAUTHORIZED, "Token inválido");
+
+        if (nuevaClave == null || nuevaClave.length() < 8)
+            return error(Response.Status.BAD_REQUEST, "La clave debe tener al menos 8 caracteres");
+
+        /*   Buscamos por login (no por PK) */
+        Personal p = buscarEmpleadoSoloPorUsuario(usuario);
+        if (p == null)
+            return error(Response.Status.NOT_FOUND, "Empleado no encontrado");
+
+        p.setContrasena(nuevaClave);
+        XPersistence.getManager().merge(p);
+
+        return Response.ok(Map.of("success", true)).build();
     }
 
     /* ----------------------- Métodos auxiliares ----------------------- */
 
-    /**
-     * Busca al empleado por usuario y contraseña.
-     * Se mantiene la firma en texto plano porque así lo solicita el proyecto,
-     * pero en producción debería compararse una contraseña hasheada.
-     */
+    /** Busca al empleado por usuario y contraseña en texto plano. */
     private Personal buscarEmpleado(String usuario, String contrasena) {
         try {
             return XPersistence.getManager()
                     .createQuery(
-                        "FROM Personal e " +
-                        "WHERE e.usuario = :usuario AND e.contrasena = :contrasena",
+                        "FROM Personal e WHERE e.usuario = :u AND e.contrasena = :c",
                         Personal.class)
-                    .setParameter("usuario", usuario)
-                    .setParameter("contrasena", contrasena)
+                    .setParameter("u", usuario)
+                    .setParameter("c", contrasena)
                     .getSingleResult();
         } catch (NoResultException nre) {
             return null;
         }
     }
 
-    /** Devuelve un objeto JSON con una clave {@code error} y el mensaje proporcionado. */
+    /** Busca al empleado solo por usuario (login). */
+    private Personal buscarEmpleadoSoloPorUsuario(String usuario) {
+        try {
+            TypedQuery<Personal> q = XPersistence.getManager()
+                    .createQuery("FROM Personal e WHERE e.usuario = :u", Personal.class);
+            return q.setParameter("u", usuario).getSingleResult();
+        } catch (NoResultException nre) {
+            return null;
+        }
+    }
+
+    /** Devuelve respuesta JSON con un mensaje de error. */
     private Response error(Response.Status status, String mensaje) {
         return Response.status(status)
                        .entity(Map.of("error", mensaje))

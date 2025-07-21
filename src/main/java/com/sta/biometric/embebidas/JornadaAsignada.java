@@ -13,8 +13,9 @@ import lombok.*;
 @Getter @Setter
 public class JornadaAsignada {
 
-	@Required
+	
 	@ReadOnly
+	@Required
 	@ManyToOne(fetch = FetchType.LAZY)
     private TurnosHorarios turno;
 

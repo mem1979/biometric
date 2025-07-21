@@ -11,7 +11,7 @@ public class GeneradorCodigoUserIdCalculator implements ICalculator {
 
     @Override
     public Object calculate() throws Exception {
-        // Usamos JPQL para extraer el máximo valor numérico después del prefijo 'A'
+        // Usamos JPQL para extraer el maximo valor numerico despues del prefijo 'A'
         Query query = XPersistence.getManager().createQuery(
             "select max(cast(substring(p.userId, 2) as integer)) " +
             "from Personal p where p.userId like 'A%'"

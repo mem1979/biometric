@@ -44,8 +44,9 @@ import lombok.*;
 public class TurnosHorarios extends Identifiable {
 
     @ReadOnly
+    @Required
     @SearchKey
-  //@MiLabel(medida = "grande", negrita = true, recuadro = true, icon = "timetable")
+    @MiLabel(medida = "grande", negrita = true, recuadro = true, icon = "timetable")
     @Column(length = 6, unique = true)
     private String codigo;
 

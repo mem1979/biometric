@@ -108,7 +108,7 @@ public class Personal extends Identifiable {
 	private String userId;
 
     @ReadOnly
-    @Password
+  //  @Password
     @Column(length = 20)
     @Action(value="Personal.borrarDeviceId", alwaysEnabled=true)
     private String deviceId;

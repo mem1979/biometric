@@ -7,7 +7,7 @@ import org.json.*;
 import com.sta.biometric.embebidas.*;
 
 /**
- * Servicio para invocar la API de OpenCage y extraer coordenadas y/o código postal.
+ * Servicio para invocar la API de OpenCage y extraer coordenadas y/o codigo postal.
  */
 public class AsignarCoordenadasService {
 
@@ -93,7 +93,7 @@ public class AsignarCoordenadasService {
     }
 
     /**
-     * Clase para encapsular las coordenadas y el código postal.
+     * Clase para encapsular las coordenadas y el codigo postal.
      */
     public static class GeoData {
         private String coordenadas;
