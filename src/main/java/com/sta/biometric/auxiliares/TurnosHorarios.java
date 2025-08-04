@@ -38,15 +38,17 @@ import lombok.*;
     "detalleJornadaHoras"
 )
 
+
+
 @Tab(editors = "List", properties = "codigo, turnoNombre.nombre, detalleJornadaHoras, totalHoras")
 @Entity
 @Getter @Setter
 public class TurnosHorarios extends Identifiable {
 
     @ReadOnly
-    @Required
+  //  @Required
     @SearchKey
-    @MiLabel(medida = "grande", negrita = true, recuadro = true, icon = "timetable")
+    @MiLabel(medida = "grande", negrita = true, recuadro = true ) //, icon = "timetable")
     @Column(length = 6, unique = true)
     private String codigo;
 
@@ -71,7 +73,7 @@ public class TurnosHorarios extends Identifiable {
     @DefaultValueCalculator(FalseCalculator.class)
     private boolean lunes, martes, miercoles, jueves, viernes, sabado, domingo;
 
-    // Horarios por día
+    // Horarios por dia
     private LocalTime horaEntradaLunes, horaSalidaLunes;
     private LocalTime horaEntradaMartes, horaSalidaMartes;
     private LocalTime horaEntradaMiercoles, horaSalidaMiercoles;
@@ -210,7 +212,7 @@ public class TurnosHorarios extends Identifiable {
 
     @PreUpdate
     private void preActualizar() {
-        setTotalHoras(getTotalHorasDecimal());
+    	setTotalHoras(getTotalHorasDecimal());
     }
 
     private void generarCodigo() {
@@ -244,8 +246,8 @@ public class TurnosHorarios extends Identifiable {
     // ========== Utilidades externas ==========
     
     /**
-     * Devuelve el día especificado.
-     * Si el día no está activo o no hay horario definido, devuelve Null.
+     * Devuelve el dia especificado.
+     * Si el dia no esta activo o no hay horario definido, devuelve Null.
      */
 
     public boolean esLaboral(DayOfWeek dia) {
@@ -262,8 +264,8 @@ public class TurnosHorarios extends Identifiable {
     }
 
     /**
-     * Devuelve la Hora de Entrada para el día especificado.
-     * Si el día no está activo o no hay horario definido, devuelve Null.
+     * Devuelve la Hora de Entrada para el dia especificado.
+     * Si el dia no esta� activo o no hay horario definido, devuelve Null.
      */
     public LocalTime getEntradaParaDia(DayOfWeek dia) {
         switch (dia) {
@@ -280,8 +282,8 @@ public class TurnosHorarios extends Identifiable {
 
     
     /**
-     * Devuelve la Hora de salida para el día especificado.
-     * Si el día no está activo o no hay horario definido, devuelve Null.
+     * Devuelve la Hora de salida para el dia especificado.
+     * Si el dia no esta activo o no hay horario definido, devuelve Null.
      */
     public LocalTime getSalidaParaDia(DayOfWeek dia) {
         switch (dia) {
@@ -297,8 +299,8 @@ public class TurnosHorarios extends Identifiable {
     }
     
     /**
-     * Devuelve la cantidad de minutos trabajados esperados para el día especificado.
-     * Si el día no está activo o no hay horario definido, devuelve 0.
+     * Devuelve la cantidad de minutos trabajados esperados para el dia especificado.
+     * Si el dia no esta activo o no hay horario definido, devuelve 0.
      */
     public int getHorasParaDia(DayOfWeek dia) {
         boolean activo;

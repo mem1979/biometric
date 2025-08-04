@@ -16,6 +16,7 @@ public class JornadaAsignada {
 	
 	@ReadOnly
 	@Required
+	@SearchAction("TurnosHorarios.BuscarCrearTurno")
 	@ManyToOne(fetch = FetchType.LAZY)
     private TurnosHorarios turno;
 

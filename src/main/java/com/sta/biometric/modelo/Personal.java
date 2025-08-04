@@ -60,7 +60,7 @@ import lombok.*;
 	    "porcentajeHoraEspecial, valorHoraEspecial;" +
 	"]; " +
 	"JORNADAS[" +
-        "jornadasAsignadas;crearNuevoTurnoLaboral;" +
+        "jornadasAsignadas;" +
         "]; " +
 "}; " +
 
@@ -366,9 +366,7 @@ public class Personal extends Identifiable {
     @OrderBy("fechaInicio")
     private List<JornadaAsignada> jornadasAsignadas = new ArrayList<>();
     
-    @Editor("BoldLabel")
-    @Action("TurnosHorarios.CrearTurno")
-    String crearNuevoTurnoLaboral;
+
 
     @Transient
     public LocalDate desde;

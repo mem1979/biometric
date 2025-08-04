@@ -132,18 +132,24 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
 
  <controlador nombre="TurnosHorarios">
   <hereda-de controlador="MiTypicalNoResetNoNavNoImport"/>
-  <accion nombre="CrearTurno" oculta="true"
-        clase="com.sta.biometric.acciones.TurnosHorariosNuevo"
-        icono="timetable">
+  
+  <accion nombre="BuscarCrearTurno" oculta="true"
+        clase="com.sta.biometric.acciones.TurnosHorariosBuscar"
+        icono="magnify">
     </accion>
-</controlador>
-
-<controlador nombre="TurnosHorariosCreation">
-  <hereda-de controlador="NewCreation"/>
+    
+    <accion nombre="CrearTurno" oculta="true"
+        clase="com.sta.biometric.acciones.TurnosHorariosNuevo">
+    </accion>
+    
+      <accion nombre="grabarTurno" oculta="true"
+        clase="com.sta.biometric.acciones.TurnosHorariosGrabar">
+    </accion>
+    
 </controlador>
 
     
-    <controlador nombre="AuditoriaRegistros">
+<controlador nombre="AuditoriaRegistros">
  <hereda-de controlador="Print"/>
     <accion nombre="importarFichadas"
     		clase="com.sta.biometric.acciones.ImportarFichadasAction" 
