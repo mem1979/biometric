@@ -42,7 +42,7 @@ public class DatosContacto {
     
     @URL
     @Column(length = 100)
-    @Size(max = 100, message = "El valor no puede exceder los 10 caracteres")
+    @Size(max = 100, message = "El valor no puede exceder los 100 caracteres")
     private String web;
 
 }
