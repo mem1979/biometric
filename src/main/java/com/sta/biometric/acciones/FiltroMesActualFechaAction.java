@@ -10,9 +10,7 @@ public class FiltroMesActualFechaAction  extends TabBaseAction {
     @Override
     public void execute() throws Exception {
 
-      	
-    	LocalDate desde = LocalDate.now();
-        
+       	LocalDate desde = LocalDate.now();
         getTab().setConditionValue("fecha", desde);
     
     }
