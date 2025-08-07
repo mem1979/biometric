@@ -9,6 +9,7 @@ import com.sta.biometric.embebidas.*;
 /**
  * Servicio para invocar la API de OpenCage y extraer coordenadas y/o codigo postal.
  */
+
 public class AsignarCoordenadasService {
 
 	private static final String apiKey = ConfiguracionesPreferencias.getInstance()
@@ -37,7 +38,7 @@ public class AsignarCoordenadasService {
 	    }
 	
     /**
-     * Retorna un objeto con coordenadas y código postal.
+     * Retorna un objeto con coordenadas y codigo postal.
      */
     public static GeoData obtenerGeoData(String direccionCompleta, String apiKey) throws Exception {
         String urlStr = String.format(

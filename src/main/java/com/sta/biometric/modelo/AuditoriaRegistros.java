@@ -45,9 +45,9 @@ import lombok.*;
     		 @RowStyle(style = "estilo-verde-claro",    property = "evaluacion", value = "SIN_TURNO_ASIGNADO"),    // No hay turno configurado
     		 @RowStyle(style = "estilo-rojo-intenso",   property = "evaluacion", value = "SIN_DATOS")             // Sin información básica
      },
-     properties="empleado.sucursal.nombre, empleado.nombreCompleto, fecha, horario, evaluacion",
-     defaultOrder="${fecha} desc, ${empleado.sucursal.nombre} asc, ${empleado.nombreCompleto} asc"
-)
+     properties = "empleado.sucursal.nombre, empleado.nombreCompleto, fecha, horario, evaluacion",
+     defaultOrder = "${fecha} desc, ${empleado.sucursal.nombre} asc, ${empleado.nombreCompleto} asc"
+   )
 
 public class AuditoriaRegistros extends Identifiable {
 
@@ -82,7 +82,8 @@ public class AuditoriaRegistros extends Identifiable {
 
     @Stereotype("FECHA")
     private LocalDate fecha;
-
+    
+ 
     @Stereotype("HORA")
     private LocalTime horaEsperadaEntrada;
 

@@ -156,6 +156,11 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
     		icono="calendar-import"  modo="list">
     </accion>
     
+    <accion nombre="FiltroMesActualFecha" oculta="true"
+    		clase="com.sta.biometric.acciones.FiltroMesActualFechaAction" 
+    		al-iniciar="true"  modo="list">
+    </accion>
+    
 </controlador>
 
 <controlador nombre="ImportarRegistros">
