@@ -17,6 +17,11 @@ import com.sta.biometric.formateadores.*;
 
 import lombok.*;
 
+/**
+ * Auditoría diaria de asistencia. Aglutina los registros de fichadas de un
+ * empleado para una fecha determinada y calcula evaluaciones y totales de la
+ * jornada de trabajo.
+ */
 @Entity
 @Getter @Setter
 @View(members=
@@ -38,12 +43,12 @@ import lombok.*;
     		 @RowStyle(style = "estilo-verde-intenso",  property = "evaluacion", value = "COMPLETA"),              // Jornada cerrada correctamente
     		 @RowStyle(style = "estilo-amarillo-claro", property = "evaluacion", value = "INCOMPLETA"),            // Faltan fichadas para cerrar
     		 @RowStyle(style = "estilo-rojo-intenso",   property = "evaluacion", value = "AUSENTE"),               // Sin registros
-    		 @RowStyle(style = "estilo-rojo-claro",     property = "evaluacion", value = "LICENCIA"),              // D�a justificado con licencia
-    		 @RowStyle(style = "estilo-azul-claro",     property = "evaluacion", value = "FERIADO"),               // Feriado com�n
+    		 @RowStyle(style = "estilo-rojo-claro",     property = "evaluacion", value = "LICENCIA"),              // Día justificado con licencia
+    		 @RowStyle(style = "estilo-azul-claro",     property = "evaluacion", value = "FERIADO"),               // Feriado común
     		 @RowStyle(style = "estilo-azul-intenso",   property = "evaluacion", value = "FERIADO_TRABAJADO"),     // Feriado pero con actividad
-    		 @RowStyle(style = "estilo-verde-claro",    property = "evaluacion", value = "DIA_NO_LABORAL"),        // D�a no laborable seg�n turno
+    		 @RowStyle(style = "estilo-verde-claro",    property = "evaluacion", value = "DIA_NO_LABORAL"),        // Día no laborable según turno
     		 @RowStyle(style = "estilo-verde-claro",    property = "evaluacion", value = "SIN_TURNO_ASIGNADO"),    // No hay turno configurado
-    		 @RowStyle(style = "estilo-rojo-intenso",   property = "evaluacion", value = "SIN_DATOS")             // Sin informaci�n b�sica
+    		 @RowStyle(style = "estilo-rojo-intenso",   property = "evaluacion", value = "SIN_DATOS")             // Sin información básica
      },
      properties="empleado.sucursal.nombre, empleado.nombreCompleto, fecha, horario, evaluacion",
      defaultOrder="${fecha} desc, ${empleado.sucursal.nombre} asc, ${empleado.nombreCompleto} asc"
@@ -54,7 +59,7 @@ public class AuditoriaRegistros extends Identifiable {
     @ManyToOne(fetch = FetchType.LAZY)
     @ReferenceView("simple")
     @NoFrame @ReadOnly
-    private Personal empleado;
+    private Personal empleado; // Empleado auditado
 
     @EditOnly
     @NoDefaultActions
@@ -78,8 +83,9 @@ public class AuditoriaRegistros extends Identifiable {
     @RowStyle(style = "estilo-rojo-intenso",     property = "evaluacion", value = "REGISTRO NO VALIDADO - TIPO DE MOVIMIENTO INCORRECTO")
     @OneToMany(mappedBy = "asistenciaDiaria", cascade = CascadeType.ALL, orphanRemoval = true)
     @ListProperties("diaSemana, fecha, hora, evaluacion")
-    private List<ColeccionRegistros> registros = new ArrayList<>();
+    private List<ColeccionRegistros> registros = new ArrayList<>(); // fichadas del día
 
+    // Fecha y horarios planificados para la jornada
     @Stereotype("FECHA")
     private LocalDate fecha;
 
@@ -89,6 +95,7 @@ public class AuditoriaRegistros extends Identifiable {
     @Stereotype("HORA")
     private LocalTime horaEsperadaSalida;
 
+    // Duraciones calculadas
     private int minutosEsperados;
     private int minutosTrabajados;
     private int minutosExtras;
@@ -96,13 +103,13 @@ public class AuditoriaRegistros extends Identifiable {
     
     @Stereotype("BOLD_LABEL")
     @LabelFormat(LabelFormatType.NO_LABEL)
-    private EvaluacionJornada evaluacion;
+    private EvaluacionJornada evaluacion; // Resultado de la jornada
 
     @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
     @DefaultValueCalculator(TrueCalculator.class)
-    private boolean justificado;
+    private boolean justificado; // Si el registro está justificado
 
-    private boolean feriado;
+    private boolean feriado; // Indica si el día corresponde a un feriado
     
     @Transient
     @Label
@@ -125,8 +132,12 @@ public class AuditoriaRegistros extends Identifiable {
     @TextArea
     private String nota;
 
-// ===================== ME�TODOS PRINCIPALES =====================
+// ===================== METODOS PRINCIPALES =====================
 
+    /**
+     * Consolida los registros asociados para obtener la evaluación de la
+     * jornada y calcular las horas trabajadas/extras.
+     */
     public void consolidarDesdeRegistros() {
         if (empleado == null || fecha == null) return;
 
@@ -140,6 +151,10 @@ public class AuditoriaRegistros extends Identifiable {
         }
     }
 
+    /**
+     * Obtiene el turno planificado y prepara los valores esperados de la
+     * jornada (horarios y minutos).
+     */
     private void inicializarTurnoYCondiciones() {
         TurnosHorarios turno = empleado.getTurnoParaFecha(fecha);
         DayOfWeek dia = fecha.getDayOfWeek();
@@ -155,6 +170,9 @@ public class AuditoriaRegistros extends Identifiable {
         }
     }
 
+    /**
+     * Calcula minutos trabajados y extras según los registros.
+     */
     private void calcularDuraciones() {
         registros.sort(Comparator.comparing(ColeccionRegistros::getHora));
 
@@ -165,6 +183,9 @@ public class AuditoriaRegistros extends Identifiable {
         minutosExtras = Math.max(0, minutosTrabajados - minutosEsperados);
     }
 
+    /**
+     * Determina la evaluación cuando no existen registros de fichada.
+     */
     private void evaluarSinRegistros() {
         TurnosHorarios turno = empleado.getTurnoParaFecha(fecha);
         boolean esLaboral = turno != null && turno.esLaboral(fecha.getDayOfWeek());
@@ -180,6 +201,9 @@ public class AuditoriaRegistros extends Identifiable {
         }
     }
 
+    /**
+     * Determina la evaluación de la jornada cuando hay registros de fichada.
+     */
     private void evaluarConRegistros() {
         TurnosHorarios turno = empleado.getTurnoParaFecha(fecha);
         boolean esLaboral = turno != null && turno.esLaboral(fecha.getDayOfWeek());
@@ -326,6 +350,6 @@ public class AuditoriaRegistros extends Identifiable {
     public String getTurnoPlanificado() {
         return (empleado != null && fecha != null)
             ? TiempoUtils.formatearFecha(fecha) + " - " + empleado.getTurnoDescripcionParaFecha(fecha)
-            : "Sin informaci�n";
+            : "Sin información";
     }
 }
