@@ -23,6 +23,11 @@ import com.sta.biometric.servicios.*;
 
 import lombok.*;
 
+/**
+ * Entidad principal que representa a un empleado dentro del sistema
+ * biométrico. Reúne datos personales, credenciales de acceso, información
+ * laboral y utilidades para el cálculo de jornadas y licencias.
+ */
 @Entity
 @Getter @Setter
 @View(members =
@@ -96,10 +101,11 @@ members = "eventos"
 
 public class Personal extends Identifiable {
 	
-	@DefaultValueCalculator(TrueCalculator.class)
-	@OnChange(PersonalOnChangeActivoAction.class)
+    // --- Estado y credenciales del usuario ---------------------------------
+    @DefaultValueCalculator(TrueCalculator.class)
+    @OnChange(PersonalOnChangeActivoAction.class)
     @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
-	private boolean activo;
+    private boolean activo;
 	
 	@Required
 	@SearchKey
@@ -118,6 +124,11 @@ public class Personal extends Identifiable {
 
     @Mayuscula
     @Depends("nombres, apellido, userId")
+    /**
+     * Construye un identificador de usuario legible combinando la inicial
+     * del nombre, el apellido y el userId generado. Se utiliza como sugerencia
+     * para crear cuentas de acceso externas.
+     */
     public String getCreaUsuario() {
         if ((nombres == null || nombres.isEmpty()) || (apellido == null || apellido.isEmpty()) ) {
             return "N/D";
@@ -132,8 +143,9 @@ public class Personal extends Identifiable {
     @Column(length = 20)
     @Action(value="Personal.borrarContrasena", alwaysEnabled=true)
     @DefaultValueCalculator(CalculadorPassword.class)
-    private String contrasena;
+    private String contrasena; // Contraseña provisoria generada automáticamente
 
+    // --- Datos personales ----------------------------------------------------
     @Capitalizar
     @Required
     @DisplaySize(40)
@@ -145,23 +157,29 @@ public class Personal extends Identifiable {
     @Column(length = 30)
     private String apellido;
 
- 
+
     @DisplaySize(40)
     @MiLabel(medida = "extra", negrita = true, recuadro = true, icon = "account")
-    private String nombreCompleto;
+    private String nombreCompleto; // nombre y apellido concatenados
 
 
-    @DisplaySize(40)   
+    @DisplaySize(40)
     @MiLabel(medida = "extra", negrita = true, recuadro = true, icon = "account-box")
     @Depends("nombres, apellido")
-    	public String getApellidoNombre() {
-    	    return apellido + ", " + nombres;
-    	}
+    /**
+     * Devuelve la representación "Apellido, Nombre" utilizada en listados
+     * y reportes.
+     */
+    public String getApellidoNombre() {
+        return apellido + ", " + nombres;
+    }
 
 
+    // Fecha de nacimiento del empleado
     @DefaultValueCalculator(CurrentLocalDateCalculator.class)
     private LocalDate fechaNacimiento;
 
+    // Calcula la edad actual en años a partir de la fecha de nacimiento
     @DisplaySize(30)
     @MiLabel(medida = "chica", negrita = true, recuadro = false)
     @Depends("fechaNacimiento")
@@ -169,34 +187,38 @@ public class Personal extends Identifiable {
         if (fechaNacimiento == null) return "";
         return "( Edad: " + ChronoUnit.YEARS.between(fechaNacimiento, LocalDate.now()) + " Años )";
     }
-    
+
     @Mask(" 00.000.000  ")
-	@Required
-	private String dni; // Documento Nacional de Identidad
-    
+    @Required
+    private String dni; // Documento Nacional de Identidad
+
     @Mask("00-00000000-0")
-	private String cuil; // Código Único de Identificación Laboral
+    private String cuil; // Código Único de Identificación Laboral
 
     @Embedded
     @ReferenceView(forViews="VerMapa", value="VerMapa")
-    private Direccion direccion;
+    private Direccion direccion; // Dirección física
 
 
     @Embedded
-    private DatosContacto contacto;
+    private DatosContacto contacto; // Teléfonos, email, etc.
 
     @DisplaySize(30)
     @Capitalizar
     @ReadOnly(forViews="Simple")
     @LabelFormat(forViews="simple" , value = LabelFormatType.SMALL)
     @Column(length = 50)
-    private String puesto;
-    
+    private String puesto; // Cargo o función del empleado
+
+    // Fecha de ingreso a la empresa
     @Required
     @Stereotype("FECHA")
     @DefaultValueCalculator(CurrentLocalDateCalculator.class)
     private LocalDate inicioActividades;
-    
+
+    /**
+     * Calcula la antigüedad laboral en un formato legible "X años, Y meses".
+     */
     @Label
     @Depends("inicioActividades")
     public String getAntiguedadLaboral() {
@@ -228,20 +250,21 @@ public class Personal extends Identifiable {
     
     @Capitalizar
     @LabelFormat(forViews="simple" , value =  LabelFormatType.SMALL)
-    @DescriptionsList 
+    @DescriptionsList
     @ManyToOne(fetch=FetchType.LAZY)
-    private Sucursales sucursal;
+    private Sucursales sucursal; // Sucursal a la que pertenece
 
     @HtmlText(simple=true)
-    private String nota;
+    private String nota; // Observaciones internas
 
     @ReadOnly(forViews="Simple")
     @LabelFormat(LabelFormatType.NO_LABEL)
     @File(acceptFileTypes="image/*", maxFileSizeInKb=200)
     @Column(length=32)
-    private String foto;
+    private String foto; // Fotografía del empleado
     
     
+    // Eventos (feriados y licencias) utilizados por el componente de calendario
     @Editor("yearCalendarEditor")
     public Collection<DtoLicenciasFeriados> getEventos() {
 
@@ -266,6 +289,7 @@ public class Personal extends Identifiable {
     
     
    
+    // --- Licencias del empleado ---------------------------------------------
     @ListAction("Licencia.VerCalendario")
     @ListAction("Licencia.crearLista")
     @DeleteSelectedAction("")
@@ -282,6 +306,10 @@ public class Personal extends Identifiable {
     
     @NoCreate
     @SimpleList
+    /**
+     * Genera un resumen anual agrupando los días tomados por cada tipo de
+     * licencia y los días restantes según la última licencia registrada.
+     */
     public Collection<LicenciaResumenPorTipo> getLicenciasResumenAnual() {
         Map<TipoLicenciaAR, Integer> totalDias = new TreeMap<>();
         Map<TipoLicenciaAR, Licencia> ultimaLicenciaPorTipo = new TreeMap<>();
@@ -322,6 +350,7 @@ public class Personal extends Identifiable {
     
     
     
+    // --- Honorarios ----------------------------------------------------------
     @Money
     private BigDecimal valorHora;
 
@@ -361,6 +390,7 @@ public class Personal extends Identifiable {
     
     
     
+    // --- Asignación de jornadas ----------------------------------------------
     @ElementCollection
     @ListProperties("turno.codigo, turno.detalleJornadaHoras, fechaInicio, fechaFin")
     @OrderBy("fechaInicio")
@@ -373,7 +403,7 @@ public class Personal extends Identifiable {
     
     @Depends("inicioActividades, desde")
     public LocalDate getDesde() {
-        return LocalDate.now().withDayOfMonth(1);
+        return LocalDate.now().withDayOfMonth(1); // primer día del mes actual
     }
     
     @Transient
@@ -381,12 +411,16 @@ public class Personal extends Identifiable {
     
     @Depends("hasta")
     public LocalDate getHasta() {
-        return LocalDate.now();
+        return LocalDate.now(); // hoy
     }
     
     
     //=============================================================================================  
  
+    /**
+     * Obtiene el turno que corresponde a una fecha determinada. Prioriza
+     * jornadas fijas y, en su defecto, calcula rotaciones semanales.
+     */
     public TurnosHorarios getTurnoParaFecha(LocalDate fecha) {
         if (jornadasAsignadas == null || jornadasAsignadas.isEmpty()) return null;
 
@@ -468,7 +502,7 @@ public class Personal extends Identifiable {
 
     @PrePersist @PreUpdate
     private void preGuardar() {
-    	
+        // Completa campos derivados antes de guardar y asigna coordenadas
         setUsuario(getCreaUsuario());
         setNombreCompleto(getApellidoNombre());
         try {
