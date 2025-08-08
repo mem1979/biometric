@@ -38,12 +38,12 @@ import lombok.*;
     		 @RowStyle(style = "estilo-verde-intenso",  property = "evaluacion", value = "COMPLETA"),              // Jornada cerrada correctamente
     		 @RowStyle(style = "estilo-amarillo-claro", property = "evaluacion", value = "INCOMPLETA"),            // Faltan fichadas para cerrar
     		 @RowStyle(style = "estilo-rojo-intenso",   property = "evaluacion", value = "AUSENTE"),               // Sin registros
-    		 @RowStyle(style = "estilo-rojo-claro",     property = "evaluacion", value = "LICENCIA"),              // Día justificado con licencia
-    		 @RowStyle(style = "estilo-azul-claro",     property = "evaluacion", value = "FERIADO"),               // Feriado común
+    		 @RowStyle(style = "estilo-rojo-claro",     property = "evaluacion", value = "LICENCIA"),              // DÃ­a justificado con licencia
+    		 @RowStyle(style = "estilo-azul-claro",     property = "evaluacion", value = "FERIADO"),               // Feriado comÃºn
     		 @RowStyle(style = "estilo-azul-intenso",   property = "evaluacion", value = "FERIADO_TRABAJADO"),     // Feriado pero con actividad
-    		 @RowStyle(style = "estilo-verde-claro",    property = "evaluacion", value = "DIA_NO_LABORAL"),        // Día no laborable según turno
+    		 @RowStyle(style = "estilo-verde-claro",    property = "evaluacion", value = "DIA_NO_LABORAL"),        // DÃ­a no laborable segÃºn turno
     		 @RowStyle(style = "estilo-verde-claro",    property = "evaluacion", value = "SIN_TURNO_ASIGNADO"),    // No hay turno configurado
-    		 @RowStyle(style = "estilo-rojo-intenso",   property = "evaluacion", value = "SIN_DATOS")             // Sin información básica
+    		 @RowStyle(style = "estilo-rojo-intenso",   property = "evaluacion", value = "SIN_DATOS")             // Sin informaciÃ³n bÃ¡sica
      },
      properties = "empleado.sucursal.nombre, empleado.nombreCompleto, fecha, horario, evaluacion",
      defaultOrder = "${fecha} desc, ${empleado.sucursal.nombre} asc, ${empleado.nombreCompleto} asc"
@@ -126,12 +126,15 @@ public class AuditoriaRegistros extends Identifiable {
     @TextArea
     private String nota;
 
-// ===================== ME‰TODOS PRINCIPALES =====================
+// ===================== MEÂ‰TODOS PRINCIPALES =====================
 
     public void consolidarDesdeRegistros() {
         if (empleado == null || fecha == null) return;
 
         inicializarTurnoYCondiciones();
+
+        feriado = Feriados.existeParaFecha(fecha);
+        licencia = Licencia.tieneLicenciaEnFecha(empleado, fecha);
 
         if (registros == null || registros.isEmpty()) {
             evaluarSinRegistros();
@@ -170,9 +173,9 @@ public class AuditoriaRegistros extends Identifiable {
         TurnosHorarios turno = empleado.getTurnoParaFecha(fecha);
         boolean esLaboral = turno != null && turno.esLaboral(fecha.getDayOfWeek());
 
-        if (getConLicencia()) {
+        if (licencia) {
             evaluacion = EvaluacionJornada.LICENCIA;
-        } else if (getEsFeriado()) {
+        } else if (feriado) {
             evaluacion = EvaluacionJornada.FERIADO;
         } else if (!esLaboral) {
             evaluacion = EvaluacionJornada.DIA_NO_LABORAL;
@@ -185,9 +188,9 @@ public class AuditoriaRegistros extends Identifiable {
         TurnosHorarios turno = empleado.getTurnoParaFecha(fecha);
         boolean esLaboral = turno != null && turno.esLaboral(fecha.getDayOfWeek());
 
-        if (getConLicencia()) {
+        if (licencia) {
             evaluacion = EvaluacionJornada.LICENCIA;
-        } else if (getEsFeriado()) {
+        } else if (feriado) {
             evaluacion = EvaluacionJornada.FERIADO_TRABAJADO;
         } else if (!esLaboral) {
             evaluacion = EvaluacionJornada.DIA_NO_LABORAL;
@@ -199,19 +202,6 @@ public class AuditoriaRegistros extends Identifiable {
     }
 
 // ===================== PROPIEDADES CALCULADAS =====================
-
-    @Transient
-    @ReadOnly
-    public boolean getEsFeriado() {
-        return Feriados.existeParaFecha(fecha);
-    }
-
-    @Transient
-    @ReadOnly
-    public boolean getConLicencia() {
-        return Licencia.tieneLicenciaEnFecha(empleado, fecha);
-    }
-
     @Transient
     @ReadOnly
     @DisplaySize(10)
@@ -327,6 +317,6 @@ public class AuditoriaRegistros extends Identifiable {
     public String getTurnoPlanificado() {
         return (empleado != null && fecha != null)
             ? TiempoUtils.formatearFecha(fecha) + " - " + empleado.getTurnoDescripcionParaFecha(fecha)
-            : "Sin información";
+            : "Sin informaciÃ³n";
     }
 }
