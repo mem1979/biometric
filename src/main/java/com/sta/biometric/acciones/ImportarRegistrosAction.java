@@ -18,7 +18,7 @@ import com.sta.biometric.modelo.*;
 import com.sta.biometric.servicios.*;
 
 /**
- * Acción personalizada para importar registros de fichadas desde un archivo Excel.
+ * AcciÃ³n personalizada para importar registros de fichadas desde un archivo Excel.
  * Refactorizada para trabajar con las nuevas clases `AuditoriaRegistros` y `ColeccionRegistros`
  * utilizando `LocalDate` y `LocalTime` en lugar de `LocalDateTime`.
  */
@@ -32,7 +32,7 @@ public class ImportarRegistrosAction extends ViewBaseAction {
         // 1) Obtener archivo cargado desde la vista
         XFileItem fichero = (XFileItem) getView().getValue("fichero");
         if (fichero == null) {
-            addError("Debe seleccionar un archivo válido.");
+            addError("Debe seleccionar un archivo vÃ¡lido.");
             return;
         }
 
@@ -60,10 +60,10 @@ public class ImportarRegistrosAction extends ViewBaseAction {
                     // === PARSEO DE DATOS ===
                     LocalDate fecha = parsearFecha(row.getCell(columnas.colFecha), formatoCorto, formatoLargo);
                     LocalTime hora = parsearHora(row.getCell(columnas.colHora));
-                    if (fecha == null || hora == null) throw new IllegalArgumentException("Fecha u hora inválida");
+                    if (fecha == null || hora == null) throw new IllegalArgumentException("Fecha u hora invÃ¡lida");
 
                     String userId = getCellValueAsString(row.getCell(columnas.colUserId)).trim();
-                    if (userId.isEmpty()) throw new IllegalArgumentException("UserId vacío");
+                    if (userId.isEmpty()) throw new IllegalArgumentException("UserId vacÃ­o");
 
                     Personal empleado = em.createQuery(
                         "SELECT e FROM Personal e WHERE e.userId = :userId", Personal.class)
@@ -81,7 +81,7 @@ public class ImportarRegistrosAction extends ViewBaseAction {
                     TipoMovimiento tipo = InterpreteFichadasService.deducirTipoMovimiento(descripcion);
                     if (tipo == null) throw new IllegalArgumentException("No se pudo deducir tipo de movimiento");
 
-                    // === CREACIO�N DEL REGISTRO ===
+                    // === CREACIO“N DEL REGISTRO ===
                     ColeccionRegistros cr = new ColeccionRegistros();
                     cr.setFecha(fecha);
                     cr.setHora(hora);
@@ -99,9 +99,7 @@ public class ImportarRegistrosAction extends ViewBaseAction {
 
             workbook.close();
 
-            // === CONSOLIDACIO�N EN AUDITORIAREGISTROS ===
-            for (Map.Entry<Pair<Personal, LocalDate>, List<ColeccionRegistros>> entry : porEmpleadoYFecha.entrySet()) {
-                try {
+                        auditoria.agregarRegistro(r); // sin duplicados fecha/hora
                     Personal empleado = entry.getKey().getLeft();
                     LocalDate fecha = entry.getKey().getRight();
                     List<ColeccionRegistros> registros = entry.getValue();
@@ -137,11 +135,11 @@ public class ImportarRegistrosAction extends ViewBaseAction {
 
             closeDialog();
             getView().refresh();
-            addMessage("Importaci�n finalizada correctamente.");
+            addMessage("Importación finalizada correctamente.");
         }
     }
 
-    // ===================== MÉTODOS AUXILIARES =====================
+    // ===================== MÃ‰TODOS AUXILIARES =====================
 
     private LocalDate parsearFecha(Cell cell, DateTimeFormatter corto, DateTimeFormatter largo) {
         try {
@@ -173,7 +171,7 @@ public class ImportarRegistrosAction extends ViewBaseAction {
             return LocalDate.parse(texto); // fallback
 
         } catch (Exception e) {
-            addWarning("Fecha inválida: '" + getCellValueAsString(cell) + "'");
+            addWarning("Fecha invÃ¡lida: '" + getCellValueAsString(cell) + "'");
             return null;
         }
     }

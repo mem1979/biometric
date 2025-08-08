@@ -11,22 +11,17 @@ import com.sta.biometric.modelo.*;
 /**
  * Servicio para consolidar registros diarios de asistencia de los empleados.
  * 
- * Refactorizado para utilizar EvaluacionJornada como único resultado final.
- */
-	public class AsistenciaDiariaService {
-
-    /**
-     * Consolida la asistencia de un empleado en una fecha especafica
-     * a partir de sus registros del dia.
-     * @param hora 
-   /*
-    * 
-    * @param empleado
-    * @param fecha
-    * @param hora
-    * @param registrosDelDia
-    */
-    public static void consolidarDia(Personal empleado, LocalDate fecha, LocalTime hora, List<ColeccionRegistros> registrosDelDia) {
+public class AsistenciaDiariaService {
+     * Consolida la asistencia de un empleado en una fecha especifica a partir de sus registros del dia.
+     * Los registros duplicados (misma fecha y hora) son reemplazados.
+     *
+     * @param empleado Empleado a procesar
+     * @param fecha Fecha de la asistencia
+     * @param hora Hora de consolidacion (opcional)
+     * @param registrosDelDia Registros capturados en el dia
+     */
+ // Si hay registros nuevos, se agregan deduplicando por fecha/hora
+                asistencia.agregarRegistro(registro);
         EntityManager em = XPersistence.getManager();
 
         if (empleado == null || fecha == null) return;
@@ -59,7 +54,7 @@ import com.sta.biometric.modelo.*;
 
 
     /**
-     * Busca la asistencia diaria de un empleado para una fecha espec�fica.
+     * Busca la asistencia diaria de un empleado para una fecha específica.
      * Si no existe, retorna null.
      */
     private static AuditoriaRegistros buscarAsistenciaDiaria(Personal empleado, LocalDate fecha) {

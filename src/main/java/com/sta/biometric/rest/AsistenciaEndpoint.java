@@ -186,9 +186,8 @@ public class AsistenciaEndpoint {
             : InterpreteFichadasService.deducirTipoMovimiento(body.getDescripcionTipo());
         reg.setTipoMovimiento(tipo);
 
-        /* 5.2 Asociar a la auditoría */
-        reg.setAsistenciaDiaria(dia);
-        dia.getRegistros().add(reg);   // relación bidireccional
+        /* 5.2 Asociar a la auditoria (dedup fecha/hora) */
+        dia.agregarRegistro(reg);   // relacion bidireccional y sin duplicados
 
         /* 6. Consolidar */
         dia.consolidarDesdeRegistros();
