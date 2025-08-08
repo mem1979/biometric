@@ -110,6 +110,8 @@ public class AperturaJornadaJob implements Job {
             ? TiempoUtils.calcularMinutosLocalTime(entrada, salida)
             : 0);
         asistencia.setNota(null);
+        asistencia.setObservacionFeriado(
+            feriado != null ? feriado.getTipo().toUpperCase() + " - " + feriado.getMotivo() : null);
 
         if (asistencia.getConLicencia()) {
             asistencia.setEvaluacion(EvaluacionJornada.LICENCIA);
