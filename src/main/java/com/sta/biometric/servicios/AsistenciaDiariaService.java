@@ -1,4 +1,5 @@
 package com.sta.biometric.servicios;
+
 import java.time.*;
 import java.util.*;
 
@@ -10,40 +11,33 @@ import com.sta.biometric.modelo.*;
 
 /**
  * Servicio para consolidar registros diarios de asistencia de los empleados.
- * 
- * Refactorizado para utilizar EvaluacionJornada como único resultado final.
  */
-	public class AsistenciaDiariaService {
+public class AsistenciaDiariaService {
 
     /**
-     * Consolida la asistencia de un empleado en una fecha especafica
-     * a partir de sus registros del dia.
-     * @param hora 
-   /*
-    * 
-    * @param empleado
-    * @param fecha
-    * @param hora
-    * @param registrosDelDia
-    */
-    public static void consolidarDia(Personal empleado, LocalDate fecha, LocalTime hora, List<ColeccionRegistros> registrosDelDia) {
+     * Consolida la asistencia de un empleado en una fecha específica a partir
+     * de los registros del día. Devuelve la instancia gestionada de
+     * {@link AuditoriaRegistros} y realiza un {@link EntityManager#flush()} al
+     * finalizar.
+     */
+    public static AuditoriaRegistros consolidarDia(Personal empleado, LocalDate fecha,
+            List<ColeccionRegistros> registrosDelDia) {
         EntityManager em = XPersistence.getManager();
 
-        if (empleado == null || fecha == null) return;
+        if (empleado == null || fecha == null) return null;
 
-  // Buscamos si ya existe AsistenciaDiaria para el empleado y fecha
         AuditoriaRegistros asistencia = buscarAsistenciaDiaria(empleado, fecha);
+        boolean esNueva = false;
         if (asistencia == null) {
             asistencia = new AuditoriaRegistros();
             asistencia.setEmpleado(empleado);
             asistencia.setFecha(fecha);
             em.persist(asistencia);
+            esNueva = true;
+        } else {
+            asistencia.getRegistros().clear();
         }
 
-  // Limpiamos registros anteriores
-  //      asistencia.getRegistros().clear();
-
- // Si hay registros nuevos, los vinculamos
         if (registrosDelDia != null && !registrosDelDia.isEmpty()) {
             for (ColeccionRegistros registro : registrosDelDia) {
                 registro.setAsistenciaDiaria(asistencia);
@@ -51,23 +45,26 @@ import com.sta.biometric.modelo.*;
             }
         }
 
- // Consolidamos usando la propia logica interna de AsistenciaDiaria
         asistencia.consolidarDesdeRegistros();
 
-        em.merge(asistencia);
-    }  
+        if (!esNueva) {
+            asistencia = em.merge(asistencia);
+        }
 
+        em.flush();
+        return asistencia;
+    }
 
     /**
-     * Busca la asistencia diaria de un empleado para una fecha espec�fica.
-     * Si no existe, retorna null.
+     * Busca la asistencia diaria de un empleado para una fecha específica. Si no
+     * existe, retorna {@code null}.
      */
     private static AuditoriaRegistros buscarAsistenciaDiaria(Personal empleado, LocalDate fecha) {
         try {
             return XPersistence.getManager()
-                .createQuery("SELECT a FROM AuditoriaRegistros a " +
-                             "WHERE a.empleado = :emp " +
-                             "AND a.fecha = :fecha", AuditoriaRegistros.class)
+                .createQuery(
+                    "SELECT a FROM AuditoriaRegistros a WHERE a.empleado = :emp AND a.fecha = :fecha",
+                    AuditoriaRegistros.class)
                 .setParameter("emp", empleado)
                 .setParameter("fecha", fecha)
                 .getSingleResult();
