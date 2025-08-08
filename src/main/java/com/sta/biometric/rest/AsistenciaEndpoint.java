@@ -155,45 +155,29 @@ public class AsistenciaEndpoint {
                            .entity("Dispositivo no autorizado").build();
         }
 
-        /* 4. Obtener o crear la Auditoría del día */
-        AuditoriaRegistros dia = XPersistence.getManager()
-            .createQuery(
-                "FROM AuditoriaRegistros a WHERE a.empleado = :emp AND a.fecha = :fecha",
-                AuditoriaRegistros.class
-            )
-            .setParameter("emp",   empleado)
-            .setParameter("fecha", body.getFecha())
-            .getResultStream()
-            .findFirst()
-            .orElseGet(() -> {
-                AuditoriaRegistros nuevo = new AuditoriaRegistros();
-                nuevo.setEmpleado(empleado);
-                nuevo.setFecha(body.getFecha());
-                XPersistence.getManager().persist(nuevo);
-                return nuevo;
-            });
-
-        /* 5. Crear y configurar ColeccionRegistros */
+        /* 4. Crear y configurar ColeccionRegistros */
         ColeccionRegistros reg = new ColeccionRegistros();
         reg.setFecha(body.getFecha());
         reg.setHora(body.getHora());
         reg.setCoordenada(body.getUbicacion());
         reg.setObservacion("App");
 
-        /* 5.1 Deducir tipo de movimiento si no viene explícito */
+        /* 4.1 Deducir tipo de movimiento si no viene explícito */
         TipoMovimiento tipo = body.getTipoMovimiento() != null
             ? body.getTipoMovimiento()
             : InterpreteFichadasService.deducirTipoMovimiento(body.getDescripcionTipo());
         reg.setTipoMovimiento(tipo);
 
-        /* 5.2 Asociar a la auditoría */
-        reg.setAsistenciaDiaria(dia);
-        dia.getRegistros().add(reg);   // relación bidireccional
+        /* 5. Consolidar mediante el servicio */
+        AsistenciaDiariaService.consolidarDia(
+            empleado,
+            body.getFecha(),
+            body.getHora(),
+            List.of(reg)
+        );
+        XPersistence.getManager().flush();
 
-        /* 6. Consolidar */
-        dia.consolidarDesdeRegistros();
-
-        /* 7. Responder */
+        /* 6. Responder */
         Map<String, Object> resp = new HashMap<>();
         resp.put("estado", "ok");
         resp.put("fecha",  TiempoUtils.formatearFecha(body.getFecha()));

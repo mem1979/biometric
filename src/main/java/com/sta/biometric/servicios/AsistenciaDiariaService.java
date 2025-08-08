@@ -11,7 +11,7 @@ import com.sta.biometric.modelo.*;
 /**
  * Servicio para consolidar registros diarios de asistencia de los empleados.
  * 
- * Refactorizado para utilizar EvaluacionJornada como único resultado final.
+ * Refactorizado para utilizar EvaluacionJornada como Ãºnico resultado final.
  */
 	public class AsistenciaDiariaService {
 
@@ -55,11 +55,12 @@ import com.sta.biometric.modelo.*;
         asistencia.consolidarDesdeRegistros();
 
         em.merge(asistencia);
-    }  
+        em.flush();
+    }
 
 
     /**
-     * Busca la asistencia diaria de un empleado para una fecha espec�fica.
+     * Busca la asistencia diaria de un empleado para una fecha específica.
      * Si no existe, retorna null.
      */
     private static AuditoriaRegistros buscarAsistenciaDiaria(Personal empleado, LocalDate fecha) {
