@@ -50,9 +50,10 @@ public class AperturaJornadaJob implements Job {
                         System.out.println("  [+] Nueva asistencia creada para: " + empleado.getNombreCompleto());
                     }
 
+                    asistencia.setLicencia(Licencia.tieneLicenciaEnFecha(empleado, hoy));
+                    asistencia.setFeriado(feriado != null);
+
                     inicializarAsistencia(asistencia, empleado, hoy, feriado);
-                    asistencia.setLicencia(asistencia.getConLicencia());
-                    asistencia.setFeriado(asistencia.getEsFeriado());
                     em.merge(asistencia);
 
                     contador++;
@@ -111,11 +112,11 @@ public class AperturaJornadaJob implements Job {
             : 0);
         asistencia.setNota(null);
 
-        if (asistencia.getConLicencia()) {
+        if (asistencia.isLicencia()) {
             asistencia.setEvaluacion(EvaluacionJornada.LICENCIA);
             asistencia.setNota("Licencia activa para hoy.");
             asistencia.setJustificado(true);
-        } else if (asistencia.getEsFeriado()) {
+        } else if (asistencia.isFeriado()) {
             asistencia.setEvaluacion(EvaluacionJornada.FERIADO);
             asistencia.setNota("Feriado: " + (feriado != null ? feriado.getMotivo() : "Sin motivo especificado"));
             asistencia.setJustificado(true);
