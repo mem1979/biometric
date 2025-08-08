@@ -17,7 +17,7 @@ import lombok.*;
  * 
  * 
  * Entidad que representa un registro individual (antes era embebido).
- * Ahora cada ColeccionRegistros sabe cómo evaluarse a sí mismo
+ * Ahora cada ColeccionRegistros sabe cÃ³mo evaluarse a sÃ­ mismo
  * a partir del turno asignado al empleado y la hora de fichada.
  * 
  * 
@@ -46,18 +46,22 @@ public class ColeccionRegistros extends Identifiable {
     private AuditoriaRegistros asistenciaDiaria;
 
     /**
-     * Fecha y hora exacta en que se registró la fichada.
+     * Fecha y hora exacta en que se registrÃ³ la fichada.
      */
     @ReadOnly
     private LocalDate fecha;
     
  
     /**
-    * metodo adicional para mostrar el dia de la semana en espa�ol.
+    * metodo adicional para mostrar el dia de la semana en español.
      */
     @Transient
     @ReadOnly
     @Depends("fecha")
+    /**
+     * Devuelve el nombre del día de la semana en español para la fecha del
+     * registro.
+     */
     public String getDiaSemana() {
         if (fecha == null) return "";
         return fecha.getDayOfWeek().getDisplayName(
@@ -93,7 +97,7 @@ public class ColeccionRegistros extends Identifiable {
     private String evaluacion;
     
     @Transient
-    public String getEvaluacion() {
+    public String calcularEvaluacion() {
     	
         if (asistenciaDiaria == null) {
             return "ERROR DE REGISTRO - SIN ASISTENCIA DIARIA";
@@ -156,8 +160,12 @@ public class ColeccionRegistros extends Identifiable {
     }
 
     
+    public String getEvaluacion() {
+        return evaluacion;
+    }
+
     @PrePersist @PreUpdate
     private void preGuardarActualizar() {
-        setEvaluacion(getEvaluacion());
+        setEvaluacion(calcularEvaluacion());
      }
 }
