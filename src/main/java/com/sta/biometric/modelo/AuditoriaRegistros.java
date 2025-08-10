@@ -126,7 +126,7 @@ public class AuditoriaRegistros extends Identifiable {
     @TextArea
     private String nota;
 
-// ===================== ME‰TODOS PRINCIPALES =====================
+// ===================== MEÂ‰TODOS PRINCIPALES =====================
 
     public void consolidarDesdeRegistros() {
         if (empleado == null || fecha == null) return;
