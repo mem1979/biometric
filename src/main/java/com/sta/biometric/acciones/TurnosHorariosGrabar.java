@@ -8,7 +8,6 @@ public class TurnosHorariosGrabar extends SaveAction {
 	public void execute() throws Exception {
 		super.execute();
 		closeDialog();
-	//	executeAction("TurnosHorarios.BuscarCrearTurno");
 		
 	}
 

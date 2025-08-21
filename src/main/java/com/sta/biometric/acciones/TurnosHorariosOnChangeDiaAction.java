@@ -10,9 +10,9 @@ import com.sta.biometric.formateadores.*;
 
 
 /**
- * Acción que se dispara al marcar o desmarcar un día (lunes a domingo).
- * Asigna horarios automáticamente si se marca, o limpia campos si se desmarca.
- * Calcula también la duración del día y la refleja en el campo correspondiente.
+ * AcciÃ³n que se dispara al marcar o desmarcar un dÃ­a (lunes a domingo).
+ * Asigna horarios automÃ¡ticamente si se marca, o limpia campos si se desmarca.
+ * Calcula tambiÃ©n la duraciÃ³n del dÃ­a y la refleja en el campo correspondiente.
  */
 public class TurnosHorariosOnChangeDiaAction extends OnChangePropertyBaseAction {
 
@@ -84,7 +84,7 @@ public class TurnosHorariosOnChangeDiaAction extends OnChangePropertyBaseAction 
     }
 
     /**
-     * Asigna entrada/salida y calcula la duración usando TiempoUtils.
+     * Asigna entrada/salida y calcula la duraciÃ³n usando TiempoUtils.
      */
     private void asignarHorasADia(String dia, LocalTime entrada, LocalTime salida) {
         getView().setValueNotifying(HORA_ENTRADA.get(dia), entrada);

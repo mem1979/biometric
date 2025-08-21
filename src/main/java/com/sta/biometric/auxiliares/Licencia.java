@@ -59,8 +59,9 @@ public class Licencia extends Identifiable {
    @LabelFormat(LabelFormatType.SMALL)
    private Integer dias;
    
-   @ReadOnly
+   
    @DisplaySize(5)
+   @OnChange(ExedeDiasLicenciaAction.class)
    private Integer diasRestantes;
    
     @Required
@@ -82,6 +83,7 @@ public class Licencia extends Identifiable {
     
 
     @Stereotype("TEXT_AREA")
+    @Column(length = 500)
     private String observacion;
     
     /**

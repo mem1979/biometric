@@ -37,8 +37,6 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
 		<hereda-de controlador="Print"/>
 </controlador>
 
-
-
 <controlador nombre="MiTypicalNoResetNoNavNoImport">
   <hereda-de controlador="MiTypical" acciones-excluidas="refresh"/>
        
@@ -79,14 +77,25 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
     
  <controlador nombre="Personal">
  <hereda-de controlador="MiTypicalNoResetNoNavNoImport"/>
+ 
     <accion nombre="borrarContrasena" oculta="true"
     		clase="com.sta.biometric.acciones.BlanquearContrasenaAction" 
     		icono="lock-reset" confirmar="true">
     </accion>
+    
     <accion nombre="borrarDeviceId" oculta="true"
     		clase="com.sta.biometric.acciones.BlanquearDeviceIdAction" 
     		icono="lock-reset" confirmar="true">
     </accion>
+    
+     <accion nombre="dni" oculta="true"
+    		clase="com.sta.biometric.acciones.DniEditarEnDialogoAction" 
+    		icono="camera-account" confirmar="false">
+    </accion>
+    
+    <accion nombre="IrANSES" oculta="true"
+			 clase="com.sta.biometric.acciones.AbrirUrlAnsesAccion">
+	</accion>
  
 </controlador>  
 
@@ -142,7 +151,7 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         clase="com.sta.biometric.acciones.TurnosHorariosNuevo">
     </accion>
     
-      <accion nombre="grabarTurno" oculta="true"
+      <accion nombre="Guardar_Y_Salir" oculta="true"
         clase="com.sta.biometric.acciones.TurnosHorariosGrabar">
     </accion>
     

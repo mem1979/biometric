@@ -18,7 +18,7 @@ import org.openxava.tab.*;
 			showDialog();                                                   
 	        getView().setTitle("NUEVA JORNADA SEMANAL");         // 4
 	        getView().setModelName("TurnosHorarios"); 
-	        addActions("TurnosHorarios.grabarTurno", "Dialog.cancel");
+	        addActions("TurnosHorarios.Guardar_Y_Salir", "Dialog.cancel");
 	        removeActions("MiTypicalNoResetNoNavNoImport.save");
 	   
 	    

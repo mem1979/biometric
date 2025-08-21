@@ -27,19 +27,22 @@ import lombok.*;
 @Getter @Setter
 @View(members =
 "nombreCompleto, turnoActivoHoy;" +
-
 "InformacionPersonal { " +
     "Nombres[" +
         "apellido;" +
         "nombres;" +
-        "fechaNacimiento, edad;" +
-        "dni; cuil;" +
+        "fechaNacimiento, edad, proximoCumpleanos;" +
+        "nacionalidad, estadoCivil;" +
+        "dni, Personal.dni(ALWAYS);" + 
+        "cuil, Personal.IrANSES(ALWAYS);" + 
+        
     "], " +
     "foto[" +
         "foto;" +
     "]; " +
     "direccion;" +
     "contacto;" +
+    "documentacionPersonal;" +
 "}; " +
 
 "InformacionLaboral { " +
@@ -107,8 +110,7 @@ public class Personal extends Identifiable {
 	@DefaultValueCalculator(GeneradorCodigoUserIdCalculator.class)
 	private String userId;
 
-    @ReadOnly
-  //  @Password
+    @ReadOnly //  @Password
     @Column(length = 20)
     @Action(value="Personal.borrarDeviceId", alwaysEnabled=true)
     private String deviceId;
@@ -127,8 +129,7 @@ public class Personal extends Identifiable {
         return inicialNombre + apellidoCompleto + "@" + userId;
     }
 
-    @Password
-    @ReadOnly
+    @Password @ReadOnly
     @Column(length = 20)
     @Action(value="Personal.borrarContrasena", alwaysEnabled=true)
     @DefaultValueCalculator(CalculadorPassword.class)
@@ -162,17 +163,61 @@ public class Personal extends Identifiable {
     @DefaultValueCalculator(CurrentLocalDateCalculator.class)
     private LocalDate fechaNacimiento;
 
-    @DisplaySize(30)
-    @MiLabel(medida = "chica", negrita = true, recuadro = false)
+    @DisplaySize(15)
+    @MiLabel(medida = "mediana", negrita = true, recuadro = false)
     @Depends("fechaNacimiento")
     public String getEdad() {
         if (fechaNacimiento == null) return "";
-        return "( Edad: " + ChronoUnit.YEARS.between(fechaNacimiento, LocalDate.now()) + " Años )";
+        return " Edad: " + ChronoUnit.YEARS.between(fechaNacimiento, LocalDate.now()) + " Años ";
+	}
+    
+    @Label
+    @LabelFormat(LabelFormatType.NO_LABEL)
+    public String getProximoCumpleanos() { // Método para calcular la proximidad del próximo cumpleaños
+        if (fechaNacimiento == null) {
+            return "Fecha de nacimiento no disponible";
+        }
+
+        LocalDate hoy = LocalDate.now();
+        LocalDate proximoCumpleanos = fechaNacimiento.withYear(hoy.getYear());
+
+        // Verificar si hoy es el cumpleaños
+        if (proximoCumpleanos.isEqual(hoy)) {
+            return "¡HOY ES EL CUMPLEAÑOS!";
+        }
+
+        // Si el cumpleaños de este año ya pasó, tomar el del próximo año
+        if (proximoCumpleanos.isBefore(hoy)) {
+            proximoCumpleanos = proximoCumpleanos.plusYears(1);
+        }
+
+        Period periodo = Period.between(hoy, proximoCumpleanos);
+        int meses = periodo.getMonths();
+        int dias = periodo.getDays();
+
+        return "(Proximo cumpleaños en " + meses + " meses y " + dias + " días)";
     }
     
-    @Mask(" 00.000.000  ")
-	@Required
-	private String dni; // Documento Nacional de Identidad
+    @Enumerated(EnumType.STRING)
+    private EstadoCivil estadoCivil;
+    
+   	@NoCreate @NoModify 
+	@DefaultValueCalculator(NacionalidadPorDefectoCalculator.class)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true) 
+    @DescriptionsList(descriptionProperties = "nacionalidad") // Muestra nacionalidad como texto
+    private Nacionalidades nacionalidad;
+    
+    
+ // Relación OneToOne con Dni
+    @NoFrame 
+    @NoSearch
+    @NoCreate
+    @NoModify
+    @AsEmbedded
+    @ReferenceView ("simple")
+    @OneToOne(fetch=FetchType.LAZY, cascade = CascadeType.ALL) // 'CascadeType.ALL' permite que las operaciones como persist y remove se propaguen a la entidad 'Dni'
+    @JoinColumn(name = "dni_id") // Crea una columna 'dni_id' que almacena la clave primaria de 'Dni'
+    private Dni dni;
     
     @Mask("00-00000000-0")
 	private String cuil; // Código Único de Identificación Laboral
@@ -240,6 +285,10 @@ public class Personal extends Identifiable {
     @File(acceptFileTypes="image/*", maxFileSizeInKb=200)
     @Column(length=32)
     private String foto;
+    
+    @Files( maxFileSizeInKb=200)
+    @Column(length=32)
+    private String documentacionPersonal;
     
     
     @Editor("yearCalendarEditor")

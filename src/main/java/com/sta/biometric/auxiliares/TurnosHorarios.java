@@ -1,63 +1,89 @@
 package com.sta.biometric.auxiliares;
 
-import java.math.*;
-import java.time.*;
-import java.util.*;
+import java.math.*;     // BigDecimal, RoundingMode
+import java.time.*;     // LocalTime, DayOfWeek
+import java.util.*;     // Map, LinkedHashMap
 
-import javax.persistence.*;
-import javax.validation.constraints.*;
+import javax.persistence.*;            // JPA: @Entity, @Column, @PrePersist, etc.
+import javax.validation.constraints.*; // Bean Validation: @AssertTrue
 
-import org.openxava.annotations.*;
-import org.openxava.calculators.*;
-import org.openxava.jpa.*;
-import org.openxava.model.*;
+import org.openxava.annotations.*;     // Anotaciones de OpenXava para UI (@View, @Tab, etc.)
+import org.openxava.calculators.*;     // Calculators por defecto (@DefaultValueCalculator)
+import org.openxava.jpa.*;             // XPersistence para obtener EntityManager
+import org.openxava.model.*;           // Identifiable (id persistente OX)
 
-import com.sta.biometric.acciones.*;
-import com.sta.biometric.anotaciones.*;
-import com.sta.biometric.calculadores.*;
-import com.sta.biometric.enums.*;
-import com.sta.biometric.formateadores.*;
+import com.sta.biometric.acciones.*;       // Acción @OnChange para UI (tu implementación)
+import com.sta.biometric.anotaciones.*;    // @MiLabel (decoración de etiquetas en UI)
+import com.sta.biometric.calculadores.*;   // CalculadorDefaultFromProperties (valor por defecto configurable)
+import com.sta.biometric.enums.*;          // Enum Turnos
 
-import lombok.*;
+import lombok.*;   // Lombok para @Getter/@Setter
 
+/**
+ * Entidad que modela un esquema de horarios semanales de un turno.
+ *
+ * Responsabilidades:
+ * - Marcar qué días están activos y sus horas de entrada/salida.
+ * - Calcular minutos por día y total semanal:
+ *      * Representación amigable "X Hs. Y Min." para UI.
+ *      * Representación decimal (BigDecimal) para persistir en 'totalHoras'.
+ * - Generar un 'codigo' único por tipo de turno (prefijo por inicial del enum).
+ *
+ * Mejores prácticas aplicadas:
+ * 1) No dependemos de cadenas para calcular totales (evita errores de formato).
+ * 2) Soportamos turnos nocturnos (ej. 22:00–06:00 => 8h).
+ * 3) Validaciones de consistencia: días activos deben tener horas; tolerancia no negativa.
+ */
 @View(members =
+    // Vista compuesta en secciones: "Jornada", "DIAS" y el resumen "detalleJornadaHoras"
     "Jornada [" +
-    "turnoNombre, tolerancia;"+
-    "codigo, calculaTotalHoras;" +
+      // Fila 1: tipo de turno y tolerancia
+      "turnoNombre, tolerancia;" +
+      // Fila 2: código generado (read-only) y total semanal formateado (derivado)
+      "codigo, calculaTotalHoras;" +
     "];" +
 
-    "DIAS [#" +
-    "lunes, horaEntradaLunes, horaSalidaLunes, horasLunes;" +
-    "martes, horaEntradaMartes, horaSalidaMartes, horasMartes;" +
-    "miercoles, horaEntradaMiercoles, horaSalidaMiercoles, horasMiercoles;" +
-    "jueves, horaEntradaJueves, horaSalidaJueves, horasJueves;" +
-    "viernes, horaEntradaViernes, horaSalidaViernes, horasViernes;" +
-    "sabado, horaEntradaSabado, horaSalidaSabado, horasSabado;" +
-    "domingo, horaEntradaDomingo, horaSalidaDomingo, horasDomingo;" +
+    "DIAS [#" + // Sección tipo grid: por cada día, checkbox + entrada + salida + calculado
+      "lunes, horaEntradaLunes, horaSalidaLunes, horasLunes;" +
+      "martes, horaEntradaMartes, horaSalidaMartes, horasMartes;" +
+      "miercoles, horaEntradaMiercoles, horaSalidaMiercoles, horasMiercoles;" +
+      "jueves, horaEntradaJueves, horaSalidaJueves, horasJueves;" +
+      "viernes, horaEntradaViernes, horaSalidaViernes, horasViernes;" +
+      "sabado, horaEntradaSabado, horaSalidaSabado, horasSabado;" +
+      "domingo, horaEntradaDomingo, horaSalidaDomingo, horasDomingo;" +
     "];" +
+    // Resumen compacto que agrupa días con el mismo horario
     "detalleJornadaHoras"
 )
-
-
-
-@Tab(editors = "List", properties = "codigo, turnoNombre.nombre, detalleJornadaHoras, totalHoras")
+@Tab(
+    // Columnas visibles en la lista del módulo
+    editors = "List",
+    properties = "codigo, turnoNombre.nombre, detalleJornadaHoras, totalHoras"
+)
 @Entity
 @Getter @Setter
-public class TurnosHorarios extends Identifiable {
+public class TurnosHorarios extends Identifiable { // Identifiable provee 'id' y equals/hashCode estándar OX
 
-    @ReadOnly
-  //  @Required
-    @SearchKey
-    @MiLabel(medida = "grande", negrita = true, recuadro = true ) //, icon = "timetable")
-    @Column(length = 6, unique = true)
+    // ===========================
+    // Identidad y clasificación
+    // ===========================
+
+    @ReadOnly                          // No editable desde UI: se genera en @PrePersist
+    @SearchKey                         // Clave de búsqueda rápida en OpenXava
+    @MiLabel(medida = "grande", negrita = true, recuadro = true) // Estilo visual de etiqueta
+    @Column(length = 6, unique = true) // Ej.: "TM.01" (6 es ajustado; amplía si cambias formato)
     private String codigo;
 
-    
-    @LabelFormat(LabelFormatType.SMALL)
-    @Enumerated(EnumType.STRING)
-    private Turnos turnoNombre;
 
-    @DefaultValueCalculator(
+    @LabelFormat(LabelFormatType.SMALL) // Etiqueta compacta en UI
+    @Enumerated(EnumType.STRING)        // Persistir enum como texto legible (no ordinal)
+    private Turnos turnoNombre;         // Ej.: MANANA, TARDE, NOCHE (según tu enum)
+
+    // ===========================
+    // Parámetros del turno
+    // ===========================
+
+    @DefaultValueCalculator( // Toma valor de properties; por defecto 5 si no hay propiedad
         value = CalculadorDefaultFromProperties.class,
         properties = {
             @PropertyValue(name = "propiedad", value = "tolerancia.minutos"),
@@ -65,15 +91,21 @@ public class TurnosHorarios extends Identifiable {
             @PropertyValue(name = "tipo", value = "int")
         }
     )
-    private Integer tolerancia;
+    private Integer tolerancia; // Minutos de tolerancia (se valida no-negativo; uso fuera de esta clase)
 
-    // D�as activos (checkbox)
+    // ===========================
+    // Días de la semana activos
+    // ===========================
     @Column
-    @OnChange(TurnosHorariosOnChangeDiaAction.class)
-    @DefaultValueCalculator(FalseCalculator.class)
+    @OnChange(TurnosHorariosOnChangeDiaAction.class) // Tu acción UI para reaccionar al toggle de un día
+    @DefaultValueCalculator(FalseCalculator.class)   // Por defecto: desactivado
     private boolean lunes, martes, miercoles, jueves, viernes, sabado, domingo;
 
-    // Horarios por dia
+    // ===========================
+    // Horarios por día (LocalTime)
+    // ===========================
+    // Si un día está activo, ambos deben ser no-nulos (validado más abajo)
+
     private LocalTime horaEntradaLunes, horaSalidaLunes;
     private LocalTime horaEntradaMartes, horaSalidaMartes;
     private LocalTime horaEntradaMiercoles, horaSalidaMiercoles;
@@ -82,118 +114,170 @@ public class TurnosHorarios extends Identifiable {
     private LocalTime horaEntradaSabado, horaSalidaSabado;
     private LocalTime horaEntradaDomingo, horaSalidaDomingo;
 
+    // ===========================
+    // Totales persistidos
+    // ===========================
+
     @Column
-    private BigDecimal totalHoras;
+    private BigDecimal totalHoras; // Horas semanales en decimal (ej. 16.00); se setea en prePersist/preUpdate
 
-    // ========== C�lculo de duraci�n por dia ==========
+    // ===========================================================
+    // Helpers de cálculo (evitan duplicar lógica y facilitan test)
+    // ===========================================================
 
-    @DisplaySize(20)
-    @Depends("lunes, horaEntradaLunes, horaSalidaLunes")
-    public String getHorasLunes() {
-        return calcularDuracionFormateada(lunes, horaEntradaLunes, horaSalidaLunes);
+    /**
+     * Diferencia en minutos entre 'entrada' y 'salida'.
+     * - Si 'salida' es antes que 'entrada' asumimos cruce de medianoche (turno nocturno) => +24h.
+     * - Si alguna es null retornamos 0 (consistencia con getters de día).
+     */
+    private int minutosEntre(LocalTime entrada, LocalTime salida) {
+        if (entrada == null || salida == null) return 0;
+        int start = entrada.getHour() * 60 + entrada.getMinute();
+        int end   = salida.getHour()  * 60 + salida.getMinute();
+        int diff  = end - start;
+        if (diff < 0) diff += 24 * 60; // soporte a nocturnos: ej. 22:00 -> 06:00
+        return diff;
     }
 
-    @DisplaySize(20)
-    @Depends("martes, horaEntradaMartes, horaSalidaMartes")
-    public String getHorasMartes() {
-        return calcularDuracionFormateada(martes, horaEntradaMartes, horaSalidaMartes);
-    }
-
-    @DisplaySize(20)
-    @Depends("miercoles, horaEntradaMiercoles, horaSalidaMiercoles")
-    public String getHorasMiercoles() {
-        return calcularDuracionFormateada(miercoles, horaEntradaMiercoles, horaSalidaMiercoles);
-    }
-
-    @DisplaySize(20)
-    @Depends("jueves, horaEntradaJueves, horaSalidaJueves")
-    public String getHorasJueves() {
-        return calcularDuracionFormateada(jueves, horaEntradaJueves, horaSalidaJueves);
-    }
-
-    @DisplaySize(20)
-    @Depends("viernes, horaEntradaViernes, horaSalidaViernes")
-    public String getHorasViernes() {
-        return calcularDuracionFormateada(viernes, horaEntradaViernes, horaSalidaViernes);
-    }
-
-    @DisplaySize(20)
-    @Depends("sabado, horaEntradaSabado, horaSalidaSabado")
-    public String getHorasSabado() {
-        return calcularDuracionFormateada(sabado, horaEntradaSabado, horaSalidaSabado);
-    }
-
-    @DisplaySize(20)
-    @Depends("domingo, horaEntradaDomingo, horaSalidaDomingo")
-    public String getHorasDomingo() {
-        return calcularDuracionFormateada(domingo, horaEntradaDomingo, horaSalidaDomingo);
-    }
-
-    private String calcularDuracionFormateada(boolean diaActivo, LocalTime entrada, LocalTime salida) {
-        if (!diaActivo || entrada == null || salida == null) return "0 Hs. 0 Min.";
-        int minutos = TiempoUtils.calcularMinutosLocalTime(entrada, salida);
+    /** Devuelve "X Hs. Y Min." dado un total de minutos. */
+    private String formatearMinutos(int minutos) {
         return (minutos / 60) + " Hs. " + (minutos % 60) + " Min.";
     }
 
-    // ========== Total semanal ==========
+    // ===========================================================
+    // Cálculo por día (propiedades derivadas para mostrar en UI)
+    // ===========================================================
 
-    @Depends("horasLunes, horasMartes, horasMiercoles, horasJueves, horasViernes, horasSabado, horasDomingo")
-   // @LargeDisplay(icon = "timetable")
-    @MiLabel(medida = "extra", negrita = true, recuadro = true, icon = "clock")
-    @LabelFormat(LabelFormatType.NO_LABEL)
+    @DisplaySize(20)
+    @Depends("horaEntradaLunes, horaSalidaLunes") // Recalcula si cambia cualquiera
+    public String getHorasLunes() {
+        return formatearDuracion( horaEntradaLunes, horaSalidaLunes);
+    }
+
+    @DisplaySize(20)
+    @Depends("horaEntradaMartes, horaSalidaMartes")
+    public String getHorasMartes() {
+        return formatearDuracion( horaEntradaMartes, horaSalidaMartes);
+    }
+
+    @DisplaySize(20)
+    @Depends("horaEntradaMiercoles, horaSalidaMiercoles")
+    public String getHorasMiercoles() {
+        return formatearDuracion(horaEntradaMiercoles, horaSalidaMiercoles);
+    }
+
+    @DisplaySize(20)
+    @Depends("horaEntradaJueves, horaSalidaJueves")
+    public String getHorasJueves() {
+        return formatearDuracion(horaEntradaJueves, horaSalidaJueves);
+    }
+
+    @DisplaySize(20)
+    @Depends("horaEntradaViernes, horaSalidaViernes")
+    public String getHorasViernes() {
+        return formatearDuracion(horaEntradaViernes, horaSalidaViernes);
+    }
+
+    @DisplaySize(20)
+    @Depends("horaEntradaSabado, horaSalidaSabado")
+    public String getHorasSabado() {
+        return formatearDuracion(horaEntradaSabado, horaSalidaSabado);
+    }
+
+    @DisplaySize(20)
+    @Depends("horaEntradaDomingo, horaSalidaDomingo")
+    public String getHorasDomingo() {
+        return formatearDuracion( horaEntradaDomingo, horaSalidaDomingo);
+    }
+
+ // Si hay horas definidas calcula; si no, 0. El on-change al desactivar borra las horas.
+        private String formatearDuracion(LocalTime entrada, LocalTime salida) {
+            if (entrada == null || salida == null) return "0 Hs. 0 Min.";
+            return formatearMinutos(minutosEntre(entrada, salida));
+        }
+
+    // ===========================================================
+    // Total semanal (derivados, sin parsear cadenas intermedias)
+    // ===========================================================
+
+    @Depends(
+        "lunes, horaEntradaLunes, horaSalidaLunes, horasLunes  " +
+        "martes, horaEntradaMartes, horaSalidaMartes, horasMartes" +
+        "miercoles, horaEntradaMiercoles, horaSalidaMiercoles, horasMiercoles " +
+        "jueves, horaEntradaJueves, horaSalidaJueves, horasJueves " +
+        "viernes, horaEntradaViernes, horaSalidaViernes, horasViernes " +
+        "sabado, horaEntradaSabado, horaSalidaSabado, horasSabado " +
+        "domingo, horaEntradaDomingo, horaSalidaDomingo, horasDomingo"
+    )
+    @MiLabel(medida = "extra", negrita = true, recuadro = true, icon = "clock") // Estilo destacado
+    @LabelFormat(LabelFormatType.NO_LABEL) // Mostrar el valor sin etiqueta a la izquierda
     public String getCalculaTotalHoras() {
-        int totalMinutos = obtenerTotalMinutosSemanales();
-        return (totalMinutos / 60) + " Hs. " + (totalMinutos % 60) + " Min.";
+        return formatearMinutos(obtenerTotalMinutosSemanales());
     }
 
     @Label
     @LabelFormat(LabelFormatType.NO_LABEL)
     public BigDecimal getTotalHorasDecimal() {
-        int totalMinutos = obtenerTotalMinutosSemanales();
-        return BigDecimal.valueOf(totalMinutos).divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
+        // Conversión de minutos a horas con 2 decimales (HALF_UP)
+        return BigDecimal.valueOf(obtenerTotalMinutosSemanales())
+                         .divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
     }
 
+    /**
+     * Suma en minutos las duraciones de cada día usando la API de negocio (getHorasParaDia).
+     * Ventaja: evita acoplarse al formato de strings de los getters de UI.
+     */
     private int obtenerTotalMinutosSemanales() {
-        return Arrays.asList(
-            getHorasLunes(), getHorasMartes(), getHorasMiercoles(),
-            getHorasJueves(), getHorasViernes(), getHorasSabado(), getHorasDomingo()
-        ).stream()
-         .mapToInt(this::extraerMinutosDesdeTexto)
-         .sum();
+        int total = 0;
+        total += getHorasParaDia(DayOfWeek.MONDAY);
+        total += getHorasParaDia(DayOfWeek.TUESDAY);
+        total += getHorasParaDia(DayOfWeek.WEDNESDAY);
+        total += getHorasParaDia(DayOfWeek.THURSDAY);
+        total += getHorasParaDia(DayOfWeek.FRIDAY);
+        total += getHorasParaDia(DayOfWeek.SATURDAY);
+        total += getHorasParaDia(DayOfWeek.SUNDAY);
+        return total;
     }
 
-    private int extraerMinutosDesdeTexto(String texto) {
-        if (texto == null || texto.isEmpty()) return 0;
-        String[] partes = texto.split(" ");
-        return Integer.parseInt(partes[0]) * 60 + Integer.parseInt(partes[2]);
-    }
+    // ===========================================================
+    // Resumen visual de jornada (agrupa días con mismo horario)
+    // ===========================================================
 
-    // ========== Resumen visual de jornada ==========
-
-    @Depends("lunes, horaEntradaLunes, horaSalidaLunes, martes, horaEntradaMartes, horaSalidaMartes, " +
-             "miercoles, horaEntradaMiercoles, horaSalidaMiercoles, jueves, horaEntradaJueves, horaSalidaJueves, " +
-             "viernes, horaEntradaViernes, horaSalidaViernes, sabado, horaEntradaSabado, horaSalidaSabado, " +
-             "domingo, horaEntradaDomingo, horaSalidaDomingo")
+    @Depends(
+            "lunes, horaEntradaLunes, horaSalidaLunes, horasLunes  " +
+            "martes, horaEntradaMartes, horaSalidaMartes, horasMartes" +
+            "miercoles, horaEntradaMiercoles, horaSalidaMiercoles, horasMiercoles " +
+            "jueves, horaEntradaJueves, horaSalidaJueves, horasJueves " +
+            "viernes, horaEntradaViernes, horaSalidaViernes, horasViernes " +
+            "sabado, horaEntradaSabado, horaSalidaSabado, horasSabado " +
+            "domingo, horaEntradaDomingo, horaSalidaDomingo, horasDomingo"
+        )
     @TextArea
-    @LabelFormat(LabelFormatType.SMALL)
+    @LabelFormat(LabelFormatType.SMALL) // Texto compacto
     public String getDetalleJornadaHoras() {
+        // Clave: "HH:mm a HH:mm" ; Valor: concatenación de abreviaturas "Lu.Ma." en orden
         Map<String, String> horariosDias = new LinkedHashMap<>();
-        agregarDia(horariosDias, "Lu.", lunes, horaEntradaLunes, horaSalidaLunes);
-        agregarDia(horariosDias, "Ma.", martes, horaEntradaMartes, horaSalidaMartes);
-        agregarDia(horariosDias, "Mi.", miercoles, horaEntradaMiercoles, horaSalidaMiercoles);
-        agregarDia(horariosDias, "Ju.", jueves, horaEntradaJueves, horaSalidaJueves);
-        agregarDia(horariosDias, "Vi.", viernes, horaEntradaViernes, horaSalidaViernes);
-        agregarDia(horariosDias, "Sa.", sabado, horaEntradaSabado, horaSalidaSabado);
-        agregarDia(horariosDias, "Do.", domingo, horaEntradaDomingo, horaSalidaDomingo);
+        agregarDia(horariosDias, "Lu.", lunes,    horaEntradaLunes,     horaSalidaLunes);
+        agregarDia(horariosDias, "Ma.", martes,   horaEntradaMartes,    horaSalidaMartes);
+        agregarDia(horariosDias, "Mi.", miercoles,horaEntradaMiercoles, horaSalidaMiercoles);
+        agregarDia(horariosDias, "Ju.", jueves,   horaEntradaJueves,    horaSalidaJueves);
+        agregarDia(horariosDias, "Vi.", viernes,  horaEntradaViernes,   horaSalidaViernes);
+        agregarDia(horariosDias, "Sa.", sabado,   horaEntradaSabado,    horaSalidaSabado);
+        agregarDia(horariosDias, "Do.", domingo,  horaEntradaDomingo,   horaSalidaDomingo);
 
         StringBuilder resultado = new StringBuilder();
         for (Map.Entry<String, String> entry : horariosDias.entrySet()) {
             if (resultado.length() > 0) resultado.append(" / ");
+            // Ej.: "Lu.Ma." + " de " + "08:00 a 16:00" + " Hs"
             resultado.append(entry.getValue()).append(" de ").append(entry.getKey()).append(" Hs");
         }
         return resultado.toString();
     }
 
+    /**
+     * Si 'activo' y ambos horarios definidos, agrega el día a la agrupación por rango horario.
+     * - Usa merge() para concatenar abreviaturas si ya existe la misma clave "HH:mm a HH:mm".
+     */
     private void agregarDia(Map<String, String> mapa, String dia, boolean activo, LocalTime entrada, LocalTime salida) {
         if (activo && entrada != null && salida != null) {
             String horario = String.format("%02d:%02d a %02d:%02d",
@@ -202,105 +286,105 @@ public class TurnosHorarios extends Identifiable {
         }
     }
 
-    // ========== Persistencia ==========
+    // ===========================================================
+    // Ciclo de persistencia (JPA)
+    // ===========================================================
 
     @PrePersist
     private void preGuardar() {
+        // Mantener 'totalHoras' sincronizado al insertar
         setTotalHoras(getTotalHorasDecimal());
+        // Generación del código único por prefijo de turno
         generarCodigo();
     }
 
     @PreUpdate
     private void preActualizar() {
-    	setTotalHoras(getTotalHorasDecimal());
+        // Mantener 'totalHoras' sincronizado al actualizar
+        setTotalHoras(getTotalHorasDecimal());
     }
 
+    /**
+     * Genera 'codigo' con patrón: "T{InicialTurno}.{NN}" (ej.: MANANA -> "TM.01").
+     * - Busca el máximo existente con ese prefijo y lo incrementa.
+     * - Limita a 10 códigos por prefijo (01..10); si se excede lanza excepción.
+     * Nota de concurrencia:
+     *   Hay ventana de carrera entre el SELECT y el INSERT. La restricción 'unique = true'
+     *   protege la integridad; ante colisión deberías capturar la excepción y reintentar.
+     */
     private void generarCodigo() {
-        if (turnoNombre == null ) {
-            throw new IllegalStateException("El nombre del turno no puede estar vac�o.");
+        if (turnoNombre == null) {
+            throw new IllegalStateException("El nombre del turno no puede estar vacío.");
         }
+        String inicial = turnoNombre.name().substring(0, 1).toUpperCase(); // Inicial del enum (ej. 'M')
+        String prefijo = "T" + inicial;                                    // Ej. "TM"
 
-        String inicial = turnoNombre.name().substring(0, 1).toUpperCase();
-        String prefijo = "T" + inicial;
-
+        // Consulta JPA para obtener el mayor 'codigo' con el prefijo (orden lexicográfico)
         Query q = XPersistence.getManager().createQuery(
             "select max(e.codigo) from " + getClass().getSimpleName() +
-            " e where e.codigo like :codigo");
+            " e where e.codigo like :codigo"
+        );
         q.setParameter("codigo", prefijo + ".%");
 
-        String ultimo = (String) q.getSingleResult();
-        int nro;
+        String ultimo = (String) q.getSingleResult(); // Ej.: "TM.03" o null si no existe ninguno
+        int nro = (ultimo == null) ? 1 : Integer.parseInt(ultimo.substring(3)) + 1; // "TM." ocupa 3 chars
 
-        if (ultimo == null) {
-            nro = 1;
-        } else {
-            nro = Integer.parseInt(ultimo.substring(3)) + 1;
-            if (nro > 10) {
-                throw new IllegalStateException("Se ha alcanzado el m�ximo de 10 c�digos para el turno: " + turnoNombre);
-            }
+        if (nro > 99) {
+            throw new IllegalStateException("Se ha alcanzado el máximo de 99 códigos para el turno: " + turnoNombre);
         }
-
-        this.codigo = prefijo + "." + String.format("%02d", nro);
+        this.codigo = prefijo + "." + String.format("%02d", nro); // Formato 2 dígitos: 01..99
     }
 
-    // ========== Utilidades externas ==========
-    
-    /**
-     * Devuelve el dia especificado.
-     * Si el dia no esta activo o no hay horario definido, devuelve Null.
-     */
+    // ===========================================================
+    // API de negocio por día (para reglas externas y para el total)
+    // ===========================================================
 
+    /** ¿El día está marcado como laboral? */
     public boolean esLaboral(DayOfWeek dia) {
         switch (dia) {
-            case MONDAY: return lunes;
-            case TUESDAY: return martes;
+            case MONDAY:    return lunes;
+            case TUESDAY:   return martes;
             case WEDNESDAY: return miercoles;
-            case THURSDAY: return jueves;
-            case FRIDAY: return viernes;
-            case SATURDAY: return sabado;
-            case SUNDAY: return domingo;
-            default: return false;
+            case THURSDAY:  return jueves;
+            case FRIDAY:    return viernes;
+            case SATURDAY:  return sabado;
+            case SUNDAY:    return domingo;
+            default:        return false;
         }
     }
 
-    /**
-     * Devuelve la Hora de Entrada para el dia especificado.
-     * Si el dia no esta� activo o no hay horario definido, devuelve Null.
-     */
+    /** Hora de entrada (o null si el día no aplica/no configurado). */
     public LocalTime getEntradaParaDia(DayOfWeek dia) {
         switch (dia) {
-            case MONDAY: return horaEntradaLunes;
-            case TUESDAY: return horaEntradaMartes;
+            case MONDAY:    return horaEntradaLunes;
+            case TUESDAY:   return horaEntradaMartes;
             case WEDNESDAY: return horaEntradaMiercoles;
-            case THURSDAY: return horaEntradaJueves;
-            case FRIDAY: return horaEntradaViernes;
-            case SATURDAY: return horaEntradaSabado;
-            case SUNDAY: return horaEntradaDomingo;
-            default: return null;
+            case THURSDAY:  return horaEntradaJueves;
+            case FRIDAY:    return horaEntradaViernes;
+            case SATURDAY:  return horaEntradaSabado;
+            case SUNDAY:    return horaEntradaDomingo;
+            default:        return null;
         }
     }
 
-    
-    /**
-     * Devuelve la Hora de salida para el dia especificado.
-     * Si el dia no esta activo o no hay horario definido, devuelve Null.
-     */
+    /** Hora de salida (o null si el día no aplica/no configurado). */
     public LocalTime getSalidaParaDia(DayOfWeek dia) {
         switch (dia) {
-            case MONDAY: return horaSalidaLunes;
-            case TUESDAY: return horaSalidaMartes;
+            case MONDAY:    return horaSalidaLunes;
+            case TUESDAY:   return horaSalidaMartes;
             case WEDNESDAY: return horaSalidaMiercoles;
-            case THURSDAY: return horaSalidaJueves;
-            case FRIDAY: return horaSalidaViernes;
-            case SATURDAY: return horaSalidaSabado;
-            case SUNDAY: return horaSalidaDomingo;
-            default: return null;
+            case THURSDAY:  return horaSalidaJueves;
+            case FRIDAY:    return horaSalidaViernes;
+            case SATURDAY:  return horaSalidaSabado;
+            case SUNDAY:    return horaSalidaDomingo;
+            default:        return null;
         }
     }
-    
+
     /**
-     * Devuelve la cantidad de minutos trabajados esperados para el dia especificado.
-     * Si el dia no esta activo o no hay horario definido, devuelve 0.
+     * Minutos esperados de trabajo para 'dia'.
+     * - 0 si el día no está activo o faltan horarios.
+     * - Soporta nocturnos vía 'minutosEntre'.
      */
     public int getHorasParaDia(DayOfWeek dia) {
         boolean activo;
@@ -325,14 +409,34 @@ public class TurnosHorarios extends Identifiable {
             default:
                 return 0;
         }
-
-        if (!activo || entrada == null || salida == null) return 0;
-        return TiempoUtils.calcularMinutosLocalTime(entrada, salida);
+        return (activo && entrada != null && salida != null) ? minutosEntre(entrada, salida) : 0;
     }
 
+    // ===========================================================
+    // Validaciones Bean Validation (se muestran en UI y bloquean persistencia)
+    // ===========================================================
 
-    @AssertTrue(message = "Debe seleccionar al menos un d�a de la Semana.")
+    /** Debe existir al menos un día activo. */
+    @AssertTrue(message = "Debe seleccionar al menos un día de la Semana.")
     public boolean isAlMenosUnDiaSeleccionado() {
         return lunes || martes || miercoles || jueves || viernes || sabado || domingo;
+    }
+
+    /** Para cada día activo deben definirse ambas horas (entrada y salida). */
+    @AssertTrue(message = "Para cada día activo debe definir hora de entrada y salida.")
+    public boolean isHorasDefinidasParaDiasActivos() {
+        return (!lunes    || (horaEntradaLunes    != null && horaSalidaLunes    != null)) &&
+               (!martes   || (horaEntradaMartes   != null && horaSalidaMartes   != null)) &&
+               (!miercoles|| (horaEntradaMiercoles!= null && horaSalidaMiercoles!= null)) &&
+               (!jueves   || (horaEntradaJueves   != null && horaSalidaJueves   != null)) &&
+               (!viernes  || (horaEntradaViernes  != null && horaSalidaViernes  != null)) &&
+               (!sabado   || (horaEntradaSabado   != null && horaSalidaSabado   != null)) &&
+               (!domingo  || (horaEntradaDomingo  != null && horaSalidaDomingo  != null));
+    }
+
+    /** 'tolerancia' no puede ser negativa (null se admite como "sin configurar"). */
+    @AssertTrue(message = "La tolerancia no puede ser negativa.")
+    public boolean isToleranciaValida() {
+        return tolerancia == null || tolerancia >= 0;
     }
 }

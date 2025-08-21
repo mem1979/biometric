@@ -13,6 +13,7 @@ public class CrearLicenciaAction extends CreateNewElementInCollectionAction {
         View view = getCollectionElementView();
         // En creación, permitimos todos los campos hasta que guarde
         setAllEditable(view, true);
+        view.setEditable("diasRestantes", false);
     }
 
     @SuppressWarnings("unchecked")

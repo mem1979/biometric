@@ -3,7 +3,7 @@ package com.sta.biometric.auxiliares;
 import com.sta.biometric.servicios.*;
 
 /**
- * Clase utilitaria para cargar la configuración de mapeo de columnas
+ * Clase utilitaria para cargar la configuracion de mapeo de columnas
  * desde las propiedades definidas (por ejemplo, en xava.properties).
  */
 public class ImportMapping {
@@ -16,7 +16,7 @@ public class ImportMapping {
 
     /**
      * Carga el mapeo de columnas desde las propiedades, usando un prefijo como "import.default" o "import.clienteA".
-     * Si alguna propiedad no está definida, se usan los valores por defecto.
+     * Si alguna propiedad no esta definida, se usan los valores por defecto.
      * 
      * @param prefijo Prefijo usado para buscar en las propiedades. Ej: "import.default"
      * @return Un objeto ImportMapping con las columnas configuradas.

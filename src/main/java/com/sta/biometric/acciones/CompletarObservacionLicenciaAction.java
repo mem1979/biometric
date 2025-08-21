@@ -25,6 +25,10 @@ public class CompletarObservacionLicenciaAction extends OnChangePropertyBaseActi
 
         TipoLicenciaAR tipo = (TipoLicenciaAR) getView().getValue("tipo");
         if (tipo == null) tipo = TipoLicenciaAR.VACACIONES;
+        
+       
+
+        
 
         Map<?, ?> clave = getView().getParent().getKeyValuesWithValue();
         Personal empleado = (Personal) MapFacade.findEntity(getView().getParent().getModelName(), clave);
@@ -40,6 +44,11 @@ public class CompletarObservacionLicenciaAction extends OnChangePropertyBaseActi
         	                    ModoComputoLicencia.class));
 
         boolean justificado = ConfiguracionesPreferencias.obtenerValor(keyBase + ".justificado", true, Boolean.class);
+        
+        if (!(Boolean) justificado) {
+            addError("licencia_no_justificada");
+        }
+        
         int diasPorAnio = ConfiguracionesPreferencias.obtenerValor(keyBase + ".diasPorAnio", 0, Integer.class);
 
         String observacion = descripcion;

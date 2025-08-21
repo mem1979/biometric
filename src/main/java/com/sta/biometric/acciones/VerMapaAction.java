@@ -11,11 +11,11 @@ public class VerMapaAction extends ViewBaseAction {
     @Override
     public void execute() throws Exception {
 
-        // Obtener entidad raíz (por ejemplo, Sucursales o Empleado)
+        // Obtener entidad raiz (por ejemplo, Sucursales o Empleado)
         Object obj = getView().getRoot().getEntity();
         Map<?, ?> clave = getView().getKeyValues();
 
-        // Obtener dirección embebida
+        // Obtener direccion embebida
         Object direccionObj = null;
         try {
             direccionObj = obj.getClass().getMethod("getDireccion").invoke(obj);
@@ -31,13 +31,13 @@ public class VerMapaAction extends ViewBaseAction {
 
         Direccion direccion = (Direccion) direccionObj;
 
-        // Si no hay coordenadas, ejecutar acción que las obtenga
+        // Si no hay coordenadas, ejecutar accion que las obtenga
         if (direccion.getUbicacion() == null || direccion.getUbicacion().trim().isEmpty()) {
-            // Ejecutar la acción ObtenerCoordenadasGenericaAction programáticamente
+            // Ejecutar la accion ObtenerCoordenadasGenericaAction programaticamente
             executeAction("Coordenadas.ObtenerCoordenadas");
         }
 
-        // Mostrar diálogo con la vista de dirección
+        // Mostrar dialogo con la vista de direccion
         showDialog();
         getView().setModel(obj);
         getView().setViewName("VerMapa"); // Asegúrate que esta vista esté definida
