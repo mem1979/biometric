@@ -10,10 +10,12 @@ public class CrearLicenciaAction extends CreateNewElementInCollectionAction {
     @Override
     public void execute() throws Exception {
         super.execute();
+   
         View view = getCollectionElementView();
-        // En creación, permitimos todos los campos hasta que guarde
+     // En creacion, permitimos todos los campos hasta que guarde
         setAllEditable(view, true);
         view.setEditable("diasRestantes", false);
+        removeActions("Licencia.ImprimirConstancia");
     }
 
     @SuppressWarnings("unchecked")
@@ -21,6 +23,6 @@ public class CrearLicenciaAction extends CreateNewElementInCollectionAction {
         Set<Object> props = view.getMembersNames().keySet();
         for (Object propObj : props) {
             view.setEditable(propObj.toString(), editable);
-        }
+        }  
     }
 }

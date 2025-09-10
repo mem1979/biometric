@@ -1,6 +1,7 @@
 package com.sta.biometric.modelo;
 import java.math.*;
 import java.time.*;
+import java.time.format.*;
 import java.time.temporal.*;
 import java.util.*;
 import java.util.stream.*;
@@ -10,7 +11,9 @@ import javax.validation.constraints.*;
 
 import org.openxava.annotations.*;
 import org.openxava.calculators.*;
+import org.openxava.jpa.*;
 import org.openxava.model.*;
+import org.openxava.web.editors.*;
 
 import com.sta.biometric.acciones.*;
 import com.sta.biometric.anotaciones.*;
@@ -28,7 +31,7 @@ import lombok.*;
 @View(members =
 "nombreCompleto, turnoActivoHoy;" +
 "InformacionPersonal { " +
-    "Nombres[" +
+    "InformacionPersonal[" +
         "apellido;" +
         "nombres;" +
         "fechaNacimiento, edad, proximoCumpleanos;" +
@@ -68,7 +71,7 @@ import lombok.*;
 "}; " +
 
 "LICENCIAS { " +
-    "licencias, licenciasResumenAnual; " +
+    "licencias, licenciasResumenAnual; licenciasGraficoAnual; " +
 "}; " +
     
 
@@ -110,12 +113,13 @@ public class Personal extends Identifiable {
 	@DefaultValueCalculator(GeneradorCodigoUserIdCalculator.class)
 	private String userId;
 
-    @ReadOnly //  @Password
+    @ReadOnly  @Password
     @Column(length = 20)
     @Action(value="Personal.borrarDeviceId", alwaysEnabled=true)
     private String deviceId;
 
     @Column(length = 20)
+    @Mayuscula
     private String usuario;
 
     @Mayuscula
@@ -195,7 +199,7 @@ public class Personal extends Identifiable {
         int meses = periodo.getMonths();
         int dias = periodo.getDays();
 
-        return "(Proximo cumpleaños en " + meses + " meses y " + dias + " días)";
+        return "(Cumpleaños en " + meses + " meses y " + dias + " días)";
     }
     
     @Enumerated(EnumType.STRING)
@@ -277,9 +281,6 @@ public class Personal extends Identifiable {
     @ManyToOne(fetch=FetchType.LAZY)
     private Sucursales sucursal;
 
-    @HtmlText(simple=true)
-    private String nota;
-
     @ReadOnly(forViews="Simple")
     @LabelFormat(LabelFormatType.NO_LABEL)
     @File(acceptFileTypes="image/*", maxFileSizeInKb=200)
@@ -294,34 +295,72 @@ public class Personal extends Identifiable {
     @Editor("yearCalendarEditor")
     public Collection<DtoLicenciasFeriados> getEventos() {
 
-        EntityManager em =org.openxava.jpa.XPersistence.getManager();
-
+        EntityManager em = org.openxava.jpa.XPersistence.getManager();
         List<DtoLicenciasFeriados> out = new ArrayList<>();
 
-        /* 1. Todos los feriados ------------------------------------------------- */
+        /* 1) (Opcional) Feriados “comunes” como contexto visual */
         em.createQuery("select f from Feriados f", Feriados.class)
           .getResultList()
           .forEach(f -> out.add(DtoLicenciasFeriados.of(f)));
 
-        /* 2. Licencias del empleado actual (this) ------------------------------ */
-        em.createQuery(
-            "select l from Licencia l where l.empleado = :yo", Licencia.class)
-          .setParameter("yo", this)             // si el método está en Empleado
+        /* 2) Licencias del empleado (rango real) */
+        em.createQuery("select l from Licencia l where l.empleado = :yo", Licencia.class)
+          .setParameter("yo", this)
+          // Si querés limitar al año actual, descomentá:
+          // .setParameter("d", LocalDate.of(LocalDate.now().getYear(),1,1))
+          // .setParameter("h", LocalDate.of(LocalDate.now().getYear(),12,31))
           .getResultList()
           .forEach(l -> out.add(DtoLicenciasFeriados.of(l)));
 
-      return out;
+        /* 3) Auditoría diaria: COM/INC/AUS + FERIADO_TRABAJADO (NO LICENCIA para evitar duplicados) */
+        int anio = java.time.LocalDate.now().getYear();
+        java.time.LocalDate desde = java.time.LocalDate.of(anio, 1, 1);
+        java.time.LocalDate hasta = java.time.LocalDate.of(anio, 12, 31);
+
+        List<EvaluacionJornada> evs = java.util.Arrays.asList(
+            EvaluacionJornada.COMPLETA,
+            EvaluacionJornada.INCOMPLETA,
+            EvaluacionJornada.AUSENTE,
+            EvaluacionJornada.FERIADO_TRABAJADO
+        );
+
+        List<AuditoriaRegistros> regs = em.createQuery(
+            "select a from AuditoriaRegistros a " +
+            "where a.empleado = :yo and a.evaluacion in :evs " +
+            "and a.fecha between :d and :h " +
+            "order by a.fecha asc",
+            AuditoriaRegistros.class)
+          .setParameter("yo", this)
+          .setParameter("evs", evs)
+          // Si 'a.fecha' es java.util.Date, usa java.sql.Date.valueOf(...)
+          .setParameter("d", desde)
+          .setParameter("h", hasta)
+          .getResultList();
+
+        // Mapear cada día a su evento por tipo
+        for (AuditoriaRegistros a : regs) {
+            if (a.getFecha() == null || a.getEvaluacion() == null) continue;
+            switch (a.getEvaluacion()) {
+                case COMPLETA:            out.add(DtoLicenciasFeriados.ofCompleta(a));          break;
+                case INCOMPLETA:          out.add(DtoLicenciasFeriados.ofIncompleta(a));        break;
+                case AUSENTE:             out.add(DtoLicenciasFeriados.ofAusente(a));           break;
+                case FERIADO_TRABAJADO:   out.add(DtoLicenciasFeriados.ofFeriadoTrabajado(a));  break;
+                default: break; // LICENCIA/FERIADO “común” no se generan aquí
+            }
+        }
+        return out;
     }
     
     
-   
+    
     @ListAction("Licencia.VerCalendario")
     @ListAction("Licencia.crearLista")
     @DeleteSelectedAction("")
     @NewAction("Licencia.AsignarLicencia")
-    @EditAction("Licencia.editarCondicional")
+    @EditAction("Licencia.EditarLicencia")
     @SaveAction("Licencia.Guardar")
     @NoDefaultActions
+    @DetailAction("Licencia.ImprimirConstancia")
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL)
     @ListProperties("tipo, fechaInicio, fechaFin, dias")
     @OrderBy("fechaInicio desc")
@@ -408,6 +447,9 @@ public class Personal extends Identifiable {
     }
 
     
+    @Discussion
+    @Column(length=32)
+    private String nota;
     
     
     @ElementCollection
@@ -510,6 +552,61 @@ public class Personal extends Identifiable {
 
         return turno.getCodigo() + " / " + diaNombre + " de " + horario + " / " + horasTurno;
     }
+    
+    
+	//=============================================================================================
+
+    @Chart(
+    		  type = ChartType.BAR,
+    		  labelProperties = "mesEtiqueta",
+    		  dataProperties  = "completas, incompletas, licencias, ausentes, feriadosTrabajados"
+    		)
+    		@ListProperties("mesEtiqueta, completas, incompletas, licencias, ausentes, feriadosTrabajados")
+    	
+    		@Transient @ReadOnly
+    		public Collection<ResumenAnualGrafico> getLicenciasGraficoAnual() {
+    		    final int anio = LocalDate.now().getYear();
+    		    final LocalDate desde = LocalDate.of(anio, 1, 1);
+    		    final LocalDate hasta = LocalDate.of(anio, 12, 31);
+
+    		    EntityManager em = XPersistence.getManager();
+    		    List<AuditoriaRegistros> registros = em.createQuery(
+    		        "select a from AuditoriaRegistros a " +
+    		        "where a.empleado = :emp and a.fecha between :d and :h",
+    		        AuditoriaRegistros.class)
+    		        .setParameter("emp", this)
+    		        .setParameter("d", desde)   // usa java.sql.Date.valueOf(...) si tu campo es Date
+    		        .setParameter("h", hasta)
+    		        .getResultList();
+
+    		    // Inicializar meses
+    		    Locale esAR = new Locale("es","AR");
+    		    Map<YearMonth, ResumenAnualGrafico> porMes = new LinkedHashMap<>();
+    		    for (int m = 1; m <= 12; m++) {
+    		        YearMonth ym = YearMonth.of(anio, m);
+    		        String et = ym.getMonth().getDisplayName(TextStyle.SHORT, esAR);
+    		        et = et.substring(0,1).toUpperCase(esAR) + et.substring(1);
+    		        porMes.put(ym, new ResumenAnualGrafico(et, 0,0,0,0,0));
+    		    }
+
+    		    for (AuditoriaRegistros a : registros) {
+    		        if (a.getFecha() == null || a.getEvaluacion() == null) continue;
+    		        YearMonth ym = YearMonth.from(a.getFecha()); // adapta si usás java.util.Date
+    		        ResumenAnualGrafico r = porMes.get(ym);
+    		        if (r == null) continue;
+
+    		        switch (a.getEvaluacion()) {
+    		            case COMPLETA:            r.setCompletas(r.getCompletas()+1);                 break;
+    		            case INCOMPLETA:          r.setIncompletas(r.getIncompletas()+1);             break;
+    		            case LICENCIA:            r.setLicencias(r.getLicencias()+1);                 break;
+    		            case AUSENTE:             r.setAusentes(r.getAusentes()+1);                   break;
+    		            case FERIADO_TRABAJADO:   r.setFeriadosTrabajados(r.getFeriadosTrabajados()+1); break;
+    		            case FERIADO:             /* NO contar */                                      break;
+    		            default: break;
+    		        }
+    		    }
+    		    return porMes.values();
+    		}
 
     //===============================================================================================
     
@@ -525,5 +622,10 @@ public class Personal extends Identifiable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    @PreRemove
+    private void borrarDiscusion() {
+        DiscussionComment.removeForDiscussion(nota);
     }
 }

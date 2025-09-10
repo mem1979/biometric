@@ -22,7 +22,7 @@ public class PersonalOnChangeActivoAction extends OnChangePropertyBaseAction {
             getView().setEditable(false);
             addWarning("El empleado ha sido marcado como inactivo. Debe guardar los cambios para que el estado se aplique en el sistema.");
         } else {
-            addInfo("El empleado ha sido marcado como activo nuevamente. Debe guardar los cambios para que el estado se aplique en el sistema.");
+            addInfo("El empleado activo. Debe guardar los cambios para que el estado se aplique en el sistema.");
             getView().setEditable(true);
         }
     }

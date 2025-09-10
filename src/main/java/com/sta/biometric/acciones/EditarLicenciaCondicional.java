@@ -13,6 +13,7 @@ public class EditarLicenciaCondicional extends EditElementInCollectionAction {
         super.execute();
 
         View view = getCollectionElementView();
+        addActions("Licencia.ImprimirConstancia");
     
             Set<Object> props = view.getMembersNames().keySet();
             for (Object propObj : props) {

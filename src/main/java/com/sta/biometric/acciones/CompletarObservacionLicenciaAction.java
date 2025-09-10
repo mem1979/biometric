@@ -35,7 +35,6 @@ public class CompletarObservacionLicenciaAction extends OnChangePropertyBaseActi
 
         String keyBase = "licencia." + tipo.name();
         String descripcion = ConfiguracionesPreferencias.obtenerValor(keyBase + ".descripcion", "", String.class);
-        //ModoComputoLicencia modoComputo = ConfiguracionesPreferencias.obtenerValor(keyBase + ".modoComputo", ModoComputoLicencia.DIAS_HABILES, ModoComputoLicencia.class);
         ModoComputoLicencia modoComputo =
         	    Optional.ofNullable((ModoComputoLicencia) getView().getValue("modoComputo"))
         	            .orElse(ConfiguracionesPreferencias.obtenerValor(
@@ -70,7 +69,36 @@ public class CompletarObservacionLicenciaAction extends OnChangePropertyBaseActi
                 observacion += " (límite legal según antigüedad)";
             }
 
-            // LICENCIA_EXTRAORDINARIA – acumulación de vacaciones no usadas
+            
+         // LICENCIA_EXTRAORDINARIA – acumulación de vacaciones no usadas (solo año anterior)
+            else if (tipo == TipoLicenciaAR.LICENCIA_EXTRAORDINARIA) {
+                int anioActual   = LocalDate.now().getYear();
+                int anioAnterior = anioActual - 1;
+                int anioInicio   = empleado.getInicioActividades().getYear();
+
+                int acumulados = 0;
+
+                // Solo tiene sentido acumular si el empleado ya trabajaba durante el año anterior
+                if (anioInicio <= anioAnterior) {
+                    // Días que correspondían en ese año (según antigüedad al 31/12 del año anterior)
+                    int diasCorrespondientes = calcularDiasCorrespondientesPorAntiguedad(
+                        empleado, LocalDate.of(anioAnterior, 12, 31)
+                    );
+
+                    // Días efectivamente tomados como VACACIONES en ese año
+                    int diasTomados = obtenerDiasTomados(empleado, TipoLicenciaAR.VACACIONES, anioAnterior);
+
+                    // Solo se acumula el saldo positivo de ese año
+                    acumulados = Math.max(0, diasCorrespondientes - diasTomados);
+                }
+
+                diasPorAnio = acumulados;
+                observacion += " (vacaciones no utilizadas del año " + anioAnterior + ")";
+            }
+
+            
+            /*
+            // LICENCIA_EXTRAORDINARIA – acumulación de vacaciones no usadas desde InicioActividades
             else if (tipo == TipoLicenciaAR.LICENCIA_EXTRAORDINARIA) {
                 int acumulados = 0;
                 int anioActual = LocalDate.now().getYear();
@@ -85,7 +113,7 @@ public class CompletarObservacionLicenciaAction extends OnChangePropertyBaseActi
 
                 diasPorAnio = acumulados;
                 observacion += " (vacaciones no utilizadas en años anteriores)";
-            }
+            } */
         }
 
         // ---------------------------------------------------------------------------------------

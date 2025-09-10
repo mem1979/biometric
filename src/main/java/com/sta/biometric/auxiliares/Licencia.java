@@ -20,12 +20,15 @@ import com.sta.biometric.modelo.*;
 
 import lombok.*;
 
-@View(members = "tipo, modoComputo, justificado;" +
-	  			"fechaInicio, fechaFin, dias, diasRestantes;" +
+@View(members = "tipo, modoComputo;" +
+	  			"fechaInicio, fechaFin, justificado;" +
+	  			"dias, diasRestantes;" +
 	  			"observacion"
 )
 
-@Tab(properties = "empleado.nombreCompleto, tipo, fechaInicio, fechaFin, dias, justificado")
+@Tab(editors = "List",
+	 properties = "empleado.nombreCompleto, tipo, fechaInicio, fechaFin, dias, justificado",
+	 defaultOrder="${empleado.nombreCompleto} asc")
 
 @Entity
 @Getter @Setter
@@ -61,7 +64,6 @@ public class Licencia extends Identifiable {
    
    
    @DisplaySize(5)
-   @OnChange(ExedeDiasLicenciaAction.class)
    private Integer diasRestantes;
    
     @Required
@@ -107,7 +109,7 @@ public class Licencia extends Identifiable {
     }
     
     @PrePersist
-    @PreUpdate
+   // @PreUpdate
     private void validarSolapamientoLicencias() {
         if (empleado == null || fechaInicio == null || fechaFin == null) return;
 
@@ -146,13 +148,16 @@ public class Licencia extends Identifiable {
         }
     }
     
-   @PreRemove
+    @PreRemove
     private void validarAntesDeEliminar() {
-        if (fechaFin != null && fechaFin.isBefore(LocalDate.now())) {
+        if (fechaFin != null && 
+            (fechaFin.isBefore(LocalDate.now()) || fechaFin.isEqual(LocalDate.now()))) {
+            
             throw new ValidationException(
                 XavaResources.getString("no_puede_eliminar_licencia_finalizada")
             );
         }
     }
+
 
  }

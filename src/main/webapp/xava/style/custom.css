@@ -16,19 +16,19 @@
 
 /*********************botones de Acciones personalizadas ***********************************/
 
-a.xava_action.ox-action-link {
-    background-color: #28a745; /* verde */
-    color: white;
-    padding: 8px 12px;
-    border-radius: 4px;
-    text-decoration: none;
-    transition: background-color 0.2s;
-}
-
-a.xava_action.ox-action-link:hover {
-    background-color: #1e7e34;
-}
-
+													/* a.xava_action.ox-action-link {
+													    background-color: #28a745; 
+													    color: white;
+													    padding: 8px 12px;
+													    border-radius: 4px;
+													    text-decoration: none;
+													    transition: background-color 0.2s;
+													}
+													
+													a.xava_action.ox-action-link:hover {
+													    background-color: #1e7e34;
+													}
+													*/
 
 /**********************************************************************/
 .ox-active-section {

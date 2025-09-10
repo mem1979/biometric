@@ -38,10 +38,10 @@ private String numero; // Documento Nacional de Identidad
 
 @Label
 @ReadOnly
-@Depends("tipo, numero") // Se recalcula cuando cambia tipo o número
+@Depends("tipo, numero") // Se recalcula cuando cambia tipo o nï¿½mero
 @MiLabel(medida = "grande", negrita = true, recuadro = false, icon = "account-box")
 public String getDocumento() {
-    return  tipo + "  N°: " + numero;
+    return  tipo + "  NÂ°: " + numero;
 }
 
 

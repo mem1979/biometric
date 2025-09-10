@@ -2,7 +2,7 @@ package com.sta.biometric.enums;
 
 public enum Parentescos {
 	
-	 	CONYUGE("Cónyuge"),
+	 	CONYUGE("CÃ³nyuge"),
 	    CONVIVIENTE("Conviviente"),
 	    HIJO("Hijo/a"),
 	    HIJASTRO("Hijastro/a"),

@@ -6,7 +6,7 @@ public enum EstadoCivil {
     DIVORCIADO_A("Divorciado/a"),
     VIUDO_A("Viudo/a"),
     SEPARADO_A("Separado/a"),
-    UNION_HECHO("Unión de Hecho"),
+    UNION_HECHO("UniÃ³n de Hecho"),
     OTRO("Otro");
 
     private String estadoCivil;
@@ -16,12 +16,12 @@ public enum EstadoCivil {
         this.estadoCivil = estadoCivil;
     }
 
-    // Método para obtener la descripción
+    // Mï¿½todo para obtener la descripciï¿½n
     public String getEstadoCivil() {
         return estadoCivil;
     }
 
-    // Sobrescribimos el método toString para devolver la descripción
+    // Sobrescribimos el mï¿½todo toString para devolver la descripciï¿½n
     @Override
     public String toString() {
         return estadoCivil;

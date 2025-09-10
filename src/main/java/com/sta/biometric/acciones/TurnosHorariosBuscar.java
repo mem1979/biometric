@@ -6,7 +6,7 @@ public class TurnosHorariosBuscar extends ReferenceSearchAction {
 
     @Override
     public void execute() throws Exception {
-        super.execute();  // Ejecuta búsqueda habitual
-        addActions("TurnosHorarios.CrearTurno"); // Botón extra
+        super.execute();  // Ejecuta busqueda habitual
+        addActions("TurnosHorarios.CrearTurno"); // Boton extra
     }
 }

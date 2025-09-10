@@ -26,7 +26,7 @@ public class ObtenerCPGenericaAction extends ViewBaseAction {
 		try {
 			metodoGetDireccion = entidad.getClass().getMethod("getDireccion");
 		} catch (NoSuchMethodException e) {
-			addError("La entidad no tiene un mÈtodo getDireccion(). No se puede obtener direcciÛn.");
+			addError("La entidad no tiene un m√©todo getDireccion(). No se puede obtener direcci√≥n.");
 			return;
 		}
 
@@ -55,7 +55,7 @@ public class ObtenerCPGenericaAction extends ViewBaseAction {
 			GeoData geoData = AsignarCoordenadasService.obtenerGeoData(direccionCompleta, apiKey);
 
 			if (geoData == null || geoData.getCodigoPostal() == null || geoData.getCodigoPostal().isEmpty()) {
-				addWarning("No se encontrÛ un cÛdigo postal para la direcciÛn.");
+				addWarning("No se encontr√≥ un c√≥digo postal para la direcci√≥n.");
 				return;
 			}
 
@@ -64,15 +64,15 @@ public class ObtenerCPGenericaAction extends ViewBaseAction {
 				Method setCodigoPostal = direccion.getClass().getMethod("setCodigoPostal", String.class);
 				setCodigoPostal.invoke(direccion, geoData.getCodigoPostal());
 				getView().setValueNotifying("direccion.codigoPostal", geoData.getCodigoPostal());
-				addMessage("CÛdigo postal actualizado: " + geoData.getCodigoPostal());
+				addMessage("C√≥digo postal actualizado: " + geoData.getCodigoPostal());
 			} catch (NoSuchMethodException e) {
-				addError("No se encontrÛ un mÈtodo setCodigoPostal(String) en la clase Direccion.");
+				addError("No se encontr√≥ un m√©todo setCodigoPostal(String) en la clase Direcci√≥n.");
 			}
 
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-			addError("Error al obtener el cÛdigo postal.");
+			addError("Error al obtener el c√≥digo postal.");
 		}
 	}
 }

@@ -1,12 +1,16 @@
 eclipse.preferences.version=1
 encoding//src/main/java=ISO-8859-1
+encoding//src/main/java/com/sta/biometric/acciones=UTF-8
 encoding//src/main/java/com/sta/biometric/acciones/BlanquearContrasenaAction.java=UTF-8
 encoding//src/main/java/com/sta/biometric/acciones/CompletarObservacionLicenciaAction.java=UTF-8
 encoding//src/main/java/com/sta/biometric/acciones/LicenciaSaveAction.java=UTF-8
 encoding//src/main/java/com/sta/biometric/acciones/TurnosHorariosOnChangeDiaAction.java=UTF-8
+encoding//src/main/java/com/sta/biometric/anotaciones=UTF-8
 encoding//src/main/java/com/sta/biometric/auxiliares/Dni.java=UTF-8
 encoding//src/main/java/com/sta/biometric/auxiliares/TurnosHorarios.java=UTF-8
 encoding//src/main/java/com/sta/biometric/dashboard/DashboardAsistencia.java=UTF-8
+encoding//src/main/java/com/sta/biometric/enums=UTF-8
+encoding//src/main/java/com/sta/biometric/enums/EstadoCivil.java=UTF-8
 encoding//src/main/java/com/sta/biometric/enums/EvaluacionJornada.java=UTF-8
 encoding//src/main/java/com/sta/biometric/enums/ModoComputoLicencia.java=UTF-8
 encoding//src/main/java/com/sta/biometric/enums/TipoLicenciaAR.java=UTF-8
