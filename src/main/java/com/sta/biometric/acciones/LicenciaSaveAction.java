@@ -1,5 +1,5 @@
 
-package com.sta.biometric.acciones;
+ package com.sta.biometric.acciones;
 
 import org.openxava.actions.*;
 import org.openxava.util.*;
@@ -19,7 +19,8 @@ public class LicenciaSaveAction extends SaveElementInCollectionAction {
         // === Determinar si es creación o actualización ===
         // OpenXava: si la clave es editable, es un registro nuevo (creación).
         // Si no, estamos actualizando uno existente.
-        boolean creando = getView().isKeyEditable();
+        boolean creando = getCollectionElementView().isKeyEditable();
+  //      System.out.println("creando: " + creando);
 
         if (!creando) {
             // === Modo ACTUALIZACIÓN ===
@@ -101,4 +102,4 @@ public class LicenciaSaveAction extends SaveElementInCollectionAction {
         // Caso 3: Coincide o no editable → continuar normalmente.
         return true;
     }
-}
+} 

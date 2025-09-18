@@ -23,7 +23,8 @@ import lombok.*;
 @View(members = "tipo, modoComputo;" +
 	  			"fechaInicio, fechaFin, justificado;" +
 	  			"dias, diasRestantes;" +
-	  			"observacion"
+	  			"certificado;" +
+	  			"observacion"   	
 )
 
 @Tab(editors = "List",
@@ -78,7 +79,7 @@ public class Licencia extends Identifiable {
     @Enumerated(EnumType.STRING)
     private ModoComputoLicencia modoComputo;
 
-   
+   @OnChange(LicenciaOnChangeJustificadoAction.class)
     @DefaultValueCalculator(TrueCalculator.class)
     @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean justificado;
@@ -87,6 +88,11 @@ public class Licencia extends Identifiable {
     @Stereotype("TEXT_AREA")
     @Column(length = 500)
     private String observacion;
+    
+    @LabelFormat(LabelFormatType.SMALL)
+    @File( maxFileSizeInKb=200)
+    @Column(length=32)
+    private String certificado;
     
     /**
      * Año correspondiente a la licencia, derivado de la fecha desde.

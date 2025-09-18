@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 7.0.3.final using JasperReports Library version 6.0.0  -->
+<!-- 2025-09-10T21:14:07 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Product" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="572642b0-31eb-48fb-b089-bf98f41fb71e">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<parameter name="tipo" class="java.lang.String"/>
+	<parameter name="empleadoNombre" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="79" splitType="Stretch">
+			<staticText>
+				<reportElement x="41" y="23" width="260" height="41" uuid="345a99a6-619c-445a-81eb-8e4eb695b5a7"/>
+				<textElement>
+					<font size="30" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Customer]]></text>
+			</staticText>
+		</band>
+	</title>
+	<summary>
+		<band height="111" splitType="Stretch">
+			<staticText>
+				<reportElement x="43" y="17" width="100" height="20" uuid="b0cc157c-35ec-41c7-95e8-4c92edbcb6a2"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Licencia]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="166" y="17" width="100" height="20" uuid="f5e3bd10-084d-407a-bdaa-ba57f568d7ef"/>
+				<textFieldExpression><![CDATA[$P{tipo}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="43" y="55" width="100" height="20" uuid="bb784b38-3ae0-44c7-a707-5ecc90dc5273"/>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Nombre:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="166" y="55" width="324" height="20" uuid="5821aca1-671c-46fb-8878-ab1cb9a54724"/>
+				<textFieldExpression><![CDATA[$P{empleadoNombre}]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

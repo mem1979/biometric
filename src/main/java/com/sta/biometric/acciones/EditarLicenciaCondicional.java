@@ -7,20 +7,30 @@ import org.openxava.view.*;
 
 public class EditarLicenciaCondicional extends EditElementInCollectionAction {
 
-    @SuppressWarnings("unchecked")
-	@Override
+    @SuppressWarnings("unused")
+	private static final Set<String> PERMITIDOS = Set.of("observacion", "certificado");
+
+    @Override
     public void execute() throws Exception {
-        super.execute();
+        super.execute(); // abre el diálogo
 
-        View view = getCollectionElementView();
+        View v = getCollectionElementView();
+
         addActions("Licencia.ImprimirConstancia");
-    
-            Set<Object> props = view.getMembersNames().keySet();
-            for (Object propObj : props) {
-                String prop = propObj.toString();
-                view.setEditable(prop, "observacion".equals(prop));
-            }
-        }
-    
-}
 
+        // Deshabilitar todos los miembros de manera explícita
+        for (Object o : v.getMembersNames().keySet()) {
+            String prop = String.valueOf(o);
+            v.setEditable(prop, false);
+        }
+
+        // Habilitar solo los permitidos
+        v.setEditable("observacion", true);
+        v.setEditable("certificado", true);
+
+        // Debug
+        System.out.println("[EditarLicenciaCondicional] Miembros en diálogo: " + v.getMembersNames().keySet());
+        System.out.println("[EditarLicenciaCondicional] 'observacion' editable=" + v.isEditable("observacion"));
+        System.out.println("[EditarLicenciaCondicional] 'certificado' editable=" + v.isEditable("certificado"));
+    }
+}

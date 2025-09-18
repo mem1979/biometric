@@ -79,7 +79,7 @@ import lombok.*;
     "desde, hasta;" +
 "}; " +
 
-"Notas { " +
+"INCIDENCIAS_Y_OBSERVACIONES { " +
     "nota;" +
 "}")
 
