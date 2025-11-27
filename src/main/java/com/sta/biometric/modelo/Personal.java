@@ -51,7 +51,7 @@ import lombok.*;
 "InformacionLaboral { " +
     "credenciales[" +
         "userId; creaUsuario;" +
-        "contrasena; deviceId," +
+        "contrasena; deviceId, aceptaPausa," +
     "], " +
 
     "funcion[" +
@@ -113,7 +113,7 @@ public class Personal extends Identifiable {
 	@DefaultValueCalculator(GeneradorCodigoUserIdCalculator.class)
 	private String userId;
 
-    @ReadOnly  @Password
+    @ReadOnly  // @Password
     @Column(length = 20)
     @Action(value="Personal.borrarDeviceId", alwaysEnabled=true)
     private String deviceId;
@@ -138,6 +138,10 @@ public class Personal extends Identifiable {
     @Action(value="Personal.borrarContrasena", alwaysEnabled=true)
     @DefaultValueCalculator(CalculadorPassword.class)
     private String contrasena;
+    
+    @DefaultValueCalculator(TrueCalculator.class)
+    @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private boolean aceptaPausa;
 
     @Capitalizar
     @Required
@@ -362,7 +366,7 @@ public class Personal extends Identifiable {
     @NoDefaultActions
     @DetailAction("Licencia.ImprimirConstancia")
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL)
-    @ListProperties("tipo, fechaInicio, fechaFin, dias")
+    @ListProperties("tipo, fechaInicio, fechaFin, dias, justificado")
     @OrderBy("fechaInicio desc")
     @org.hibernate.annotations.Where(clause = "YEAR(fechaInicio) = YEAR(CURDATE())")
     private Collection<Licencia> licencias;

@@ -1,5 +1,7 @@
 /*
  * ─────────────────────────────────────────────────────────────
+ /*
+ * -----------------------------------------------------------
  *  AsistenciaEndpoint   (Java 11 compatible)
  *  -----------------------------------------------------------
  *  • GET  /asistencia/hoy      → ¿Ya fichó ENTRADA hoy?
@@ -10,7 +12,7 @@
  *    ▸ ColeccionRegistros      (registros individuales)
  *    ▸ JWTUtil                 (extrae login del JWT)
  *    ▸ XPersistence            (OpenXava)
- * ─────────────────────────────────────────────────────────────
+ * -----------------------------------------------------------
  */
 
 package com.sta.biometric.rest;
@@ -24,6 +26,7 @@ import javax.ws.rs.core.*;
 
 import org.openxava.jpa.*;
 
+import com.sta.biometric.auxiliares.*;
 import com.sta.biometric.enums.*;
 import com.sta.biometric.formateadores.*;
 import com.sta.biometric.modelo.*;
@@ -44,7 +47,7 @@ public class AsistenciaEndpoint {
      * --
      * Respuesta ejemplo:
      * {
-     *   "fecha": "20/07/2025",
+     *   "fecha": "2024-01-15",
      *   "yaFichoEntrada": true,
      *   "horaEntrada": "08:03"
      * }
@@ -61,35 +64,29 @@ public class AsistenciaEndpoint {
             return Response.status(Response.Status.UNAUTHORIZED)
                            .entity("Token inválido").build();
         }
-
         /* 2. Obtener empleado */
         Personal empleado = obtenerEmpleado(login);
         if (empleado == null) {
             return Response.status(Response.Status.UNAUTHORIZED)
                            .entity("Empleado no encontrado").build();
         }
-
         /* 3. Consultar en ColeccionRegistros si existe ENTRADA hoy */
         LocalDate hoy = LocalDate.now();
-
         String qCount =
               "SELECT COUNT(r) " +
               "FROM ColeccionRegistros r " +
               "WHERE r.asistenciaDiaria.empleado = :emp " +
               "AND   r.fecha                   = :hoy " +
               "AND   r.tipoMovimiento          = :tipo";
-
         boolean yaFicho = XPersistence.getManager()
             .createQuery(qCount, Long.class)
             .setParameter("emp",  empleado)
             .setParameter("hoy",  hoy)
             .setParameter("tipo", TipoMovimiento.ENTRADA)
             .getSingleResult() > 0;
-
         Map<String, Object> out = new HashMap<>();
         out.put("fecha", TiempoUtils.formatearFecha(hoy));
         out.put("yaFichoEntrada", yaFicho);
-
         /* 4. Si fichó, recuperar la hora de la primera ENTRADA */
         if (yaFicho) {
             try {
@@ -99,7 +96,6 @@ public class AsistenciaEndpoint {
                       "WHERE r.asistenciaDiaria.empleado = :emp " +
                       "AND   r.fecha                   = :hoy " +
                       "AND   r.tipoMovimiento          = :tipo";
-
                 LocalTime hora = XPersistence.getManager()
                     .createQuery(qHora, LocalTime.class)
                     .setParameter("emp",  empleado)
@@ -107,13 +103,87 @@ public class AsistenciaEndpoint {
                     .setParameter("tipo", TipoMovimiento.ENTRADA)
                     .setMaxResults(1)
                     .getSingleResult();
-
                 out.put("horaEntrada", TiempoUtils.formatearHora(hora));
             } catch (NoResultException ignore) {
                 // No debería ocurrir, pero prevenimos fallos
-            }
+            }/* 4.5. Verificar si ya fichó SALIDA */
+            String qCountSalida =
+            	      "SELECT COUNT(r) FROM ColeccionRegistros r " +
+            	      "WHERE r.asistenciaDiaria.empleado = :emp " +
+            	      "AND r.fecha = :hoy AND r.tipoMovimiento = :tipo";
+            	boolean yaFichoSalida = XPersistence.getManager()
+            	    .createQuery(qCountSalida, Long.class)
+            	    .setParameter("emp", empleado)
+            	    .setParameter("hoy", hoy)
+            	    .setParameter("tipo", TipoMovimiento.SALIDA)
+            	    .getSingleResult() > 0;
+            	out.put("yaFichoSalida", yaFichoSalida);
+            	if (yaFichoSalida) {
+            	    try {
+            	        LocalTime horaSalida = XPersistence.getManager()
+            	            .createQuery("SELECT r.hora FROM ColeccionRegistros r " +
+            	                        "WHERE r.asistenciaDiaria.empleado = :emp " +
+            	                        "AND r.fecha = :hoy AND r.tipoMovimiento = :tipo",
+            	                        LocalTime.class)
+            	            .setParameter("emp", empleado)
+            	            .setParameter("hoy", hoy)
+            	            .setParameter("tipo", TipoMovimiento.SALIDA)
+            	            .setMaxResults(1)
+            	            .getSingleResult();
+            	        out.put("horaSalida", TiempoUtils.formatearHora(horaSalida));
+            	    } catch (NoResultException ignore) {
+            	        out.put("horaSalida", null);
+            	    }
+            	} else {
+            	    out.put("horaSalida", null);
+            	}
         }
-
+        /* 5. Verificar si tiene licencia hoy */
+        boolean tieneLicencia = Licencia.tieneLicenciaEnFecha(empleado, hoy);
+        out.put("tieneLicencia", tieneLicencia);
+        
+        if (tieneLicencia) {
+            try {
+                Licencia licenciaHoy = XPersistence.getManager()
+                    .createQuery(
+                        "SELECT l FROM Licencia l " +
+                        "WHERE l.empleado = :emp " +
+                        "AND :fecha BETWEEN l.fechaInicio AND l.fechaFin",
+                        Licencia.class)
+                    .setParameter("emp", empleado)
+                    .setParameter("fecha", hoy)
+                    .setMaxResults(1)
+                    .getSingleResult();
+                
+                out.put("tipoLicencia", licenciaHoy.getTipo().name());
+                out.put("descripcionLicencia", licenciaHoy.getTipo().getDescripcion());
+            } catch (NoResultException e) {
+                out.put("tipoLicencia", null);
+                out.put("descripcionLicencia", null);
+            }
+        } else {
+            out.put("tipoLicencia", null);
+            out.put("descripcionLicencia", null);
+        }
+        /* 6. Verificar si es feriado */
+        boolean esFeriado = Feriados.existeParaFecha(hoy);
+        out.put("esFeriado", esFeriado);
+        
+        if (esFeriado) {
+            try {
+                Feriados feriadoHoy = XPersistence.getManager()
+                    .createQuery("SELECT f FROM Feriados f WHERE f.fecha = :fecha", Feriados.class)
+                    .setParameter("fecha", hoy)
+                    .setMaxResults(1)
+                    .getSingleResult();
+                
+                out.put("descripcionFeriado", feriadoHoy.getMotivo());
+            } catch (NoResultException e) {
+                out.put("descripcionFeriado", null);
+            }
+        } else {
+            out.put("descripcionFeriado", null);
+        }
         return Response.ok(out).build();
     }
 
@@ -155,6 +225,10 @@ public class AsistenciaEndpoint {
                            .entity("Dispositivo no autorizado").build();
         }
 
+        // Fecha y hora oficiales del servidor (no del dispositivo móvil)
+        LocalDate hoy   = LocalDate.now();
+        LocalTime ahora = LocalTime.now();
+
         /* 4. Obtener o crear la Auditoría del día */
         AuditoriaRegistros dia = XPersistence.getManager()
             .createQuery(
@@ -162,21 +236,21 @@ public class AsistenciaEndpoint {
                 AuditoriaRegistros.class
             )
             .setParameter("emp",   empleado)
-            .setParameter("fecha", body.getFecha())
+            .setParameter("fecha", hoy)
             .getResultStream()
             .findFirst()
             .orElseGet(() -> {
                 AuditoriaRegistros nuevo = new AuditoriaRegistros();
                 nuevo.setEmpleado(empleado);
-                nuevo.setFecha(body.getFecha());
+                nuevo.setFecha(hoy);
                 XPersistence.getManager().persist(nuevo);
                 return nuevo;
             });
 
         /* 5. Crear y configurar ColeccionRegistros */
         ColeccionRegistros reg = new ColeccionRegistros();
-        reg.setFecha(body.getFecha());
-        reg.setHora(body.getHora());
+        reg.setFecha(hoy);
+        reg.setHora(ahora);
         reg.setCoordenada(body.getUbicacion());
         reg.setObservacion("App");
 
@@ -193,12 +267,31 @@ public class AsistenciaEndpoint {
         /* 6. Consolidar */
         dia.consolidarDesdeRegistros();
 
-        /* 7. Responder */
+        /* 7. Responder con datos pensados para la app móvil */
         Map<String, Object> resp = new HashMap<>();
         resp.put("estado", "ok");
-        resp.put("fecha",  TiempoUtils.formatearFecha(body.getFecha()));
-        resp.put("hora",   TiempoUtils.formatearHora(body.getHora()));
-        resp.put("tipo",   tipo != null ? tipo.name() : "NO_RECONOCIDO");
+
+        // Fecha y hora del SERVIDOR
+        resp.put("fecha", TiempoUtils.formatearFecha(hoy));
+        resp.put("hora",  TiempoUtils.formatearHora(ahora));
+
+        // Tipo de movimiento (ENTRADA / SALIDA / etc.)
+        resp.put("tipo", tipo != null ? tipo.name() : "NO_RECONOCIDO");
+
+        // Datos del empleado para mostrar en la app
+        resp.put("nombreCompleto", empleado.getNombreCompleto());
+        resp.put("turnoActivoHoy", empleado.getTurnoActivoHoy());
+
+        // Mensaje amigable para la app según el tipo de movimiento
+        String mensaje;
+        if (tipo == TipoMovimiento.ENTRADA) {
+            mensaje = "Se registró correctamente el INICIO de la jornada.";
+        } else if (tipo == TipoMovimiento.SALIDA) {
+            mensaje = "Se registró correctamente el FIN de la jornada.";
+        } else {
+            mensaje = "Movimiento registrado.";
+        }
+        resp.put("mensaje", mensaje);
 
         return Response.ok(resp).build();
     }

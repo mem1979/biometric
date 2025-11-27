@@ -35,12 +35,33 @@ public class CompletarObservacionLicenciaAction extends OnChangePropertyBaseActi
 
         String keyBase = "licencia." + tipo.name();
         String descripcion = ConfiguracionesPreferencias.obtenerValor(keyBase + ".descripcion", "", String.class);
-        ModoComputoLicencia modoComputo =
+       /* ModoComputoLicencia modoComputo =
         	    Optional.ofNullable((ModoComputoLicencia) getView().getValue("modoComputo"))
         	            .orElse(ConfiguracionesPreferencias.obtenerValor(
         	                    keyBase + ".modoComputo",
         	                    ModoComputoLicencia.DIAS_HABILES,
-        	                    ModoComputoLicencia.class));
+        	                    ModoComputoLicencia.class)); */
+        
+     // Obtén el default desde el properties SIEMPRE
+        ModoComputoLicencia modoComputoDefault =
+            ConfiguracionesPreferencias.obtenerValor(
+                keyBase + ".modoComputo",
+                ModoComputoLicencia.DIAS_HABILES,
+                ModoComputoLicencia.class);
+
+        // Decide el valor a setear según qué campo cambió
+        ModoComputoLicencia modoComputoASetear;
+        String changed = getChangedProperty(); // "tipo" o "modoComputo"
+
+        if ("tipo".equals(changed)) {
+            // Cambió el tipo: forzar el default del nuevo tipo
+            modoComputoASetear = modoComputoDefault;
+        } else {
+            // Cambió el propio modoComputo u otro campo: respetar la vista si tiene algo
+            modoComputoASetear = (ModoComputoLicencia) Optional
+                .ofNullable(getView().getValue("modoComputo"))
+                .orElse(modoComputoDefault);
+        }
 
         boolean justificado = ConfiguracionesPreferencias.obtenerValor(keyBase + ".justificado", true, Boolean.class);
         
@@ -122,7 +143,7 @@ public class CompletarObservacionLicenciaAction extends OnChangePropertyBaseActi
         int diasTomados = obtenerDiasTomados(empleado, tipo, LocalDate.now().getYear());
         int diasRestantes = Math.max(0, diasPorAnio - diasTomados );
 
-        getView().setValue("modoComputo", modoComputo);
+        getView().setValue("modoComputo", modoComputoASetear);
         getView().setValue("justificado", justificado);
         getView().setValue("observacion", observacion);
         getView().setValue("diasRestantes", diasRestantes);
@@ -140,7 +161,7 @@ public class CompletarObservacionLicenciaAction extends OnChangePropertyBaseActi
                 TurnosHorarios turno = empleado.getTurnoParaFecha(actual);
                 boolean esLaboral = turno != null && turno.esLaboral(actual.getDayOfWeek());
 
-                switch (modoComputo) {
+                switch (modoComputoASetear) {
                     case DIAS_CORRIDOS:
                         total++;
                         break;

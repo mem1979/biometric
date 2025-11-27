@@ -19,6 +19,7 @@ encoding//src/main/java/com/sta/biometric/modelo/Personal.java=UTF-8
 encoding//src/main/java/com/sta/biometric/qartzJobs/AperturaJornadaJob.java=UTF-8
 encoding//src/main/java/com/sta/biometric/qartzJobs/ApplicationQuartzInitializer.java=UTF-8
 encoding//src/main/java/com/sta/biometric/rest/AsistenciaEndpoint.java=UTF-8
+encoding//src/main/java/com/sta/biometric/rest/AuthEndpoint.java=UTF-8
 encoding//src/main/java/com/sta/biometric/servicios/ConfiguracionesPreferencias.java=UTF-8
 encoding//src/main/java/com/sta/biometric/servicios/ResumenAsistenciaHoyService.java=UTF-8
 encoding//src/main/java/com/sta/biometric/util/JWTUtil.java=UTF-8
