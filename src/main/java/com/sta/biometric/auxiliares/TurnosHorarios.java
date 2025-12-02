@@ -263,7 +263,8 @@ public class TurnosHorarios extends Identifiable { // Identifiable provee 'id' y
     public String getDetalleJornadaHoras() {
         // Clave: "HH:mm a HH:mm" ; Valor: concatenación de abreviaturas "Lu.Ma." en
         // orden
-        Map<String, String> horariosDias = new LinkedHashMap<>();
+    	Map<String, String> horariosDias = new LinkedHashMap<>();
+
         agregarDia(horariosDias, "Lu.", lunes, horaEntradaLunes, horaSalidaLunes);
         agregarDia(horariosDias, "Ma.", martes, horaEntradaMartes, horaSalidaMartes);
         agregarDia(horariosDias, "Mi.", miercoles, horaEntradaMiercoles, horaSalidaMiercoles);
@@ -273,12 +274,26 @@ public class TurnosHorarios extends Identifiable { // Identifiable provee 'id' y
         agregarDia(horariosDias, "Do.", domingo, horaEntradaDomingo, horaSalidaDomingo);
 
         StringBuilder resultado = new StringBuilder();
+
         for (Map.Entry<String, String> entry : horariosDias.entrySet()) {
-            if (resultado.length() > 0)
-                resultado.append(" / ");
-            // Ej.: "Lu.Ma." + " de " + "08:00 a 16:00" + " Hs"
-            resultado.append(entry.getValue()).append(" de ").append(entry.getKey()).append(" Hs");
+            if (resultado.length() > 0) resultado.append(" / ");
+
+            resultado.append(entry.getValue())
+                     .append(" de ")
+                     .append(entry.getKey())
+                     .append(" Hs");
         }
+
+        // ---- NUEVO BLOQUE AGREGADO ----
+        if (tolerancia != null) {
+            resultado.append(" /Tol.").append(tolerancia).append("min");
+        }
+
+        if (porcentajeBonificacion != null) {
+            resultado.append(" /Bon.").append(porcentajeBonificacion).append("%");
+        }
+        // --------------------------------
+
         return resultado.toString();
     }
 
