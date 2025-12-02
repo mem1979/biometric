@@ -11,6 +11,7 @@ import lombok.*;
 
 @Embeddable
 @Getter @Setter
+@EqualsAndHashCode
 public class JornadaAsignada {
 
 	
