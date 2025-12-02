@@ -52,7 +52,7 @@ import lombok.*;
         "InformacionLaboral { " +
         "credenciales[" +
         "userId; creaUsuario;" +
-        "contrasena; deviceId, aceptaPausa," +
+        "contrasena; deviceId;" +
         "], " +
 
         "funcion[" +
@@ -67,7 +67,7 @@ import lombok.*;
         "porcentajeHoraEspecial, valorHoraEspecial;" +
         "]; " +
         "JORNADAS[" +
-        "jornadasAsignadas;" +
+        "aceptaPausa; jornadasAsignadas;" +
         "]; " +
         "}; " +
 
@@ -136,6 +136,7 @@ public class Personal extends Identifiable {
     @DefaultValueCalculator(CalculadorPassword.class)
     private String contrasena;
 
+    
     @DefaultValueCalculator(TrueCalculator.class)
     @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean aceptaPausa;
