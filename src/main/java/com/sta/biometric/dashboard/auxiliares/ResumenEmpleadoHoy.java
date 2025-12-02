@@ -7,7 +7,10 @@ import com.sta.biometric.modelo.*;
 
 import lombok.*;
 
-@Getter @Setter @AllArgsConstructor @NoArgsConstructor
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class ResumenEmpleadoHoy {
     private Personal empleado;
     private boolean debeTrabajar;
@@ -19,19 +22,19 @@ public class ResumenEmpleadoHoy {
 
     @Transient
     public String getIngresoRealizadoStr() {
-        return debeTrabajar ? (ingresoRealizado ? "Sí" : "No") : "N/A";
+        return debeTrabajar ? (ingresoRealizado ? "SÃ­" : "No") : "N/A";
     }
 
     @Transient
     public String getLlegadaTardeStr() {
-        return debeTrabajar && ingresoRealizado ? (llegadaTarde ? "Sí" : "No") : "N/A";
+        return debeTrabajar && ingresoRealizado ? (llegadaTarde ? "SÃ­" : "No") : "N/A";
     }
 
     @Transient
     public String getSalidaAnticipadaStr() {
-        return debeTrabajar && ingresoRealizado ? (salidaAnticipada ? "Sí" : "No") : "N/A";
+        return debeTrabajar && ingresoRealizado ? (salidaAnticipada ? "SÃ­" : "No") : "N/A";
     }
-    
+
     @Transient
     public String getEmpleadoNombre() {
         return empleado != null ? empleado.getNombreCompleto() : "";

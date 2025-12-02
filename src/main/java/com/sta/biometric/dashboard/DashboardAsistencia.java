@@ -12,7 +12,6 @@ import org.openxava.jpa.*;
 
 import com.sta.biometric.anotaciones.*;
 import com.sta.biometric.auxiliares.*;
-import com.sta.biometric.dashboard.acciones.*;
 import com.sta.biometric.dashboard.auxiliares.*;
 import com.sta.biometric.modelo.*;
 import com.sta.biometric.servicios.*;
@@ -39,8 +38,7 @@ public class DashboardAsistencia {
     @DescriptionsList
     @NoCreate @NoModify
     @LabelFormat(LabelFormatType.SMALL)
-    @OnChange(DashboardActualizarAction.class)
-    private Sucursales sucursalSeleccionada;
+     private Sucursales sucursalSeleccionada;
 
     // ================================
     // 2. FECHA Y HORA FORMATEADA

@@ -21,7 +21,7 @@ https://www.openxava.org/OpenXavaDoc/docs/customizing_en.html
 		</editor>
 
 	<editor nombre="miLabel" url="miLabelEditor.jsp" formato-etiqueta-defecto="sin-etiqueta">
-		<formateador clase="org.openxava.formatters.UpperCaseFormatter"/>
+	<!--	<formateador clase="org.openxava.formatters.UpperCaseFormatter"/> -->
         <para-anotacion anotacion="com.sta.biometric.anotaciones.MiLabel"/>
     </editor>
 

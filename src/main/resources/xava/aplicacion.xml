@@ -2,28 +2,35 @@
 
 <!DOCTYPE aplicacion SYSTEM "dtds/aplicacion.dtd">
 
-<aplicacion nombre="biometric"> 
-	
+<aplicacion nombre="biometric">
+
 	<!--
 	Un módulo por defecto se asume para cada
 	controlador en <modulo-defecto/> 
 	-->
-	<modulo-defecto>		  
-		<controlador nombre="Typical"/>		
+	<modulo-defecto>
+		<controlador nombre="Typical"/>
 	</modulo-defecto>
-	
+
 	<modulo nombre="DashboardAsistencia">
 		<modelo nombre="DashboardAsistencia"/>
 		<controlador nombre="InitModelWithNewInstance"/>
 	</modulo>
-	
+
 	<modulo nombre="Licencia">
-    <var-entorno nombre="XAVA_SEARCH_ACTION" valor="CRUD.searchReadOnly"/>  <!-- 1 -->
-    <modelo nombre="Licencia"/>
-    <controlador nombre="Print"/>                                           <!-- 2 -->
+		<var-entorno nombre="XAVA_SEARCH_ACTION" valor="CRUD.searchReadOnly"/>
+		<!-- 1 -->
+		<modelo nombre="Licencia"/>
+		<controlador nombre="Print"/>
+		<!-- 2 -->
 	</modulo>
-	
-	
+
+	<modulo nombre="Personal">
+		<modelo nombre="Personal"/>
+		<controlador nombre="Personal"/>
+	</modulo>
+
+
 	<!--
 	
 
@@ -33,7 +40,7 @@
 		<modelo nombre="Profesor"/>
 		<controlador nombre="Print"/>
 	</modulo>		
-	-->	  
-		
+	-->
+
 </aplicacion>
 

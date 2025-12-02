@@ -86,7 +86,7 @@ public class ImportarRegistrosAction extends ViewBaseAction {
                     cr.setHora(hora);
                     cr.setCoordenada(ubicacion);
                     cr.setTipoMovimiento(tipo);
-                    cr.setObservacion("Origen del registro: Importado");
+                    cr.setObservacion("Origen del registro: Importado desde fichero Excel");
 
                     Pair<Personal, LocalDate> clave = Pair.of(empleado, fecha);
                     porEmpleadoYFecha.computeIfAbsent(clave, k -> new ArrayList<>()).add(cr);

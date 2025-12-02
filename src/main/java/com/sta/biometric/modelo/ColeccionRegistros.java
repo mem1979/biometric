@@ -1,7 +1,6 @@
 package com.sta.biometric.modelo;
+
 import java.time.*;
-import java.time.format.*;
-import java.util.*;
 
 import javax.persistence.*;
 
@@ -10,6 +9,7 @@ import org.openxava.model.*;
 
 import com.sta.biometric.auxiliares.*;
 import com.sta.biometric.enums.*;
+import com.sta.biometric.formateadores.*;
 
 import lombok.*;
 
@@ -23,18 +23,16 @@ import lombok.*;
  * 
  */
 
-@View(members= 
-				"fecha, hora, tipoMovimiento;"+
-				"evaluacion;" +
-				"observacion;" +
-				"coordenada" )
+@View(members = "fecha, hora, tipoMovimiento;" +
+        "evaluacion;" +
+        "observacion;" +
+        "coordenada")
 
-@Tab( properties = "diaSemana, fecha, hora, tipoMovimiento, evaluacion",
-	   defaultOrder = "${fecha} asc"
-	)
+@Tab(properties = "diaSemana, fecha, hora, tipoMovimiento, evaluacion", defaultOrder = "${fecha} asc")
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 public class ColeccionRegistros extends Identifiable {
 
     /**
@@ -50,25 +48,22 @@ public class ColeccionRegistros extends Identifiable {
      */
     @ReadOnly
     private LocalDate fecha;
-    
- 
+
     /**
-    * metodo adicional para mostrar el dia de la semana en español.
+     * metodo adicional para mostrar el dia de la semana en español.
      */
-    @Transient
-    @ReadOnly
-    @Depends("fecha")
+
     /**
      * Devuelve el nombre del día de la semana en español para la fecha del
      * registro.
      */
+    @Transient
+    @ReadOnly
+    @Depends("fecha")
     public String getDiaSemana() {
-        if (fecha == null) return "";
-        return fecha.getDayOfWeek().getDisplayName(
-            TextStyle.FULL, new Locale("es", "ES")
-        ).toUpperCase();
+        return TiempoUtils.obtenerNombreDia(fecha);
     }
-    
+
     @ReadOnly
     private LocalTime hora;
 
@@ -76,7 +71,7 @@ public class ColeccionRegistros extends Identifiable {
      * Coordenada geografica (lat, lon), u otro identificador de ubicacion.
      */
     @ReadOnly
-    @Coordinates 
+    @Coordinates
     @Column(length = 50)
     private String coordenada;
 
@@ -95,14 +90,14 @@ public class ColeccionRegistros extends Identifiable {
 
     @ReadOnly
     private String evaluacion;
-    
+
     @Transient
     public String calcularEvaluacion() {
-    	
+
         if (asistenciaDiaria == null) {
             return "ERROR DE REGISTRO - SIN ASISTENCIA DIARIA";
         }
-        
+
         if (fecha == null || tipoMovimiento == null) {
             return "ERROR DE REGISTRO - SIN DATOS";
         }
@@ -112,8 +107,8 @@ public class ColeccionRegistros extends Identifiable {
         }
 
         // Obtenemos la fecha y el dia de la semana
-        
-          DayOfWeek dia = fecha.getDayOfWeek();
+
+        DayOfWeek dia = fecha.getDayOfWeek();
 
         // Buscamos el turno asignado al empleado para esa fecha
         TurnosHorarios turno = empleado.getTurnoParaFecha(fecha);
@@ -124,24 +119,31 @@ public class ColeccionRegistros extends Identifiable {
             return "DIA NO LABORAL";
         }
 
-   
-
         // Determinamos horas esperadas y tolerancia
         LocalTime entradaEsperada = turno.getEntradaParaDia(dia);
         LocalTime salidaEsperada = turno.getSalidaParaDia(dia);
-        int tolerancia = (turno.getTolerancia() != null) ? turno.getTolerancia() : 5;
+
+        // Usamos la tolerancia persistida en el registro diario (snapshot)
+        // para mantener consistencia histórica si el turno cambia después.
+        int tolerancia = asistenciaDiaria.getToleranciaMinutos();
 
         switch (tipoMovimiento) {
             case ENTRADA:
-                if (entradaEsperada == null) return "SIN HORARIO DE ENTRADA";
-                if (hora.isBefore(entradaEsperada.minusMinutes(tolerancia))) return "ENTRADA ANTICIPADA";
-                if (hora.isAfter(entradaEsperada.plusMinutes(tolerancia))) return "ENTRADA TARDE";
+                if (entradaEsperada == null)
+                    return "SIN HORARIO DE ENTRADA";
+                if (hora.isBefore(entradaEsperada.minusMinutes(tolerancia)))
+                    return "ENTRADA ANTICIPADA";
+                if (hora.isAfter(entradaEsperada.plusMinutes(tolerancia)))
+                    return "ENTRADA TARDE";
                 return "ENTRADA EN HORARIO";
 
             case SALIDA:
-                if (salidaEsperada == null) return "SIN HORARIO DE SALIDA";
-                if (hora.isBefore(salidaEsperada.minusMinutes(tolerancia))) return "SALIDA ANTICIPADA";
-                if (hora.isAfter(salidaEsperada.plusMinutes(tolerancia))) return "SALIDA TARDIA";
+                if (salidaEsperada == null)
+                    return "SIN HORARIO DE SALIDA";
+                if (hora.isBefore(salidaEsperada.minusMinutes(tolerancia)))
+                    return "SALIDA ANTICIPADA";
+                if (hora.isAfter(salidaEsperada.plusMinutes(tolerancia)))
+                    return "SALIDA TARDIA";
                 return "SALIDA EN HORARIO";
 
             // Otros tipos de movimiento (Pausa, Ubicacion, etc.)
@@ -159,13 +161,13 @@ public class ColeccionRegistros extends Identifiable {
         }
     }
 
-    
     public String getEvaluacion() {
         return evaluacion;
     }
 
-    @PrePersist @PreUpdate
+    @PrePersist
+    @PreUpdate
     private void preGuardarActualizar() {
         setEvaluacion(calcularEvaluacion());
-     }
+    }
 }

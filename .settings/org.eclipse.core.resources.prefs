@@ -1,5 +1,5 @@
 eclipse.preferences.version=1
-encoding//src/main/java=ISO-8859-1
+encoding//src/main/java=UTF-8
 encoding//src/main/java/com/sta/biometric/acciones=UTF-8
 encoding//src/main/java/com/sta/biometric/acciones/BlanquearContrasenaAction.java=UTF-8
 encoding//src/main/java/com/sta/biometric/acciones/CompletarObservacionLicenciaAction.java=UTF-8
@@ -23,7 +23,8 @@ encoding//src/main/java/com/sta/biometric/rest/AuthEndpoint.java=UTF-8
 encoding//src/main/java/com/sta/biometric/servicios/ConfiguracionesPreferencias.java=UTF-8
 encoding//src/main/java/com/sta/biometric/servicios/ResumenAsistenciaHoyService.java=UTF-8
 encoding//src/main/java/com/sta/biometric/util/JWTUtil.java=UTF-8
-encoding//src/main/resources=ISO-8859-1
-encoding//src/test/resources=ISO-8859-1
+encoding//src/main/resources=UTF-8
+encoding//src/test/java=UTF-8
+encoding//src/test/resources=UTF-8
 encoding/<project>=UTF-8
 separateDerivedEncodings=true

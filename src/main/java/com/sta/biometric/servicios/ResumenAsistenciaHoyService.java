@@ -18,11 +18,11 @@ public class ResumenAsistenciaHoyService {
      * Devuelve el resumen diario de asistencia para cada empleado activo.
      * Incluye evaluación inteligente según hora, turno, licencia y fichadas.
      *
-     * @param empleados Lista de empleados a considerar
+     * @param empleados       Lista de empleados a considerar
      * @param fechaEvaluacion Fecha del día a evaluar
      * @return Lista de resúmenes por empleado
      */
-	
+
     public static List<ResumenEmpleadoHoy> calcularResumen(List<Personal> empleados, LocalDate fechaEvaluacion) {
         EntityManager em = XPersistence.getManager();
         DayOfWeek dia = fechaEvaluacion.getDayOfWeek();
@@ -31,7 +31,8 @@ public class ResumenAsistenciaHoyService {
         List<ResumenEmpleadoHoy> resumenes = new ArrayList<>();
 
         for (Personal e : empleados) {
-            if (!e.isActivo()) continue;
+            if (!e.isActivo())
+                continue;
 
             TurnosHorarios turno = e.getTurnoParaFecha(fechaEvaluacion);
             boolean tieneTurnoAsignado = turno != null;
@@ -51,10 +52,11 @@ public class ResumenAsistenciaHoyService {
             if (esLaboral && !conLicencia) {
                 List<LocalTime> entradas = em.createQuery(
                         "SELECT r.hora FROM ColeccionRegistros r " +
-                        "WHERE r.asistenciaDiaria.empleado = :emp " +
-                        "AND r.fecha = :fecha " +
-                        "AND r.tipoMovimiento = :tipo " +
-                        "ORDER BY r.hora ASC", LocalTime.class)
+                                "WHERE r.asistenciaDiaria.empleado = :emp " +
+                                "AND r.fecha = :fecha " +
+                                "AND r.tipoMovimiento = :tipo " +
+                                "ORDER BY r.hora ASC",
+                        LocalTime.class)
                         .setParameter("emp", e)
                         .setParameter("fecha", fechaEvaluacion)
                         .setParameter("tipo", TipoMovimiento.ENTRADA)
@@ -62,22 +64,25 @@ public class ResumenAsistenciaHoyService {
 
                 if (!entradas.isEmpty()) {
                     ingresoRealizado = true;
-                    llegadaTarde = entradaEsperada != null && entradas.get(0).isAfter(entradaEsperada.plusMinutes(tolerancia));
+                    llegadaTarde = entradaEsperada != null
+                            && entradas.get(0).isAfter(entradaEsperada.plusMinutes(tolerancia));
                 }
 
                 List<LocalTime> salidas = em.createQuery(
                         "SELECT r.hora FROM ColeccionRegistros r " +
-                        "WHERE r.asistenciaDiaria.empleado = :emp " +
-                        "AND r.fecha = :fecha " +
-                        "AND r.tipoMovimiento = :tipo " +
-                        "ORDER BY r.hora DESC", LocalTime.class)
+                                "WHERE r.asistenciaDiaria.empleado = :emp " +
+                                "AND r.fecha = :fecha " +
+                                "AND r.tipoMovimiento = :tipo " +
+                                "ORDER BY r.hora DESC",
+                        LocalTime.class)
                         .setParameter("emp", e)
                         .setParameter("fecha", fechaEvaluacion)
                         .setParameter("tipo", TipoMovimiento.SALIDA)
                         .getResultList();
 
                 if (!salidas.isEmpty()) {
-                    salidaAnticipada = salidaEsperada != null && salidas.get(0).isBefore(salidaEsperada.minusMinutes(tolerancia));
+                    salidaAnticipada = salidaEsperada != null
+                            && salidas.get(0).isBefore(salidaEsperada.minusMinutes(tolerancia));
                 }
             }
 
@@ -116,11 +121,9 @@ public class ResumenAsistenciaHoyService {
             }
 
             resumenes.add(new ResumenEmpleadoHoy(
-                e, esLaboral, conLicencia, ingresoRealizado, llegadaTarde, salidaAnticipada, evaluacion
-            ));
+                    e, esLaboral, conLicencia, ingresoRealizado, llegadaTarde, salidaAnticipada, evaluacion));
         }
 
         return resumenes;
     }
 }
-

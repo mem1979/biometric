@@ -21,26 +21,23 @@ import com.sta.biometric.modelo.*;
 import lombok.*;
 
 @View(members = "tipo, modoComputo;" +
-	  			"fechaInicio, fechaFin, justificado;" +
-	  			"dias, diasRestantes;" +
-	  			"certificado;" +
-	  			"observacion"   	
-)
+        "fechaInicio, fechaFin, dias, diasRestantes;" +
+        "certificado, justificado;" +
+        "observacion")
 
-@Tab(editors = "List",
-	 properties = "empleado.nombreCompleto, tipo, fechaInicio, fechaFin, dias, justificado",
-	 defaultOrder="${empleado.nombreCompleto} asc")
+@Tab(editors = "List", properties = "empleado.nombreCompleto, tipo, fechaInicio, fechaFin, dias, justificado", defaultOrder = "${empleado.nombreCompleto} asc")
 
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 public class Licencia extends Identifiable {
 
-	@Required
-	@NoFrame
-	@ReferenceView("simple")
-	@ManyToOne(fetch = FetchType.LAZY)
-	private Personal empleado;
-		
+    @Required
+    @NoFrame
+    @ReferenceView("simple")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Personal empleado;
+
     @Required
     @LabelFormat(LabelFormatType.SMALL)
     @DefaultValueCalculator(CurrentLocalDateCalculator.class)
@@ -52,51 +49,51 @@ public class Licencia extends Identifiable {
     @DefaultValueCalculator(CurrentLocalDateCalculator.class)
     @OnChange(CompletarObservacionLicenciaAction.class)
     private LocalDate fechaFin;
-    
-   @AssertTrue(message = "La fecha de inicio no puede ser posterior a la fecha de fin")
-    public boolean isFechasValidas() {
-        if (fechaInicio == null || fechaFin == null) return true;
-        return !fechaInicio.isAfter(fechaFin); } 
 
-   @ReadOnly
-   @DisplaySize(5)
-   @LabelFormat(LabelFormatType.SMALL)
-   private Integer dias;
-   
-   
-   @DisplaySize(5)
-   private Integer diasRestantes;
-   
+    @AssertTrue(message = "La fecha de inicio no puede ser posterior a la fecha de fin")
+    public boolean isFechasValidas() {
+        if (fechaInicio == null || fechaFin == null)
+            return true;
+        return !fechaInicio.isAfter(fechaFin);
+    }
+
+    @ReadOnly
+    @DisplaySize(5)
+    @LabelFormat(LabelFormatType.SMALL)
+    private Integer dias;
+
+    @DisplaySize(5)
+    private Integer diasRestantes;
+
     @Required
     @LabelFormat(LabelFormatType.SMALL)
     @OnChange(CompletarObservacionLicenciaAction.class)
     @Enumerated(EnumType.STRING)
     private TipoLicenciaAR tipo;
-    
+
     @Required
     @LabelFormat(LabelFormatType.SMALL)
     @OnChange(CompletarObservacionLicenciaAction.class)
     @Enumerated(EnumType.STRING)
     private ModoComputoLicencia modoComputo;
 
-   @OnChange(LicenciaOnChangeJustificadoAction.class)
+    @OnChange(LicenciaOnChangeJustificadoAction.class)
     @DefaultValueCalculator(TrueCalculator.class)
     @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean justificado;
-    
 
     @Stereotype("TEXT_AREA")
     @Column(length = 500)
     private String observacion;
-    
+
     @LabelFormat(LabelFormatType.SMALL)
-    @File( maxFileSizeInKb=200)
-    @Column(length=32)
+    @File(maxFileSizeInKb = 200)
+    @Column(length = 32)
     private String certificado;
-    
+
     /**
-     * AÒo correspondiente a la licencia, derivado de la fecha desde.
-     * Se usa para c·lculos y agrupamientos por aÒo calendario.
+     * A√±o correspondiente a la licencia, derivado de la fecha desde.
+     * Se usa para c√°lculos y agrupamientos por a√±o calendario.
      */
     @Hidden
     public int getAnio() {
@@ -106,64 +103,81 @@ public class Licencia extends Identifiable {
     public static boolean tieneLicenciaEnFecha(Personal empleado, LocalDate fecha) {
         EntityManager em = XPersistence.getManager();
         Long count = em.createQuery(
-            "select count(l) from Licencia l where l.empleado = :emp " +
-            "and :fecha between l.fechaInicio and l.fechaFin", Long.class)
-            .setParameter("emp", empleado)
-            .setParameter("fecha", fecha)
-            .getSingleResult();
+                "select count(l) from Licencia l where l.empleado = :emp " +
+                        "and :fecha between l.fechaInicio and l.fechaFin",
+                Long.class)
+                .setParameter("emp", empleado)
+                .setParameter("fecha", fecha)
+                .getSingleResult();
         return count > 0;
     }
-    
+
+    /**
+     * Obtiene la licencia activa para un empleado en una fecha espec√≠fica.
+     * 
+     * @return Licencia activa o null si no existe
+     */
+    public static Licencia getLicenciaEnFecha(Personal empleado, LocalDate fecha) {
+        EntityManager em = XPersistence.getManager();
+        return em.createQuery(
+                "select l from Licencia l where l.empleado = :emp " +
+                        "and :fecha between l.fechaInicio and l.fechaFin",
+                Licencia.class)
+                .setParameter("emp", empleado)
+                .setParameter("fecha", fecha)
+                .setMaxResults(1)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+    }
+
     @PrePersist
-   // @PreUpdate
+    // @PreUpdate
     private void validarSolapamientoLicencias() {
-        if (empleado == null || fechaInicio == null || fechaFin == null) return;
+        if (empleado == null || fechaInicio == null || fechaFin == null)
+            return;
 
         EntityManager em = XPersistence.getManager();
 
         Licencia licenciaConflictiva = em.createQuery(
-            "select l from Licencia l " +
-            "where l.empleado = :emp " +
-            "and l.id <> :id " +
-            "and ( " +
-            "    (:inicio between l.fechaInicio and l.fechaFin) or " +
-            "    (:fin between l.fechaInicio and l.fechaFin) or " +
-            "    (l.fechaInicio between :inicio and :fin) or " +
-            "    (l.fechaFin between :inicio and :fin) " +
-            ")",
-            Licencia.class)
-            .setParameter("emp", empleado)
-            .setParameter("id", getId() == null ? "" : getId())
-            .setParameter("inicio", fechaInicio)
-            .setParameter("fin", fechaFin)
-            .setMaxResults(1)
-            .getResultStream()
-            .findFirst()
-            .orElse(null);
+                "select l from Licencia l " +
+                        "where l.empleado = :emp " +
+                        "and l.id <> :id " +
+                        "and ( " +
+                        "    (:inicio between l.fechaInicio and l.fechaFin) or " +
+                        "    (:fin between l.fechaInicio and l.fechaFin) or " +
+                        "    (l.fechaInicio between :inicio and :fin) or " +
+                        "    (l.fechaFin between :inicio and :fin) " +
+                        ")",
+                Licencia.class)
+                .setParameter("emp", empleado)
+                .setParameter("id", getId() == null ? "" : getId())
+                .setParameter("inicio", fechaInicio)
+                .setParameter("fin", fechaFin)
+                .setMaxResults(1)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
 
         if (licenciaConflictiva != null) {
             throw new javax.validation.ValidationException(
-                String.format(
-                    "Ya existe una licencia para %s desde el %s hasta el %s (Tipo: %s).",
-                    empleado.getNombreCompleto(),
-                    TiempoUtils.formatearFecha(licenciaConflictiva.getFechaInicio()),
-                    TiempoUtils.formatearFecha(licenciaConflictiva.getFechaFin()),
-                    licenciaConflictiva.getTipo() != null ? licenciaConflictiva.getTipo().name() : "Sin tipo"
-                )
-            );
+                    String.format(
+                            "Ya existe una licencia para %s desde el %s hasta el %s (Tipo: %s).",
+                            empleado.getNombreCompleto(),
+                            TiempoUtils.formatearFecha(licenciaConflictiva.getFechaInicio()),
+                            TiempoUtils.formatearFecha(licenciaConflictiva.getFechaFin()),
+                            licenciaConflictiva.getTipo() != null ? licenciaConflictiva.getTipo().name() : "Sin tipo"));
         }
     }
-    
+
     @PreRemove
     private void validarAntesDeEliminar() {
-        if (fechaFin != null && 
-            (fechaFin.isBefore(LocalDate.now()) || fechaFin.isEqual(LocalDate.now()))) {
-            
+        if (fechaFin != null &&
+                (fechaFin.isBefore(LocalDate.now()) || fechaFin.isEqual(LocalDate.now()))) {
+
             throw new ValidationException(
-                XavaResources.getString("no_puede_eliminar_licencia_finalizada")
-            );
+                    XavaResources.getString("no_puede_eliminar_licencia_finalizada"));
         }
     }
 
-
- }
+}

@@ -17,7 +17,9 @@ import org.openxava.tab.*;
 			
 			showDialog();                                                   
 	        getView().setTitle("NUEVA JORNADA SEMANAL");         // 4
-	        getView().setModelName("TurnosHorarios"); 
+	        getView().setModelName("TurnosHorarios");
+	        getView().setValue("tolerancia", 10);
+	        getView().setValue("porcentajeBonificacion", 0);
 	        addActions("TurnosHorarios.Guardar_Y_Salir", "Dialog.cancel");
 	        removeActions("MiTypicalNoResetNoNavNoImport.save");
 	   

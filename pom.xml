@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.sta</groupId>
@@ -8,7 +9,7 @@
 	<packaging>war</packaging>
 
 	<properties>
-		<openxava.version>7.5.3</openxava.version>
+		<openxava.version>7.6.2</openxava.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- Las aplicaciones OpenXava funcionan bien con Java 1.8, 11, 17 y 21 -->
 		<maven.compiler.source>11</maven.compiler.source>
@@ -22,54 +23,54 @@
 			<artifactId>openxava</artifactId>
 			<version>${openxava.version}</version>
 		</dependency>
-		
-		 <!-- ✅ Quartz 2.3.2 -->		
+
+		<!-- ✅ Quartz 2.3.2 -->
 		<dependency>
-    <groupId>org.quartz-scheduler</groupId>
-    <artifactId>quartz</artifactId>
-    <version>2.3.2</version>
-</dependency>
-		
-		 <!-- ✅ REST Jersey 2.41 -->
-		<dependency>
-		<groupId>org.glassfish.jersey.core</groupId>
-		  <artifactId>jersey-common</artifactId>
-		  <version>2.35</version> <!-- mismo que las demás -->
+			<groupId>org.quartz-scheduler</groupId>
+			<artifactId>quartz</artifactId>
+			<version>2.3.2</version>
 		</dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.core</groupId>
-            <artifactId>jersey-server</artifactId>
-            <version>2.35</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-servlet</artifactId>
-            <version>2.35</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.inject</groupId>
-            <artifactId>jersey-hk2</artifactId>
-            <version>2.35</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-binding</artifactId>
-            <version>2.35</version>
-        </dependency>
-		
+
+		<!-- ✅ REST Jersey 2.41 -->
 		<dependency>
-    <groupId>io.jsonwebtoken</groupId>
-    <artifactId>jjwt</artifactId>
-    <version>0.9.1</version>
-</dependency>
-		
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-common</artifactId>
+			<version>2.35</version>			<!-- mismo que las demás -->
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.core</groupId>
+			<artifactId>jersey-server</artifactId>
+			<version>2.35</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-servlet</artifactId>
+			<version>2.35</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.inject</groupId>
+			<artifactId>jersey-hk2</artifactId>
+			<version>2.35</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jersey.media</groupId>
+			<artifactId>jersey-media-json-binding</artifactId>
+			<version>2.35</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+
 		<!-- 
 		Para acceder a tu base de datos descomenta la entrada correspondiente 
 		de las dependencias de abajo. Si no encuentras la tuya, busca en
 		internet por la dependencia maven para tu base de datos y añádela
 		aquí tu mismo.
 		-->
-		
+
 		<!-- MySQL 
 		<dependency>
 			<groupId>com.mysql</groupId>
@@ -77,7 +78,7 @@
     		<version>9.1.0</version>
 		</dependency>
 		-->
-		
+
 		<!-- PostgreSQL 
 		<dependency>
 			<groupId>org.postgresql</groupId>
@@ -85,7 +86,7 @@
     		<version>42.7.4</version>
 		</dependency>
 		-->
-		
+
 		<!-- Oracle 
 		<dependency>
 			<groupId>com.oracle.database.jdbc</groupId>
@@ -93,7 +94,7 @@
 			<version>23.6.0.24.10</version>
 		</dependency>
 		-->
-		
+
 		<!-- AS/400 
 		<dependency>
 			<groupId>net.sf.jt400</groupId>
@@ -102,7 +103,7 @@
 			<classifier>java8</classifier>
 		</dependency>
 		-->
-		
+
 		<!-- Microsoft SQL Server
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
@@ -110,7 +111,7 @@
     		<version>12.8.1.jre8</version>
 		</dependency>
 		-->
-		
+
 		<!-- Informix
 		<dependency>
 			<groupId>com.ibm.informix</groupId>
@@ -118,7 +119,7 @@
 			<version>15.0.0.0</version>
 		</dependency>
 		-->
-		
+
 		<!-- Db2
 		<dependency>
 			<groupId>com.ibm.db2</groupId>
@@ -126,7 +127,7 @@
 			<version>12.1.0.0</version>
 		</dependency>
 		-->
-		
+
 		<!-- Firebird/Jaybird
 		<dependency>
 			<groupId>org.firebirdsql.jdbc</groupId>
@@ -134,7 +135,26 @@
 			<version>5.0.6.java8</version>
 		</dependency>
 		-->
-		
+
+		<!-- JUnit 5 -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>5.10.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>5.10.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.18.30</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -187,14 +207,14 @@
 						WEB-INF/lib/xml-apis-*.jar</packagingExcludes>
 				</configuration>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>3.2.5</version>
 				<configuration>
-				<encoding>UTF-8</encoding>
-					<skipTests>true</skipTests>
+					<encoding>UTF-8</encoding>
+					<skipTests>false</skipTests>
 				</configuration>
 			</plugin>
 		</plugins>

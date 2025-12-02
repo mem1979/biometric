@@ -1,6 +1,8 @@
 package com.sta.biometric.formateadores;
+
 import java.time.*;
 import java.time.format.*;
+import java.util.*;
 
 /**
  * Clase utilitaria para formateo y cálculo de tiempos,
@@ -11,12 +13,14 @@ public class TiempoUtils {
     // ===================== MÉTODOS DE FORMATEO DE MINUTOS =====================
 
     /**
-     * Devuelve un texto "HH:MM" a partir de una cantidad de minutos (ej: 150 -> "02:30").
+     * Devuelve un texto "HH:MM" a partir de una cantidad de minutos (ej: 150 ->
+     * "02:30").
      * Si minutos <= 0, devuelve "00:00".
      * Funciona incluso si pasan de 24 horas (ej: 1500 minutos = 25:00).
      */
     public static String formatearMinutosComoHHMM(Integer minutos) {
-        if (minutos == null || minutos <= 0) return "00:00";
+        if (minutos == null || minutos <= 0)
+            return "00:00";
         int horas = minutos / 60;
         int min = minutos % 60;
         return String.format("%02d:%02d", horas, min);
@@ -27,7 +31,8 @@ public class TiempoUtils {
      * Si minutos <= 0, retorna "00:00:00".
      */
     public static String formatearMinutosComoHHMMSS(Integer minutos) {
-        if (minutos == null || minutos <= 0) return "00:00:00";
+        if (minutos == null || minutos <= 0)
+            return "00:00:00";
         int horas = minutos / 60;
         int min = minutos % 60;
         // En este caso, asumimos que no estamos guardando segundos aparte, así que 0.
@@ -37,11 +42,12 @@ public class TiempoUtils {
     /**
      * Formatea un total de minutos distinguiendo días, por ejemplo:
      * - 27 horas 30 min => "1d 03:30"
-     * - 8 horas        => "08:00"
-     * - 0 min          => "0 min"
+     * - 8 horas => "08:00"
+     * - 0 min => "0 min"
      */
     public static String formatearMinutosMultiDia(int minutosTotales) {
-        if (minutosTotales <= 0) return "0 min";
+        if (minutosTotales <= 0)
+            return "0 min";
 
         int dias = minutosTotales / (24 * 60);
         int resto = minutosTotales % (24 * 60);
@@ -50,21 +56,46 @@ public class TiempoUtils {
 
         if (dias > 0) {
             return String.format("%dd %02d:%02d", dias, horas, mins);
-        }
-        else {
+        } else {
             return String.format("%02d:%02d", horas, mins);
         }
     }
 
-    // ===================== MÉTODOS DE CÁLCULO CON LocalDateTime =====================
+    /**
+     * Parsea una cadena en formato "HH:MM" y devuelve el total de minutos.
+     * Por ejemplo: "02:30" -> 150 minutos
+     * Si la cadena es nula, vacía o mal formateada, devuelve 0.
+     */
+    public static int parsearHHMMaMinutos(String horaFormato) {
+        if (horaFormato == null || horaFormato.isBlank())
+            return 0;
+
+        try {
+            String[] partes = horaFormato.split(":");
+            if (partes.length != 2)
+                return 0;
+
+            int horas = Integer.parseInt(partes[0].trim());
+            int minutos = Integer.parseInt(partes[1].trim());
+
+            return (horas * 60) + minutos;
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    // ===================== MÉTODOS DE CÁLCULO CON LocalDateTime
+    // =====================
 
     /**
-     * Calcula la diferencia en minutos entre dos LocalDateTime (puede ser multi-día).
-     * Si fin < inicio, retorna negativo (o podrías retornar 0 o forzar un plusDays, 
+     * Calcula la diferencia en minutos entre dos LocalDateTime (puede ser
+     * multi-día).
+     * Si fin < inicio, retorna negativo (o podrías retornar 0 o forzar un plusDays,
      * dependiendo de tu lógica).
      */
     public static int calcularMinutosEntreDateTimes(LocalDateTime inicio, LocalDateTime fin) {
-        if (inicio == null || fin == null) return 0;
+        if (inicio == null || fin == null)
+            return 0;
         return (int) Duration.between(inicio, fin).toMinutes();
     }
 
@@ -73,21 +104,21 @@ public class TiempoUtils {
      * Si fin es anterior a inicio, se regresa 0 en vez de negativo.
      */
     public static int calcularMinutosEntreDateTimesNoNeg(LocalDateTime inicio, LocalDateTime fin) {
-        if (inicio == null || fin == null) return 0;
+        if (inicio == null || fin == null)
+            return 0;
         long minutos = Duration.between(inicio, fin).toMinutes();
         return (int) Math.max(0, minutos);
     }
-    
-  
 
     // ===================== MÉTODOS DE CÁLCULO CON LocalTime =====================
 
     /**
-     * Calcula la diferencia en minutos entre dos LocalTime asumiendo 
+     * Calcula la diferencia en minutos entre dos LocalTime asumiendo
      * que fin podría cruzar medianoche, pero no más de 24h.
      */
     public static int calcularMinutosLocalTime(LocalTime inicio, LocalTime fin) {
-        if (inicio == null || fin == null) return 0;
+        if (inicio == null || fin == null)
+            return 0;
         Duration d = Duration.between(inicio, fin);
         // Si es negativo, sumamos 1 día (caso típico de cruzar medianoche)
         if (d.isNegative()) {
@@ -95,14 +126,15 @@ public class TiempoUtils {
         }
         return (int) d.toMinutes();
     }
-    
+
     /**
-     * Calcula la diferencia en minutos entre dos LocalTime asumiendo 
+     * Calcula la diferencia en minutos entre dos LocalTime asumiendo
      * para turnos de hasta 24h.
      */
-    
+
     public static int calcularMinutosEntreHoras(LocalTime inicio, LocalTime fin) {
-        if (inicio == null || fin == null) return 0;
+        if (inicio == null || fin == null)
+            return 0;
         Duration d = Duration.between(inicio, fin);
         return (int) Math.max(0, d.toMinutes());
     }
@@ -114,7 +146,8 @@ public class TiempoUtils {
      * Si minutos < 0, retorna Duration.ZERO.
      */
     public static Duration desdeMinutos(Integer minutos) {
-        if (minutos == null || minutos < 0) return Duration.ZERO;
+        if (minutos == null || minutos < 0)
+            return Duration.ZERO;
         return Duration.ofMinutes(minutos);
     }
 
@@ -135,12 +168,13 @@ public class TiempoUtils {
     // ===================== EJEMPLO EXTRA =====================
 
     /**
-     * Devuelve un String con el intervalo [inicio - fin], 
+     * Devuelve un String con el intervalo [inicio - fin],
      * por ejemplo "12/04/2025 08:30 - 13/04/2025 10:00 (Duración: 1d 01:30)".
      * Solo a modo ilustrativo; únete a tu formateo preferido.
      */
     public static String describirRangoFechaHora(LocalDateTime inicio, LocalDateTime fin) {
-        if (inicio == null || fin == null) return "Sin datos";
+        if (inicio == null || fin == null)
+            return "Sin datos";
         // Formato de ejemplo "dd/MM/yyyy HH:mm"
         // Ajustar a tu preferencia (timezones, localization, etc.)
         String inicioStr = inicio.toLocalDate() + " " + inicio.toLocalTime();
@@ -153,22 +187,25 @@ public class TiempoUtils {
     }
 
     public static String formatearFecha(LocalDateTime fechaHora) {
-        if (fechaHora == null) return "";
+        if (fechaHora == null)
+            return "";
         return fechaHora.format(DateTimeFormatter.ofPattern("dd/MM/yy"));
     }
 
     public static String formatearHora(LocalDateTime fechaHora) {
-        if (fechaHora == null) return "";
+        if (fechaHora == null)
+            return "";
         return fechaHora.format(DateTimeFormatter.ofPattern("HH:mm"));
     }
-    
- // === Sobrecarga para formateo por tipo ===
+
+    // === Sobrecarga para formateo por tipo ===
 
     /**
      * Formatea una fecha LocalDate como dd/MM/yy
      */
     public static String formatearFecha(LocalDate fecha) {
-        if (fecha == null) return "";
+        if (fecha == null)
+            return "";
         return fecha.format(DateTimeFormatter.ofPattern("dd/MM/yy"));
     }
 
@@ -176,11 +213,20 @@ public class TiempoUtils {
      * Formatea una hora LocalTime como HH:mm
      */
     public static String formatearHora(LocalTime hora) {
-        if (hora == null) return "";
+        if (hora == null)
+            return "";
         return hora.format(DateTimeFormatter.ofPattern("HH:mm"));
     }
 
-    
     // ===================== FIN =====================
+
+    /**
+     * Devuelve el nombre del día de la semana en español (ej: "LUNES", "MARTES").
+     */
+    public static String obtenerNombreDia(LocalDate fecha) {
+        if (fecha == null)
+            return "";
+        return fecha.getDayOfWeek().getDisplayName(TextStyle.FULL, new Locale("es", "ES")).toUpperCase();
+    }
 
 }

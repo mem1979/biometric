@@ -1,4 +1,5 @@
 package com.sta.biometric.modelo;
+
 import java.math.*;
 import java.time.*;
 import java.time.format.*;
@@ -27,95 +28,90 @@ import com.sta.biometric.servicios.*;
 import lombok.*;
 
 @Entity
-@Getter @Setter
-@View(members =
-"nombreCompleto, turnoActivoHoy;" +
-"InformacionPersonal { " +
-    "InformacionPersonal[" +
+@Getter
+@Setter
+@View(members = "nombreCompleto, turnoActivoHoy;" +
+        "InformacionPersonal { " +
+        "InformacionPersonal[" +
         "apellido;" +
         "nombres;" +
         "fechaNacimiento, edad, proximoCumpleanos;" +
         "nacionalidad, estadoCivil;" +
-        "dni, Personal.dni(ALWAYS);" + 
-        "cuil, Personal.IrANSES(ALWAYS);" + 
-        
-    "], " +
-    "foto[" +
-        "foto;" +
-    "]; " +
-    "direccion;" +
-    "contacto;" +
-    "documentacionPersonal;" +
-"}; " +
+        "dni, Personal.dni(ALWAYS);" +
+        "cuil, Personal.IrANSES(ALWAYS);" +
 
-"InformacionLaboral { " +
-    "credenciales[" +
+        "], " +
+        "foto[" +
+        "foto;" +
+        "]; " +
+        "direccion;" +
+        "contacto;" +
+        "documentacionPersonal;" +
+        "}; " +
+
+        "InformacionLaboral { " +
+        "credenciales[" +
         "userId; creaUsuario;" +
         "contrasena; deviceId, aceptaPausa," +
-    "], " +
+        "], " +
 
-    "funcion[" +
-    	"activo;"+
+        "funcion[" +
+        "activo;" +
         "sucursal;" +
         "inicioActividades, antiguedadLaboral;"
         + " puesto;" +
-    "]; " +
-    "Honorarios[" +
-	    "valorHora," +
-	    "porcentajeHoraExtra, valorHoraExtra," +
-	    "porcentajeHoraEspecial, valorHoraEspecial;" +
-	"]; " +
-	"JORNADAS[" +
+        "]; " +
+        "Honorarios[" +
+        "valorHora," +
+        "porcentajeHoraExtra, valorHoraExtra," +
+        "porcentajeHoraEspecial, valorHoraEspecial;" +
+        "]; " +
+        "JORNADAS[" +
         "jornadasAsignadas;" +
         "]; " +
-"}; " +
+        "}; " +
 
-"LICENCIAS { " +
-    "licencias, licenciasResumenAnual; licenciasGraficoAnual; " +
-"}; " +
-    
+        "LICENCIAS { " +
+        "licencias, licenciasResumenAnual; licenciasGraficoAnual; " +
+        "}; " +
 
-"informes { " +
-    "desde, hasta;" +
-"}; " +
+        "informes { " +
+        "desde, hasta;" +
+        "}; " +
 
-"INCIDENCIAS_Y_OBSERVACIONES { " +
-    "nota;" +
-"}")
+        "INCIDENCIAS_Y_OBSERVACIONES { " +
+        "notasPersonale; nota;" +
+        "}")
 
-@View(name= "VerMapa",
-members = "direccion"
-)
+@View(name = "VerMapa", members = "direccion")
 
-@View(name= "VerCalendario",
-members = "eventos"
-)
+@View(name = "VerCalendario", members = "eventos")
 
 @View(name = "simple", members = "nombreCompleto, sucursal, puesto;")
 
-@Tab(editors = "List",
-	 properties = "foto, nombreCompleto, userId, sucursal.nombre, puesto, activo",
-	 defaultOrder = "${activo} desc, ${nombreCompleto} asc",
-	 rowStyles = {@RowStyle(style = "empleadoInactivo", property = "activo", value = "false")}
-	)
-
+@Tab(editors = "List", properties = "foto, nombreCompleto, userId, sucursal.nombre, puesto, activo", defaultOrder = "${activo} desc, ${nombreCompleto} asc", rowStyles = {
+        @RowStyle(style = "empleadoInactivo", property = "activo", value = "false") })
 
 public class Personal extends Identifiable {
-	
-	@DefaultValueCalculator(TrueCalculator.class)
-	@OnChange(PersonalOnChangeActivoAction.class)
-    @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
-	private boolean activo;
-	
-	@Required
-	@SearchKey
-	@Column(length = 10, unique = true)
-	@DefaultValueCalculator(GeneradorCodigoUserIdCalculator.class)
-	private String userId;
 
-    @ReadOnly  // @Password
+    @DefaultValueCalculator(TrueCalculator.class)
+    @OnChange(PersonalOnChangeActivoAction.class)
+    @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private boolean activo;
+
+    @Hidden
+    @Transient
+    private String userIdOriginal;
+
+    @Required
+    @SearchKey
+    @Column(length = 10, unique = true)
+    @DefaultValueCalculator(GeneradorCodigoUserIdCalculator.class)
+    private String userId;
+
+    @ReadOnly // @Password
     @Column(length = 20)
-    @Action(value="Personal.borrarDeviceId", alwaysEnabled=true)
+    @Action(value = "Personal.borrarDeviceId", alwaysEnabled = true)
     private String deviceId;
 
     @Column(length = 20)
@@ -125,7 +121,7 @@ public class Personal extends Identifiable {
     @Mayuscula
     @Depends("nombres, apellido, userId")
     public String getCreaUsuario() {
-        if ((nombres == null || nombres.isEmpty()) || (apellido == null || apellido.isEmpty()) ) {
+        if ((nombres == null || nombres.isEmpty()) || (apellido == null || apellido.isEmpty())) {
             return "N/D";
         }
         String inicialNombre = nombres.trim().substring(0, 1);
@@ -133,12 +129,13 @@ public class Personal extends Identifiable {
         return inicialNombre + apellidoCompleto + "@" + userId;
     }
 
-    @Password @ReadOnly
+    @Password
+    @ReadOnly
     @Column(length = 20)
-    @Action(value="Personal.borrarContrasena", alwaysEnabled=true)
+    @Action(value = "Personal.borrarContrasena", alwaysEnabled = true)
     @DefaultValueCalculator(CalculadorPassword.class)
     private String contrasena;
-    
+
     @DefaultValueCalculator(TrueCalculator.class)
     @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean aceptaPausa;
@@ -154,19 +151,16 @@ public class Personal extends Identifiable {
     @Column(length = 30)
     private String apellido;
 
- 
     @DisplaySize(40)
     @MiLabel(medida = "extra", negrita = true, recuadro = true, icon = "account")
     private String nombreCompleto;
 
-
-    @DisplaySize(40)   
+    @DisplaySize(40)
     @MiLabel(medida = "extra", negrita = true, recuadro = true, icon = "account-box")
     @Depends("nombres, apellido")
-    	public String getApellidoNombre() {
-    	    return apellido + ", " + nombres;
-    	}
-
+    public String getApellidoNombre() {
+        return apellido + ", " + nombres;
+    }
 
     @DefaultValueCalculator(CurrentLocalDateCalculator.class)
     private LocalDate fechaNacimiento;
@@ -175,10 +169,11 @@ public class Personal extends Identifiable {
     @MiLabel(medida = "mediana", negrita = true, recuadro = false)
     @Depends("fechaNacimiento")
     public String getEdad() {
-        if (fechaNacimiento == null) return "";
+        if (fechaNacimiento == null)
+            return "";
         return " Edad: " + ChronoUnit.YEARS.between(fechaNacimiento, LocalDate.now()) + " Años ";
-	}
-    
+    }
+
     @Label
     @LabelFormat(LabelFormatType.NO_LABEL)
     public String getProximoCumpleanos() { // Método para calcular la proximidad del próximo cumpleaños
@@ -205,51 +200,51 @@ public class Personal extends Identifiable {
 
         return "(Cumpleaños en " + meses + " meses y " + dias + " días)";
     }
-    
+
     @Enumerated(EnumType.STRING)
     private EstadoCivil estadoCivil;
-    
-   	@NoCreate @NoModify 
-	@DefaultValueCalculator(NacionalidadPorDefectoCalculator.class)
-    @ManyToOne(fetch = FetchType.LAZY, optional = true) 
+
+    @NoCreate
+    @NoModify
+    @DefaultValueCalculator(NacionalidadPorDefectoCalculator.class)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @DescriptionsList(descriptionProperties = "nacionalidad") // Muestra nacionalidad como texto
     private Nacionalidades nacionalidad;
-    
-    
- // Relación OneToOne con Dni
-    @NoFrame 
+
+    // Relación OneToOne con Dni
+    @NoFrame
     @NoSearch
     @NoCreate
     @NoModify
     @AsEmbedded
-    @ReferenceView ("simple")
-    @OneToOne(fetch=FetchType.LAZY, cascade = CascadeType.ALL) // 'CascadeType.ALL' permite que las operaciones como persist y remove se propaguen a la entidad 'Dni'
+    @ReferenceView("simple")
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL) // 'CascadeType.ALL' permite que las operaciones como
+                                                                 // persist y remove se propaguen a la entidad 'Dni'
     @JoinColumn(name = "dni_id") // Crea una columna 'dni_id' que almacena la clave primaria de 'Dni'
     private Dni dni;
-    
+
     @Mask("00-00000000-0")
-	private String cuil; // Código Único de Identificación Laboral
+    private String cuil; // Código Único de Identificación Laboral
 
     @Embedded
-    @ReferenceView(forViews="VerMapa", value="VerMapa")
+    @ReferenceView(forViews = "VerMapa", value = "VerMapa")
     private Direccion direccion;
-
 
     @Embedded
     private DatosContacto contacto;
 
     @DisplaySize(30)
     @Capitalizar
-    @ReadOnly(forViews="Simple")
-    @LabelFormat(forViews="simple" , value = LabelFormatType.SMALL)
+    @ReadOnly(forViews = "Simple")
+    @LabelFormat(forViews = "simple", value = LabelFormatType.SMALL)
     @Column(length = 50)
     private String puesto;
-    
+
     @Required
     @Stereotype("FECHA")
     @DefaultValueCalculator(CurrentLocalDateCalculator.class)
     private LocalDate inicioActividades;
-    
+
     @Label
     @Depends("inicioActividades")
     public String getAntiguedadLaboral() {
@@ -265,37 +260,38 @@ public class Personal extends Identifiable {
         int dias = periodo.getDays();
 
         StringBuilder sb = new StringBuilder();
-        if (anios > 0) sb.append(anios).append(anios == 1 ? " año" : " años");
+        if (anios > 0)
+            sb.append(anios).append(anios == 1 ? " año" : " años");
         if (meses > 0) {
-            if (sb.length() > 0) sb.append(", ");
+            if (sb.length() > 0)
+                sb.append(", ");
             sb.append(meses).append(meses == 1 ? " mes" : " meses");
         }
         if (dias > 0) {
-            if (sb.length() > 0) sb.append(" y ");
+            if (sb.length() > 0)
+                sb.append(" y ");
             sb.append(dias).append(dias == 1 ? " dia" : " dias");
         }
 
         return sb.length() > 0 ? sb.toString() : "Menos de un dia";
     }
 
-    
     @Capitalizar
-    @LabelFormat(forViews="simple" , value =  LabelFormatType.SMALL)
-    @DescriptionsList 
-    @ManyToOne(fetch=FetchType.LAZY)
+    @LabelFormat(forViews = "simple", value = LabelFormatType.SMALL)
+    @DescriptionsList
+    @ManyToOne(fetch = FetchType.LAZY)
     private Sucursales sucursal;
 
-    @ReadOnly(forViews="Simple")
+    @ReadOnly(forViews = "Simple")
     @LabelFormat(LabelFormatType.NO_LABEL)
-    @File(acceptFileTypes="image/*", maxFileSizeInKb=200)
-    @Column(length=32)
+    @File(acceptFileTypes = "image/*", maxFileSizeInKb = 200)
+    @Column(length = 32)
     private String foto;
-    
-    @Files( maxFileSizeInKb=200)
-    @Column(length=32)
+
+    @Files(maxFileSizeInKb = 200)
+    @Column(length = 32)
     private String documentacionPersonal;
-    
-    
+
     @Editor("yearCalendarEditor")
     public Collection<DtoLicenciasFeriados> getEventos() {
 
@@ -304,59 +300,69 @@ public class Personal extends Identifiable {
 
         /* 1) (Opcional) Feriados “comunes” como contexto visual */
         em.createQuery("select f from Feriados f", Feriados.class)
-          .getResultList()
-          .forEach(f -> out.add(DtoLicenciasFeriados.of(f)));
+                .getResultList()
+                .forEach(f -> out.add(DtoLicenciasFeriados.of(f)));
 
         /* 2) Licencias del empleado (rango real) */
         em.createQuery("select l from Licencia l where l.empleado = :yo", Licencia.class)
-          .setParameter("yo", this)
-          // Si querés limitar al año actual, descomentá:
-          // .setParameter("d", LocalDate.of(LocalDate.now().getYear(),1,1))
-          // .setParameter("h", LocalDate.of(LocalDate.now().getYear(),12,31))
-          .getResultList()
-          .forEach(l -> out.add(DtoLicenciasFeriados.of(l)));
+                .setParameter("yo", this)
+                // Si querés limitar al año actual, descomentá:
+                // .setParameter("d", LocalDate.of(LocalDate.now().getYear(),1,1))
+                // .setParameter("h", LocalDate.of(LocalDate.now().getYear(),12,31))
+                .getResultList()
+                .forEach(l -> out.add(DtoLicenciasFeriados.of(l)));
 
-        /* 3) Auditoría diaria: COM/INC/AUS + FERIADO_TRABAJADO (NO LICENCIA para evitar duplicados) */
+        /*
+         * 3) Auditoría diaria: COM/INC/AUS + FERIADO_TRABAJADO (NO LICENCIA para evitar
+         * duplicados)
+         */
         int anio = java.time.LocalDate.now().getYear();
         java.time.LocalDate desde = java.time.LocalDate.of(anio, 1, 1);
         java.time.LocalDate hasta = java.time.LocalDate.of(anio, 12, 31);
 
         List<EvaluacionJornada> evs = java.util.Arrays.asList(
-            EvaluacionJornada.COMPLETA,
-            EvaluacionJornada.INCOMPLETA,
-            EvaluacionJornada.AUSENTE,
-            EvaluacionJornada.FERIADO_TRABAJADO
-        );
+                EvaluacionJornada.COMPLETA,
+                EvaluacionJornada.INCOMPLETA,
+                EvaluacionJornada.AUSENTE,
+                EvaluacionJornada.FERIADO_TRABAJADO);
 
         List<AuditoriaRegistros> regs = em.createQuery(
-            "select a from AuditoriaRegistros a " +
-            "where a.empleado = :yo and a.evaluacion in :evs " +
-            "and a.fecha between :d and :h " +
-            "order by a.fecha asc",
-            AuditoriaRegistros.class)
-          .setParameter("yo", this)
-          .setParameter("evs", evs)
-          // Si 'a.fecha' es java.util.Date, usa java.sql.Date.valueOf(...)
-          .setParameter("d", desde)
-          .setParameter("h", hasta)
-          .getResultList();
+                "select a from AuditoriaRegistros a " +
+                        "where a.empleado = :yo and a.evaluacion in :evs " +
+                        "and a.fecha between :d and :h " +
+                        "order by a.fecha asc",
+                AuditoriaRegistros.class)
+                .setParameter("yo", this)
+                .setParameter("evs", evs)
+                // Si 'a.fecha' es java.util.Date, usa java.sql.Date.valueOf(...)
+                .setParameter("d", desde)
+                .setParameter("h", hasta)
+                .getResultList();
 
         // Mapear cada día a su evento por tipo
         for (AuditoriaRegistros a : regs) {
-            if (a.getFecha() == null || a.getEvaluacion() == null) continue;
+            if (a.getFecha() == null || a.getEvaluacion() == null)
+                continue;
             switch (a.getEvaluacion()) {
-                case COMPLETA:            out.add(DtoLicenciasFeriados.ofCompleta(a));          break;
-                case INCOMPLETA:          out.add(DtoLicenciasFeriados.ofIncompleta(a));        break;
-                case AUSENTE:             out.add(DtoLicenciasFeriados.ofAusente(a));           break;
-                case FERIADO_TRABAJADO:   out.add(DtoLicenciasFeriados.ofFeriadoTrabajado(a));  break;
-                default: break; // LICENCIA/FERIADO “común” no se generan aquí
+                case COMPLETA:
+                    out.add(DtoLicenciasFeriados.ofCompleta(a));
+                    break;
+                case INCOMPLETA:
+                    out.add(DtoLicenciasFeriados.ofIncompleta(a));
+                    break;
+                case AUSENTE:
+                    out.add(DtoLicenciasFeriados.ofAusente(a));
+                    break;
+                case FERIADO_TRABAJADO:
+                    out.add(DtoLicenciasFeriados.ofFeriadoTrabajado(a));
+                    break;
+                default:
+                    break; // LICENCIA/FERIADO “común” no se generan aquí
             }
         }
         return out;
     }
-    
-    
-    
+
     @ListAction("Licencia.VerCalendario")
     @ListAction("Licencia.crearLista")
     @DeleteSelectedAction("")
@@ -370,8 +376,7 @@ public class Personal extends Identifiable {
     @OrderBy("fechaInicio desc")
     @org.hibernate.annotations.Where(clause = "YEAR(fechaInicio) = YEAR(CURDATE())")
     private Collection<Licencia> licencias;
-  
-    
+
     @NoCreate
     @SimpleList
     public Collection<LicenciaResumenPorTipo> getLicenciasResumenAnual() {
@@ -379,7 +384,8 @@ public class Personal extends Identifiable {
         Map<TipoLicenciaAR, Licencia> ultimaLicenciaPorTipo = new TreeMap<>();
         int anioActual = LocalDate.now().getYear();
 
-        if (getLicencias() == null || getLicencias().isEmpty()) return Collections.emptyList();
+        if (getLicencias() == null || getLicencias().isEmpty())
+            return Collections.emptyList();
 
         // 1. Recorrer licencias del año actual
         for (Licencia l : getLicencias()) {
@@ -390,7 +396,8 @@ public class Personal extends Identifiable {
 
                 // Mantener la última licencia (por fecha)
                 ultimaLicenciaPorTipo.compute(tipo, (k, licenciaAnterior) -> {
-                    if (licenciaAnterior == null) return l;
+                    if (licenciaAnterior == null)
+                        return l;
                     return l.getFechaInicio().isAfter(licenciaAnterior.getFechaInicio()) ? l : licenciaAnterior;
                 });
             }
@@ -401,40 +408,35 @@ public class Personal extends Identifiable {
         for (TipoLicenciaAR tipo : totalDias.keySet()) {
             int dias = totalDias.getOrDefault(tipo, 0);
             int restantes = ultimaLicenciaPorTipo.get(tipo) != null
-                ? ultimaLicenciaPorTipo.get(tipo).getDiasRestantes()
-                : 0;
+                    ? ultimaLicenciaPorTipo.get(tipo).getDiasRestantes()
+                    : 0;
 
             resultado.add(new LicenciaResumenPorTipo(tipo, dias, restantes));
         }
 
         return resultado;
     }
-    
-    
-    
-    
-    
+
     @Money
     private BigDecimal valorHora;
 
-    @Digits(integer=3, fraction=1)
+    @Digits(integer = 3, fraction = 1)
     @Min(0)
     @Max(100)
     private BigDecimal porcentajeHoraExtra;
 
-    
     @Label
     @Depends("valorHora, porcentajeHoraExtra")
     public BigDecimal getValorHoraExtra() {
         if (valorHora != null && porcentajeHoraExtra != null) {
             BigDecimal adicional = valorHora.multiply(porcentajeHoraExtra)
-                                            .divide(BigDecimal.valueOf(100));
+                    .divide(BigDecimal.valueOf(100));
             return valorHora.add(adicional);
         }
         return BigDecimal.ZERO;
     }
 
-    @Digits(integer=3, fraction=1)
+    @Digits(integer = 3, fraction = 1)
     @Min(0)
     @Max(100)
     private BigDecimal porcentajeHoraEspecial;
@@ -444,53 +446,74 @@ public class Personal extends Identifiable {
     public BigDecimal getValorHoraEspecial() {
         if (valorHora != null && porcentajeHoraEspecial != null) {
             BigDecimal adicional = valorHora.multiply(porcentajeHoraEspecial)
-                                            .divide(BigDecimal.valueOf(100));
+                    .divide(BigDecimal.valueOf(100));
             return valorHora.add(adicional);
         }
         return BigDecimal.ZERO;
     }
 
-    
+    /**
+     * Calcula el valor de la hora aplicando la bonificación del turno si existe.
+     * 
+     * @param turno Turno para el cual calcular el valor hora
+     * @return Valor hora base + bonificación del turno
+     */
+    @Transient
+    public BigDecimal getValorHoraTurno(TurnosHorarios turno) {
+        if (valorHora == null) {
+            return BigDecimal.ZERO;
+        }
+
+        if (turno == null || turno.getPorcentajeBonificacion() == null ||
+                turno.getPorcentajeBonificacion().compareTo(BigDecimal.ZERO) == 0) {
+            return valorHora;
+        }
+
+        // Mismo formato que getValorHoraExtra: dividir por 100
+        BigDecimal bonificacion = valorHora.multiply(turno.getPorcentajeBonificacion())
+                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        return valorHora.add(bonificacion);
+    }
+
     @Discussion
-    @Column(length=32)
     private String nota;
-    
-    
+
+    @TextArea
+    private String notasPersonale;
+
     @ElementCollection
     @ListProperties("turno.codigo, turno.detalleJornadaHoras, fechaInicio, fechaFin")
     @OrderBy("fechaInicio")
     private List<JornadaAsignada> jornadasAsignadas = new ArrayList<>();
-    
-
 
     @Transient
     public LocalDate desde;
-    
+
     @Depends("inicioActividades, desde")
     public LocalDate getDesde() {
         return LocalDate.now().withDayOfMonth(1);
     }
-    
+
     @Transient
     public LocalDate hasta;
-    
+
     @Depends("hasta")
     public LocalDate getHasta() {
         return LocalDate.now();
     }
-    
-    
-    //=============================================================================================  
- 
+
+    // =============================================================================================
+
     public TurnosHorarios getTurnoParaFecha(LocalDate fecha) {
-        if (jornadasAsignadas == null || jornadasAsignadas.isEmpty()) return null;
+        if (jornadasAsignadas == null || jornadasAsignadas.isEmpty())
+            return null;
 
         // 1. Priorizar jornadas puntuales (con fecha fin explícita y válida)
         Optional<JornadaAsignada> jornadaFija = jornadasAsignadas.stream()
-            .filter(j -> j.getFechaFin() != null &&
-                         !fecha.isBefore(j.getFechaInicio()) &&
-                         !fecha.isAfter(j.getFechaFin()))
-            .findFirst();
+                .filter(j -> j.getFechaFin() != null &&
+                        !fecha.isBefore(j.getFechaInicio()) &&
+                        !fecha.isAfter(j.getFechaFin()))
+                .findFirst();
 
         if (jornadaFija.isPresent()) {
             return jornadaFija.get().getTurno();
@@ -498,13 +521,15 @@ public class Personal extends Identifiable {
 
         // 2. Buscar rotaciones activas (fechaFin == null o posterior)
         List<JornadaAsignada> rotativas = jornadasAsignadas.stream()
-            .filter(j -> (j.getFechaFin() == null || !fecha.isAfter(j.getFechaFin())) &&
-                         !fecha.isBefore(j.getFechaInicio()))
-            .sorted(Comparator.comparing(JornadaAsignada::getFechaInicio))
-            .collect(Collectors.toList());
+                .filter(j -> (j.getFechaFin() == null || !fecha.isAfter(j.getFechaFin())) &&
+                        !fecha.isBefore(j.getFechaInicio()))
+                .sorted(Comparator.comparing(JornadaAsignada::getFechaInicio))
+                .collect(Collectors.toList());
 
-        if (rotativas.isEmpty()) return null;
-        if (rotativas.size() == 1) return rotativas.get(0).getTurno();
+        if (rotativas.isEmpty())
+            return null;
+        if (rotativas.size() == 1)
+            return rotativas.get(0).getTurno();
 
         // 3. Aplicar rotación semanal
         LocalDate lunesBase = rotativas.get(0).getFechaInicio().with(DayOfWeek.MONDAY);
@@ -515,24 +540,26 @@ public class Personal extends Identifiable {
 
         return rotativas.get(indice).getTurno();
     }
-    
-    //=============================================================================================
-    
+
+    // =============================================================================================
+
     @DisplaySize(40)
     @MiLabel(medida = "grande", negrita = true, recuadro = true, icon = "clock")
     public String getTurnoActivoHoy() {
         return getTurnoDescripcionParaFecha(LocalDate.now());
     };
-    
+
     /**
      * Devuelve la descripción del turno asignado para una fecha dada.
      */
     @Transient
     public String getTurnoDescripcionParaFecha(LocalDate fecha) {
-        if (fecha == null) return "Fecha no especificada";
-        
+        if (fecha == null)
+            return "Fecha no especificada";
+
         TurnosHorarios turno = getTurnoParaFecha(fecha);
-        if (turno == null) return "Sin turno asignado";
+        if (turno == null)
+            return "Sin turno asignado";
 
         DayOfWeek dia = fecha.getDayOfWeek();
 
@@ -548,7 +575,7 @@ public class Personal extends Identifiable {
         }
 
         String horario = String.format("%02d:%02d a %02d:%02d",
-            entrada.getHour(), entrada.getMinute(), salida.getHour(), salida.getMinute());
+                entrada.getHour(), entrada.getMinute(), salida.getHour(), salida.getMinute());
 
         String diaNombre = dia.getDisplayName(java.time.format.TextStyle.SHORT, new Locale("es", "ES")).toUpperCase();
         int minutos = turno.getHorasParaDia(dia);
@@ -556,78 +583,98 @@ public class Personal extends Identifiable {
 
         return turno.getCodigo() + " / " + diaNombre + " de " + horario + " / " + horasTurno;
     }
-    
-    
-	//=============================================================================================
 
-    @Chart(
-    		  type = ChartType.BAR,
-    		  labelProperties = "mesEtiqueta",
-    		  dataProperties  = "completas, incompletas, licencias, ausentes, feriadosTrabajados"
-    		)
-    		@ListProperties("mesEtiqueta, completas, incompletas, licencias, ausentes, feriadosTrabajados")
-    	
-    		@Transient @ReadOnly
-    		public Collection<ResumenAnualGrafico> getLicenciasGraficoAnual() {
-    		    final int anio = LocalDate.now().getYear();
-    		    final LocalDate desde = LocalDate.of(anio, 1, 1);
-    		    final LocalDate hasta = LocalDate.of(anio, 12, 31);
+    // =============================================================================================
 
-    		    EntityManager em = XPersistence.getManager();
-    		    List<AuditoriaRegistros> registros = em.createQuery(
-    		        "select a from AuditoriaRegistros a " +
-    		        "where a.empleado = :emp and a.fecha between :d and :h",
-    		        AuditoriaRegistros.class)
-    		        .setParameter("emp", this)
-    		        .setParameter("d", desde)   // usa java.sql.Date.valueOf(...) si tu campo es Date
-    		        .setParameter("h", hasta)
-    		        .getResultList();
+    @Chart(type = ChartType.BAR, labelProperties = "mesEtiqueta", dataProperties = "completas, incompletas, licencias, ausentes, feriadosTrabajados")
+    @ListProperties("mesEtiqueta, completas, incompletas, licencias, ausentes, feriadosTrabajados")
 
-    		    // Inicializar meses
-    		    Locale esAR = new Locale("es","AR");
-    		    Map<YearMonth, ResumenAnualGrafico> porMes = new LinkedHashMap<>();
-    		    for (int m = 1; m <= 12; m++) {
-    		        YearMonth ym = YearMonth.of(anio, m);
-    		        String et = ym.getMonth().getDisplayName(TextStyle.SHORT, esAR);
-    		        et = et.substring(0,1).toUpperCase(esAR) + et.substring(1);
-    		        porMes.put(ym, new ResumenAnualGrafico(et, 0,0,0,0,0));
-    		    }
+    @Transient
+    @ReadOnly
+    public Collection<ResumenAnualGrafico> getLicenciasGraficoAnual() {
+        final int anio = LocalDate.now().getYear();
+        final LocalDate desde = LocalDate.of(anio, 1, 1);
+        final LocalDate hasta = LocalDate.of(anio, 12, 31);
 
-    		    for (AuditoriaRegistros a : registros) {
-    		        if (a.getFecha() == null || a.getEvaluacion() == null) continue;
-    		        YearMonth ym = YearMonth.from(a.getFecha()); // adapta si usás java.util.Date
-    		        ResumenAnualGrafico r = porMes.get(ym);
-    		        if (r == null) continue;
+        EntityManager em = XPersistence.getManager();
+        List<AuditoriaRegistros> registros = em.createQuery(
+                "select a from AuditoriaRegistros a " +
+                        "where a.empleado = :emp and a.fecha between :d and :h",
+                AuditoriaRegistros.class)
+                .setParameter("emp", this)
+                .setParameter("d", desde) // usa java.sql.Date.valueOf(...) si tu campo es Date
+                .setParameter("h", hasta)
+                .getResultList();
 
-    		        switch (a.getEvaluacion()) {
-    		            case COMPLETA:            r.setCompletas(r.getCompletas()+1);                 break;
-    		            case INCOMPLETA:          r.setIncompletas(r.getIncompletas()+1);             break;
-    		            case LICENCIA:            r.setLicencias(r.getLicencias()+1);                 break;
-    		            case AUSENTE:             r.setAusentes(r.getAusentes()+1);                   break;
-    		            case FERIADO_TRABAJADO:   r.setFeriadosTrabajados(r.getFeriadosTrabajados()+1); break;
-    		            case FERIADO:             /* NO contar */                                      break;
-    		            default: break;
-    		        }
-    		    }
-    		    return porMes.values();
-    		}
+        // Inicializar meses
+        Locale esAR = new Locale("es", "AR");
+        Map<YearMonth, ResumenAnualGrafico> porMes = new LinkedHashMap<>();
+        for (int m = 1; m <= 12; m++) {
+            YearMonth ym = YearMonth.of(anio, m);
+            String et = ym.getMonth().getDisplayName(TextStyle.SHORT, esAR);
+            et = et.substring(0, 1).toUpperCase(esAR) + et.substring(1);
+            porMes.put(ym, new ResumenAnualGrafico(et, 0, 0, 0, 0, 0));
+        }
 
-    //===============================================================================================
-    
-   
+        for (AuditoriaRegistros a : registros) {
+            if (a.getFecha() == null || a.getEvaluacion() == null)
+                continue;
+            YearMonth ym = YearMonth.from(a.getFecha()); // adapta si usás java.util.Date
+            ResumenAnualGrafico r = porMes.get(ym);
+            if (r == null)
+                continue;
 
-    @PrePersist @PreUpdate
+            switch (a.getEvaluacion()) {
+                case COMPLETA:
+                    r.setCompletas(r.getCompletas() + 1);
+                    break;
+                case INCOMPLETA:
+                    r.setIncompletas(r.getIncompletas() + 1);
+                    break;
+                case LICENCIA:
+                    r.setLicencias(r.getLicencias() + 1);
+                    break;
+                case AUSENTE:
+                    r.setAusentes(r.getAusentes() + 1);
+                    break;
+                case FERIADO_TRABAJADO:
+                    r.setFeriadosTrabajados(r.getFeriadosTrabajados() + 1);
+                    break;
+                case FERIADO:
+                    /* NO contar */ break;
+                default:
+                    break;
+            }
+        }
+        return porMes.values();
+    }
+
+    // ===============================================================================================
+
+    @PrePersist
+    @PreUpdate
     private void preGuardar() {
-    	
+
         setUsuario(getCreaUsuario());
         setNombreCompleto(getApellidoNombre());
+        if (Boolean.FALSE.equals(activo)) {
+            if (userId != null && !userId.startsWith("x-")) {
+                userId = "x-" + userId;
+            }
+        } else {
+            // si userId empieza con "x-", y suponés que pertenecía a ese usuario,
+            // podés remover el prefijo:
+            if (userId != null && userId.startsWith("x-")) {
+                userId = userId.substring(2);
+            }
+        }
         try {
             AsignarCoordenadasService.asignarCoordenadasSiFaltan(this.direccion);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    
+
     @PreRemove
     private void borrarDiscusion() {
         DiscussionComment.removeForDiscussion(nota);
