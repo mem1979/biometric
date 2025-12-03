@@ -51,12 +51,12 @@ import lombok.*;
 
         "InformacionLaboral { " +
         "credenciales[" +
-        "userId; creaUsuario;" +
+        "userId, activo;" +
+        "creaUsuario;" +
         "contrasena; deviceId;" +
         "], " +
 
         "funcion[" +
-        "activo;" +
         "sucursal;" +
         "inicioActividades, antiguedadLaboral;"
         + " puesto;" +
@@ -77,6 +77,18 @@ import lombok.*;
 
         "informes { " +
         "desde, hasta;" +
+        "IndicadoresClave {" +
+        "  totalDiasTrabajados,  totalHorasTrabajadasInformes, tasaAsistencia;" +
+        "  cantidadLlegadasTardeInformes, diasLicenciaUtilizados;" +
+        "};" +
+        "Graficos {" +
+        "  evolucionMensualAsistencia;" +
+        "  distribucionTiposJornada, horasPorMes;" +
+        "};" +
+        "Detalles {" +
+        "  topDiasHorasExtras;" +
+        "  registroLlegadasTarde;" +
+        "};" +
         "}; " +
 
         "INCIDENCIAS_Y_OBSERVACIONES { " +
@@ -136,7 +148,7 @@ public class Personal extends Identifiable {
     @DefaultValueCalculator(CalculadorPassword.class)
     private String contrasena;
 
-    
+    @OnChange(PersonalOnChangePausaAction.class)
     @DefaultValueCalculator(TrueCalculator.class)
     @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean aceptaPausa;
@@ -488,19 +500,27 @@ public class Personal extends Identifiable {
     private List<JornadaAsignada> jornadasAsignadas = new ArrayList<>();
 
     @Transient
+    @OnChange(ActualizarDashboardAction.class)
     public LocalDate desde;
 
     @Depends("inicioActividades, desde")
     public LocalDate getDesde() {
-        return LocalDate.now().withDayOfMonth(1);
+        if (desde == null) {
+            return LocalDate.now().withDayOfMonth(1);
+        }
+        return desde;
     }
 
     @Transient
+    @OnChange(ActualizarDashboardAction.class)
     public LocalDate hasta;
 
     @Depends("hasta")
     public LocalDate getHasta() {
-        return LocalDate.now();
+        if (hasta == null) {
+            return LocalDate.now();
+        }
+        return hasta;
     }
 
     // =============================================================================================
@@ -593,6 +613,9 @@ public class Personal extends Identifiable {
     @Transient
     @ReadOnly
     public Collection<ResumenAnualGrafico> getLicenciasGraficoAnual() {
+        if (getId() == null)
+            return Collections.emptyList(); // Entidad no persistida
+
         final int anio = LocalDate.now().getYear();
         final LocalDate desde = LocalDate.of(anio, 1, 1);
         final LocalDate hasta = LocalDate.of(anio, 12, 31);
@@ -651,6 +674,546 @@ public class Personal extends Identifiable {
     }
 
     // ===============================================================================================
+    // DASHBOARD DE INFORMES - MÉTRICAS VISUALES
+    // ===============================================================================================
+
+    // ========== MÉTRICAS @LargeDisplay ==========
+
+    /**
+     * Cuenta el total de días trabajados (evaluación COMPLETA) en el rango de
+     * fechas.
+     */
+    @Depends("desde, hasta")
+    @LargeDisplay(icon = "calendar-check")
+    public int getTotalDiasTrabajados() {
+        if (getId() == null)
+            return 0; // Entidad no persistida
+
+        LocalDate fechaDesde = getDesde();
+        LocalDate fechaHasta = getHasta();
+
+        if (fechaDesde == null || fechaHasta == null)
+            return 0;
+
+        Long count = (Long) XPersistence.getManager()
+                .createQuery("SELECT COUNT(a) FROM AuditoriaRegistros a " +
+                        "WHERE a.empleado = :emp " +
+                        "AND a.fecha BETWEEN :desde AND :hasta " +
+                        "AND a.evaluacion = :evaluacion")
+                .setParameter("emp", this)
+                .setParameter("desde", fechaDesde)
+                .setParameter("hasta", fechaHasta)
+                .setParameter("evaluacion", EvaluacionJornada.COMPLETA)
+                .getSingleResult();
+
+        return count != null ? count.intValue() : 0;
+    }
+
+    /**
+     * Calcula la tasa de asistencia como porcentaje.
+     * Fórmula: (Días trabajados / Días laborales esperados) * 100
+     */
+    @Depends("desde, hasta")
+    @LargeDisplay(icon = "percent")
+    public String getTasaAsistencia() {
+        if (getId() == null)
+            return "0%"; // Entidad no persistida
+
+        LocalDate fechaDesde = getDesde();
+        LocalDate fechaHasta = getHasta();
+
+        if (fechaDesde == null || fechaHasta == null)
+            return "0%";
+
+        // Días trabajados (COMPLETA)
+        int diasTrabajados = getTotalDiasTrabajados();
+
+        // Días laborales esperados (excluyendo licencias y feriados)
+        Long diasEsperados = (Long) XPersistence.getManager()
+                .createQuery("SELECT COUNT(a) FROM AuditoriaRegistros a " +
+                        "WHERE a.empleado = :emp " +
+                        "AND a.fecha BETWEEN :desde AND :hasta " +
+                        "AND a.evaluacion NOT IN (:feriado, :noLaboral, :sinTurno)")
+                .setParameter("emp", this)
+                .setParameter("desde", fechaDesde)
+                .setParameter("hasta", fechaHasta)
+                .setParameter("feriado", EvaluacionJornada.FERIADO)
+                .setParameter("noLaboral", EvaluacionJornada.DIA_NO_LABORAL)
+                .setParameter("sinTurno", EvaluacionJornada.SIN_TURNO_ASIGNADO)
+                .getSingleResult();
+
+        if (diasEsperados == null || diasEsperados == 0)
+            return "0%";
+
+        double tasa = (diasTrabajados * 100.0) / diasEsperados;
+        return String.format("%.1f%%", tasa);
+    }
+
+    /**
+     * Suma total de horas trabajadas (normales + extras + especiales) en el rango.
+     */
+    @Depends("desde, hasta")
+    @LargeDisplay(icon = "clock-outline")
+    public String getTotalHorasTrabajadasInformes() {
+        if (getId() == null)
+            return "0:00"; // Entidad no persistida
+
+        LocalDate fechaDesde = getDesde();
+        LocalDate fechaHasta = getHasta();
+
+        if (fechaDesde == null || fechaHasta == null)
+            return "0:00";
+
+        List<AuditoriaRegistros> registros = XPersistence.getManager()
+                .createQuery("SELECT a FROM AuditoriaRegistros a " +
+                        "WHERE a.empleado = :emp " +
+                        "AND a.fecha BETWEEN :desde AND :hasta", AuditoriaRegistros.class)
+                .setParameter("emp", this)
+                .setParameter("desde", fechaDesde)
+                .setParameter("hasta", fechaHasta)
+                .getResultList();
+
+        int totalMinutos = 0;
+        for (AuditoriaRegistros a : registros) {
+            // Sumar minutos normales
+            String horasNormales = a.getHorasTrabajadasTurno();
+            if (horasNormales != null && !horasNormales.equals("00:00")) {
+                totalMinutos += convertirHHMMaMinutos(horasNormales);
+            }
+
+            // Sumar minutos extras
+            String horasExtras = a.getHorasExtras();
+            if (horasExtras != null && !horasExtras.equals("00:00")) {
+                totalMinutos += convertirHHMMaMinutos(horasExtras);
+            }
+
+            // Sumar minutos especiales
+            String horasEspeciales = a.getHorasEspeciales();
+            if (horasEspeciales != null && !horasEspeciales.equals("00:00")) {
+                totalMinutos += convertirHHMMaMinutos(horasEspeciales);
+            }
+        }
+
+        int horas = totalMinutos / 60;
+        int minutos = totalMinutos % 60;
+        return String.format("%d:%02d", horas, minutos);
+    }
+
+    /**
+     * Cuenta la cantidad de llegadas tarde en el rango de fechas.
+     */
+    @Depends("desde, hasta")
+    @LargeDisplay(icon = "clock-alert")
+    public int getCantidadLlegadasTardeInformes() {
+        if (getId() == null)
+            return 0; // Entidad no persistida
+
+        LocalDate fechaDesde = getDesde();
+        LocalDate fechaHasta = getHasta();
+
+        if (fechaDesde == null || fechaHasta == null)
+            return 0;
+
+        List<AuditoriaRegistros> registros = XPersistence.getManager()
+                .createQuery("SELECT a FROM AuditoriaRegistros a " +
+                        "WHERE a.empleado = :emp " +
+                        "AND a.fecha BETWEEN :desde AND :hasta " +
+                        "AND a.evaluacion IN (:completa, :incompleta)", AuditoriaRegistros.class)
+                .setParameter("emp", this)
+                .setParameter("desde", fechaDesde)
+                .setParameter("hasta", fechaHasta)
+                .setParameter("completa", EvaluacionJornada.COMPLETA)
+                .setParameter("incompleta", EvaluacionJornada.INCOMPLETA)
+                .getResultList();
+
+        int llegadasTarde = 0;
+        for (AuditoriaRegistros a : registros) {
+            if (a.getRegistros() != null && !a.getRegistros().isEmpty() &&
+                    a.getHoraEsperadaEntrada() != null) {
+
+                // Buscar primera entrada
+                Optional<LocalTime> primeraEntrada = a.getRegistros().stream()
+                        .filter(r -> r.getTipoMovimiento() == TipoMovimiento.ENTRADA)
+                        .map(ColeccionRegistros::getHora)
+                        .min(LocalTime::compareTo);
+
+                if (primeraEntrada.isPresent()) {
+                    LocalTime horaEsperada = a.getHoraEsperadaEntrada();
+                    LocalTime horaReal = primeraEntrada.get();
+                    int tolerancia = a.getToleranciaMinutos();
+
+                    // Calcular minutos de diferencia
+                    int minutosRetraso = (int) ChronoUnit.MINUTES.between(horaEsperada, horaReal);
+
+                    if (minutosRetraso > tolerancia) {
+                        llegadasTarde++;
+                    }
+                }
+            }
+        }
+
+        return llegadasTarde;
+    }
+
+    /**
+     * Cuenta los días de licencia utilizados en el rango.
+     */
+    @Depends("desde, hasta")
+    @LargeDisplay(icon = "calendar-remove")
+    public int getDiasLicenciaUtilizados() {
+        if (getId() == null)
+            return 0; // Entidad no persistida
+
+        LocalDate fechaDesde = getDesde();
+        LocalDate fechaHasta = getHasta();
+
+        if (fechaDesde == null || fechaHasta == null)
+            return 0;
+
+        Long count = (Long) XPersistence.getManager()
+                .createQuery("SELECT COUNT(a) FROM AuditoriaRegistros a " +
+                        "WHERE a.empleado = :emp " +
+                        "AND a.fecha BETWEEN :desde AND :hasta " +
+                        "AND a.evaluacion = :evaluacion")
+                .setParameter("emp", this)
+                .setParameter("desde", fechaDesde)
+                .setParameter("hasta", fechaHasta)
+                .setParameter("evaluacion", EvaluacionJornada.LICENCIA)
+                .getSingleResult();
+
+        return count != null ? count.intValue() : 0;
+    }
+
+    // ========== GRÁFICOS @Chart ==========
+
+    /**
+     * Evolución mensual de asistencia (COMPLETA, LICENCIA, AUSENTE).
+     */
+    @Chart(type = ChartType.BAR, labelProperties = "mes", dataProperties = "diasTrabajados, diasLicencia, diasAusente")
+    @ListProperties("mes, diasTrabajados, diasLicencia, diasAusente")
+    public Collection<ResumenMensualAsistencia> getEvolucionMensualAsistencia() {
+        if (getId() == null)
+            return Collections.emptyList(); // Entidad no persistida
+
+        LocalDate fechaDesde = getDesde();
+        LocalDate fechaHasta = getHasta();
+
+        if (fechaDesde == null || fechaHasta == null)
+            return Collections.emptyList();
+
+        List<AuditoriaRegistros> registros = XPersistence.getManager()
+                .createQuery("SELECT a FROM AuditoriaRegistros a " +
+                        "WHERE a.empleado = :emp " +
+                        "AND a.fecha BETWEEN :desde AND :hasta " +
+                        "ORDER BY a.fecha ASC", AuditoriaRegistros.class)
+                .setParameter("emp", this)
+                .setParameter("desde", fechaDesde)
+                .setParameter("hasta", fechaHasta)
+                .getResultList();
+
+        // Agrupar por mes
+        Map<YearMonth, ResumenMensualAsistencia> porMes = new LinkedHashMap<>();
+        Locale esAR = new Locale("es", "AR");
+
+        for (AuditoriaRegistros a : registros) {
+            if (a.getFecha() == null || a.getEvaluacion() == null)
+                continue;
+
+            YearMonth ym = YearMonth.from(a.getFecha());
+
+            if (!porMes.containsKey(ym)) {
+                String etiqueta = ym.getMonth().getDisplayName(TextStyle.SHORT, esAR);
+                etiqueta = etiqueta.substring(0, 1).toUpperCase(esAR) + etiqueta.substring(1) + " " + ym.getYear();
+                porMes.put(ym, new ResumenMensualAsistencia(etiqueta, 0, 0, 0));
+            }
+
+            ResumenMensualAsistencia resumen = porMes.get(ym);
+
+            switch (a.getEvaluacion()) {
+                case COMPLETA:
+                    resumen.setDiasTrabajados(resumen.getDiasTrabajados() + 1);
+                    break;
+                case LICENCIA:
+                    resumen.setDiasLicencia(resumen.getDiasLicencia() + 1);
+                    break;
+                case AUSENTE:
+                    resumen.setDiasAusente(resumen.getDiasAusente() + 1);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return porMes.values();
+    }
+
+    /**
+     * Distribución de tipos de jornada (gráfico circular).
+     */
+    @Chart(type = ChartType.PIE)
+    @ListProperties("tipoJornada, cantidad")
+    public Collection<DistribucionJornada> getDistribucionTiposJornada() {
+        if (getId() == null)
+            return Collections.emptyList(); // Entidad no persistida
+
+        LocalDate fechaDesde = getDesde();
+        LocalDate fechaHasta = getHasta();
+
+        if (fechaDesde == null || fechaHasta == null)
+            return Collections.emptyList();
+
+        List<AuditoriaRegistros> registros = XPersistence.getManager()
+                .createQuery("SELECT a FROM AuditoriaRegistros a " +
+                        "WHERE a.empleado = :emp " +
+                        "AND a.fecha BETWEEN :desde AND :hasta", AuditoriaRegistros.class)
+                .setParameter("emp", this)
+                .setParameter("desde", fechaDesde)
+                .setParameter("hasta", fechaHasta)
+                .getResultList();
+
+        // Contar por tipo de evaluación
+        Map<String, Integer> conteo = new HashMap<>();
+
+        for (AuditoriaRegistros a : registros) {
+            if (a.getEvaluacion() == null)
+                continue;
+
+            String tipo = a.getEvaluacion().toString();
+            conteo.put(tipo, conteo.getOrDefault(tipo, 0) + 1);
+        }
+
+        // Convertir a lista de DistribucionJornada
+        List<DistribucionJornada> resultado = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : conteo.entrySet()) {
+            resultado.add(new DistribucionJornada(entry.getKey(), entry.getValue()));
+        }
+
+        // Ordenar por cantidad descendente
+        resultado.sort((a, b) -> Integer.compare(b.getCantidad(), a.getCantidad()));
+
+        return resultado;
+    }
+
+    /**
+     * Horas trabajadas por mes (normales, extras, especiales).
+     */
+    @Chart(type = ChartType.BAR, labelProperties = "mes", dataProperties = "horasNormales, horasExtras, horasEspeciales")
+    @ListProperties("mes, horasNormales, horasExtras, horasEspeciales")
+    public Collection<ResumenHorasMensual> getHorasPorMes() {
+        if (getId() == null)
+            return Collections.emptyList(); // Entidad no persistida
+
+        LocalDate fechaDesde = getDesde();
+        LocalDate fechaHasta = getHasta();
+
+        if (fechaDesde == null || fechaHasta == null)
+            return Collections.emptyList();
+
+        List<AuditoriaRegistros> registros = XPersistence.getManager()
+                .createQuery("SELECT a FROM AuditoriaRegistros a " +
+                        "WHERE a.empleado = :emp " +
+                        "AND a.fecha BETWEEN :desde AND :hasta " +
+                        "ORDER BY a.fecha ASC", AuditoriaRegistros.class)
+                .setParameter("emp", this)
+                .setParameter("desde", fechaDesde)
+                .setParameter("hasta", fechaHasta)
+                .getResultList();
+
+        // Agrupar por mes
+        Map<YearMonth, ResumenHorasMensual> porMes = new LinkedHashMap<>();
+        Locale esAR = new Locale("es", "AR");
+
+        for (AuditoriaRegistros a : registros) {
+            if (a.getFecha() == null)
+                continue;
+
+            YearMonth ym = YearMonth.from(a.getFecha());
+
+            if (!porMes.containsKey(ym)) {
+                String etiqueta = ym.getMonth().getDisplayName(TextStyle.SHORT, esAR);
+                etiqueta = etiqueta.substring(0, 1).toUpperCase(esAR) + etiqueta.substring(1) + " " + ym.getYear();
+                porMes.put(ym, new ResumenHorasMensual(etiqueta, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO));
+            }
+
+            ResumenHorasMensual resumen = porMes.get(ym);
+
+            // Sumar horas normales
+            String horasNormales = a.getHorasTrabajadasTurno();
+            if (horasNormales != null && !horasNormales.equals("00:00")) {
+                BigDecimal horas = convertirHHMMaBigDecimal(horasNormales);
+                resumen.setHorasNormales(resumen.getHorasNormales().add(horas));
+            }
+
+            // Sumar horas extras
+            String horasExtras = a.getHorasExtras();
+            if (horasExtras != null && !horasExtras.equals("00:00")) {
+                BigDecimal horas = convertirHHMMaBigDecimal(horasExtras);
+                resumen.setHorasExtras(resumen.getHorasExtras().add(horas));
+            }
+
+            // Sumar horas especiales
+            String horasEspeciales = a.getHorasEspeciales();
+            if (horasEspeciales != null && !horasEspeciales.equals("00:00")) {
+                BigDecimal horas = convertirHHMMaBigDecimal(horasEspeciales);
+                resumen.setHorasEspeciales(resumen.getHorasEspeciales().add(horas));
+            }
+        }
+
+        return porMes.values();
+    }
+
+    // ========== LISTAS @SimpleList ==========
+
+    /**
+     * Top 10 días con más horas extras.
+     */
+    @SimpleList
+    @ListProperties("fecha, diaSemana, turnoNombre, horasExtras, montoExtras")
+    public Collection<DetalleHorasExtras> getTopDiasHorasExtras() {
+        if (getId() == null)
+            return Collections.emptyList(); // Entidad no persistida
+
+        LocalDate fechaDesde = getDesde();
+        LocalDate fechaHasta = getHasta();
+
+        if (fechaDesde == null || fechaHasta == null)
+            return Collections.emptyList();
+
+        List<AuditoriaRegistros> registros = XPersistence.getManager()
+                .createQuery("SELECT a FROM AuditoriaRegistros a " +
+                        "WHERE a.empleado = :emp " +
+                        "AND a.fecha BETWEEN :desde AND :hasta " +
+                        "ORDER BY a.minutosExtras DESC", AuditoriaRegistros.class)
+                .setParameter("emp", this)
+                .setParameter("desde", fechaDesde)
+                .setParameter("hasta", fechaHasta)
+                .setMaxResults(10)
+                .getResultList();
+
+        List<DetalleHorasExtras> resultado = new ArrayList<>();
+
+        for (AuditoriaRegistros a : registros) {
+            if (a.getMinutosExtras() > 0) {
+                String diaSemana = a.getDiaSemana();
+                String turno = a.getNombreTurno() != null ? a.getNombreTurno().toString() : "N/D";
+                String horasExtras = a.getHorasExtras();
+                BigDecimal monto = a.getTotalHorasExtras();
+
+                resultado.add(new DetalleHorasExtras(
+                        a.getFecha(),
+                        diaSemana,
+                        turno,
+                        horasExtras,
+                        monto));
+            }
+        }
+
+        return resultado;
+    }
+
+    /**
+     * Registro de todas las llegadas tarde en el período.
+     */
+    @SimpleList
+    @ListProperties("fecha, horaEsperada, horaReal, minutosRetraso, justificado")
+    public Collection<DetalleLlegadaTarde> getRegistroLlegadasTarde() {
+        if (getId() == null)
+            return Collections.emptyList(); // Entidad no persistida
+
+        LocalDate fechaDesde = getDesde();
+        LocalDate fechaHasta = getHasta();
+
+        if (fechaDesde == null || fechaHasta == null)
+            return Collections.emptyList();
+
+        List<AuditoriaRegistros> registros = XPersistence.getManager()
+                .createQuery("SELECT a FROM AuditoriaRegistros a " +
+                        "WHERE a.empleado = :emp " +
+                        "AND a.fecha BETWEEN :desde AND :hasta " +
+                        "AND a.evaluacion IN (:completa, :incompleta) " +
+                        "ORDER BY a.fecha DESC", AuditoriaRegistros.class)
+                .setParameter("emp", this)
+                .setParameter("desde", fechaDesde)
+                .setParameter("hasta", fechaHasta)
+                .setParameter("completa", EvaluacionJornada.COMPLETA)
+                .setParameter("incompleta", EvaluacionJornada.INCOMPLETA)
+                .getResultList();
+
+        List<DetalleLlegadaTarde> resultado = new ArrayList<>();
+
+        for (AuditoriaRegistros a : registros) {
+            if (a.getRegistros() != null && !a.getRegistros().isEmpty() &&
+                    a.getHoraEsperadaEntrada() != null) {
+
+                // Buscar primera entrada
+                Optional<LocalTime> primeraEntrada = a.getRegistros().stream()
+                        .filter(r -> r.getTipoMovimiento() == TipoMovimiento.ENTRADA)
+                        .map(ColeccionRegistros::getHora)
+                        .min(LocalTime::compareTo);
+
+                if (primeraEntrada.isPresent()) {
+                    LocalTime horaEsperada = a.getHoraEsperadaEntrada();
+                    LocalTime horaReal = primeraEntrada.get();
+                    int tolerancia = a.getToleranciaMinutos();
+
+                    // Calcular minutos de retraso
+                    int minutosRetraso = (int) ChronoUnit.MINUTES.between(horaEsperada, horaReal);
+
+                    if (minutosRetraso > tolerancia) {
+                        resultado.add(new DetalleLlegadaTarde(
+                                a.getFecha(),
+                                horaEsperada,
+                                horaReal,
+                                minutosRetraso,
+                                a.isJustificado()));
+                    }
+                }
+            }
+        }
+
+        return resultado;
+    }
+
+    // ========== MÉTODOS AUXILIARES ==========
+
+    /**
+     * Convierte formato "HH:MM" a minutos totales.
+     */
+    private int convertirHHMMaMinutos(String hhMM) {
+        if (hhMM == null || hhMM.isEmpty())
+            return 0;
+        try {
+            String[] partes = hhMM.split(":");
+            int horas = Integer.parseInt(partes[0]);
+            int minutos = Integer.parseInt(partes[1]);
+            return (horas * 60) + minutos;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Convierte formato "HH:MM" a BigDecimal de horas.
+     */
+    private BigDecimal convertirHHMMaBigDecimal(String hhMM) {
+        if (hhMM == null || hhMM.isEmpty())
+            return BigDecimal.ZERO;
+        try {
+            String[] partes = hhMM.split(":");
+            int horas = Integer.parseInt(partes[0]);
+            int minutos = Integer.parseInt(partes[1]);
+
+            BigDecimal horasDecimal = BigDecimal.valueOf(horas);
+            BigDecimal minutosDecimal = BigDecimal.valueOf(minutos).divide(BigDecimal.valueOf(60), 2,
+                    RoundingMode.HALF_UP);
+
+            return horasDecimal.add(minutosDecimal);
+        } catch (Exception e) {
+            return BigDecimal.ZERO;
+        }
+    }
+
+    // ===============================================================================================
 
     @PrePersist
     @PreUpdate
@@ -680,4 +1243,5 @@ public class Personal extends Identifiable {
     private void borrarDiscusion() {
         DiscussionComment.removeForDiscussion(nota);
     }
+
 }

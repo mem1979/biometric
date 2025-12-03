@@ -26,9 +26,11 @@
 	</modulo>
 
 	<modulo nombre="Personal">
+		<var-entorno nombre="XAVA_SEARCH_ACTION" valor="Personal.buscar"/>
 		<modelo nombre="Personal"/>
 		<controlador nombre="Personal"/>
 	</modulo>
+
 
 
 	<!--

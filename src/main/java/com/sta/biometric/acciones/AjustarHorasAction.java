@@ -3,6 +3,8 @@ package com.sta.biometric.acciones;
 import org.openxava.actions.*;
 import com.sta.biometric.modelo.*;
 
+import com.sta.biometric.enums.EvaluacionJornada;
+
 public class AjustarHorasAction extends ViewBaseAction {
 
     @Override
@@ -63,7 +65,7 @@ public class AjustarHorasAction extends ViewBaseAction {
     private boolean isJornadaEspecial(AuditoriaRegistros reg) {
         if (reg.getEvaluacion() == null)
             return false;
-        String eval = reg.getEvaluacion().name();
-        return "FERIADO_TRABAJADO".equals(eval) || "DIA_NO_LABORAL_TRABAJADO".equals(eval);
+        EvaluacionJornada eval = reg.getEvaluacion();
+        return eval == EvaluacionJornada.FERIADO_TRABAJADO || eval == EvaluacionJornada.DIA_NO_LABORAL_TRABAJADO;
     }
 }

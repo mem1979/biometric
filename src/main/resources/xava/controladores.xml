@@ -68,9 +68,16 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         <accion nombre="IrANSES" oculta="true" clase="com.sta.biometric.acciones.AbrirUrlAnsesAccion">
         </accion>
 
-        <accion nombre="calcularHoras" oculta="false" clase="com.sta.biometric.acciones.CalcularHorasAction" icono="clock-outline">
+        <accion nombre="calcularHoras" oculta="true" clase="com.sta.biometric.acciones.CalcularHorasAction" icono="clock-outline">
         </accion>
 
+		<accion nombre="PersonalAlIniciarAction" oculta="true" al-iniciar="true" clase="com.sta.biometric.acciones.PersonalAlIniciarAction" >
+        </accion>
+        
+        <accion nombre="buscar" oculta="true" modo="detail" clase="com.sta.biometric.acciones.PersonalBuscarAction">
+        </accion>
+      
+        
     </controlador>
 
     <controlador nombre="DialogoCalcularHoras">
