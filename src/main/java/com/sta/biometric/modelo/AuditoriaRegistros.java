@@ -206,9 +206,19 @@ public class AuditoriaRegistros extends Identifiable {
     // ==================================================================================
 
     /**
-     * Método central que procesa la información y determina el estado de la
-     * jornada.
-     * Se llama cada vez que se agregan fichadas o se recalcula.
+     * Método central que procesa la información y determina el estado de la jornada.
+     * 
+     * <p>Se ejecuta cada vez que se agregan fichadas o se recalcula el registro.
+     * Realiza las siguientes operaciones:</p>
+     * <ol>
+     *   <li>Inicializa turno y condiciones</li>
+     *   <li>Calcula duraciones (minutos trabajados)</li>
+     *   <li>Evalúa el estado de la jornada</li>
+     *   <li>Actualiza notas según evaluación</li>
+     * </ol>
+     * 
+     * @see #inicializarTurnoYCondiciones()
+     * @see #calcularDuraciones()
      */
     public void consolidarDesdeRegistros() {
         if (empleado == null || fecha == null)
@@ -248,7 +258,11 @@ public class AuditoriaRegistros extends Identifiable {
 
     /**
      * Busca el turno correspondiente y guarda sus parámetros en este registro.
-     * Esto asegura la inmutabilidad histórica.
+     * 
+     * <p>Asegura la inmutabilidad histórica guardando una "foto" de los valores
+     * al momento del registro (valor hora, tolerancia, bonificaciones).</p>
+     * 
+     * @see Personal#getTurnoParaFecha(LocalDate)
      */
     public void inicializarTurnoYCondiciones() {
         TurnosHorarios turno = empleado.getTurnoParaFecha(fecha);
@@ -287,6 +301,8 @@ public class AuditoriaRegistros extends Identifiable {
 
     /**
      * Calcula minutos trabajados basándose en la primera entrada y última salida.
+     * 
+     * <p>Descuenta pausas si están registradas.</p>
      */
     private void calcularDuraciones() {
         registros.sort(Comparator.comparing(ColeccionRegistros::getHora));
@@ -298,6 +314,19 @@ public class AuditoriaRegistros extends Identifiable {
         minutosExtras = Math.max(0, minutosTrabajados - minutosEsperados);
     }
 
+    /**
+     * Evalúa la jornada cuando no hay fichadas registradas.
+     * 
+     * <p>Determina si es:</p>
+     * <ul>
+     *   <li>FERIADO - si la fecha es feriado nacional</li>
+     *   <li>LICENCIA - si hay licencia activa</li>
+     *   <li>AUSENTE - si era día laboral sin registros</li>
+     *   <li>DIA_LIBRE - si no era día laboral</li>
+     * </ul>
+     * 
+     * @see EvaluacionJornada
+     */
     private void evaluarSinRegistros() {
         TurnosHorarios turno = empleado.getTurnoParaFecha(fecha);
         boolean esLaboral = turno != null && turno.esLaboral(fecha.getDayOfWeek());
@@ -313,6 +342,18 @@ public class AuditoriaRegistros extends Identifiable {
         }
     }
 
+    /**
+     * Evalúa la jornada cuando hay fichadas registradas.
+     * 
+     * <p>Determina:</p>
+     * <ul>
+     *   <li>COMPLETA - si cumplió las horas del turno</li>
+     *   <li>INCOMPLETA - si trabajó pero no completó las horas</li>
+     *   <li>FERIADO_TRABAJADO - si trabajó en un día feriado</li>
+     * </ul>
+     * 
+     * @see EvaluacionJornada
+     */
     private void evaluarConRegistros() {
         TurnosHorarios turno = empleado.getTurnoParaFecha(fecha);
         boolean esLaboral = turno != null && turno.esLaboral(fecha.getDayOfWeek());
@@ -330,6 +371,12 @@ public class AuditoriaRegistros extends Identifiable {
         }
     }
 
+    /**
+     * Genera notas automáticas basadas en la evaluación de la jornada.
+     * 
+     * <p>Ejemplos: "Jornada completa", "Llegada tarde: 15 min", 
+     * "Faltaron 2h para completar turno".</p>
+     */
     public void actualizarNotaSegunEvaluacion() {
         if (evaluacion == EvaluacionJornada.LICENCIA) {
             // Obtener detalles de la licencia
@@ -359,6 +406,12 @@ public class AuditoriaRegistros extends Identifiable {
         }
     }
 
+    
+    /**
+     * Retorna las horas trabajadas dentro del horario normal del turno.
+     * 
+     * @return Horas normales en formato "HH:MM"
+     */
     @Transient
     @ReadOnly
     @DisplaySize(10)
@@ -382,6 +435,11 @@ public class AuditoriaRegistros extends Identifiable {
         return TiempoUtils.formatearMinutosComoHHMM(totalMinutos);
     }
 
+    /**
+     * Retorna las horas extras trabajadas (fuera del horario normal).
+     * 
+     * @return Horas extras en formato "HH:MM"
+     */
     @Transient
     @ReadOnly
     @DisplaySize(10)
@@ -394,6 +452,11 @@ public class AuditoriaRegistros extends Identifiable {
         return TiempoUtils.formatearMinutosComoHHMM(totalExtras);
     }
 
+    /**
+     * Retorna las horas trabajadas en días especiales (feriados, domingos).
+     * 
+     * @return Horas especiales en formato "HH:MM"
+     */
     @Transient
     @ReadOnly
     @DisplaySize(10)
@@ -405,8 +468,14 @@ public class AuditoriaRegistros extends Identifiable {
         return TiempoUtils.formatearMinutosComoHHMM(total);
     }
 
-    @Transient
-    @ReadOnly
+    /**
+     * Calcula el monto total por horas normales trabajadas.
+     * 
+     * <p>Fórmula: horasTurno × valorHoraTurno</p>
+     * 
+     * @return Monto en formato monetario
+     */
+    @Transient @ReadOnly
     @DisplaySize(10)
     @LabelFormat(LabelFormatType.SMALL)
     @Money
@@ -423,8 +492,14 @@ public class AuditoriaRegistros extends Identifiable {
         return calcularTotalMonetario(getHorasTrabajadasTurno(), valorHora);
     }
 
-    @Transient
-    @ReadOnly
+    /**
+     * Calcula el monto total por horas extras.
+     * 
+     * <p>Fórmula: horasExtras × valorHoraExtra (con bonificación)</p>
+     * 
+     * @return Monto en formato monetario
+     */
+    @Transient @ReadOnly
     @DisplaySize(10)
     @LabelFormat(LabelFormatType.SMALL)
     @Money
@@ -436,8 +511,14 @@ public class AuditoriaRegistros extends Identifiable {
                 getEmpleado() != null ? getEmpleado().getValorHoraExtra() : null);
     }
 
-    @Transient
-    @ReadOnly
+    /**
+     * Calcula el monto total por horas especiales.
+     * 
+     * <p>Fórmula: horasEspeciales × valorHoraEspecial (con bonificación)</p>
+     * 
+     * @return Monto en formato monetario
+     */
+    @Transient @ReadOnly
     @DisplaySize(10)
     @LabelFormat(LabelFormatType.SMALL)
     @Money
@@ -453,8 +534,12 @@ public class AuditoriaRegistros extends Identifiable {
     // MÉTODOS AUXILIARES
     // ==================================================================================
 
-    @Transient
-    @Label
+    /**
+     * Retorna la descripción del feriado si la fecha corresponde a uno.
+     * 
+     * @return Descripción del feriado o cadena vacía
+     */
+    @Transient @Label
     @LabelFormat(LabelFormatType.NO_LABEL)
     @Depends("sucursalSeleccionada, fechaHoraActual")
     public String getObservacionFeriado() {
@@ -469,6 +554,11 @@ public class AuditoriaRegistros extends Identifiable {
         }
     }
 
+    /**
+     * Verifica si la jornada corresponde a un día especial (feriado o domingo).
+     * 
+     * @return true si es día especial con bonificación
+     */
     @Transient
     private boolean esJornadaEspecial() {
         return evaluacion == EvaluacionJornada.FERIADO_TRABAJADO ||
@@ -477,9 +567,12 @@ public class AuditoriaRegistros extends Identifiable {
 
     /**
      * Muestra el rango horario real basado en las fichadas.
+     * 
+     * <p>Formato: "HH:MM - HH:MM" (entrada - salida)</p>
+     * 
+     * @return Rango horario o mensaje de estado si faltan fichadas
      */
-    @Transient
-    @ReadOnly
+    @Transient @ReadOnly
     public String getHorario() {
         if (registros == null || registros.isEmpty())
             return "Sin Registros";
@@ -505,13 +598,24 @@ public class AuditoriaRegistros extends Identifiable {
         }
     }
 
-    @Transient
-    @ReadOnly
+    /**
+     * Retorna el día de la semana en español.
+     * 
+     * @return Nombre del día (ej: "LUNES", "MARTES")
+     */
+    @Transient @ReadOnly
     @Depends("fecha")
     public String getDiaSemana() {
         return TiempoUtils.obtenerNombreDia(fecha);
     }
 
+    /**
+     * Retorna la descripción del turno planificado para la fecha.
+     * 
+     * <p>Incluye código del turno, horario esperado y tolerancia.</p>
+     * 
+     * @return Descripción del turno o "Sin turno asignado"
+     */
     @Transient
     @DisplaySize(100)
     @MiLabel(medida = "chica", negrita = true, recuadro = true, icon = "calendar-check", multiline = false, mayuscula = false)
@@ -540,6 +644,13 @@ public class AuditoriaRegistros extends Identifiable {
         return dia + ", " + fechaStr + " - " + horario + toleranciaStr + bonificacionStr;
     }
 
+    /**
+     * Calcula el monto monetario dado un tiempo y valor hora.
+     * 
+     * @param horasEnFormatoHHmm Tiempo en formato "HH:MM"
+     * @param valorPorHora Valor monetario por hora
+     * @return Monto calculado (horas × valor)
+     */
     private BigDecimal calcularTotalMonetario(String horasEnFormatoHHmm, BigDecimal valorPorHora) {
         if (horasEnFormatoHHmm == null || valorPorHora == null)
             return BigDecimal.ZERO;
@@ -563,11 +674,19 @@ public class AuditoriaRegistros extends Identifiable {
 
     /**
      * Muestra un indicador visual del estado de la jornada para la vista de lista.
-     * Permite identificar rápidamente registros que necesitan revisión o tienen
-     * situaciones especiales.
      * 
-     * @return String con emoji e información del estado (ej: "⏰ +2h30m Extras", "⚠️
-     *         -1h Faltan")
+     * <p>Permite identificar rápidamente registros que necesitan revisión o tienen
+     * situaciones especiales.</p>
+     * 
+     * <p>Ejemplos de salida:</p>
+     * <ul>
+     *   <li>"⏰ +2h30m Extras" - horas extras trabajadas</li>
+     *   <li>"⚠️ -1h Faltan" - horas pendientes</li>
+     *   <li>"✅ Completa" - jornada cumplida</li>
+     *   <li>"🏖️ Feriado" - día feriado</li>
+     * </ul>
+     * 
+     * @return String con emoji e información del estado
      */
     @Transient
 
@@ -621,7 +740,11 @@ public class AuditoriaRegistros extends Identifiable {
     /**
      * Verifica si el registro tiene ajustes manuales aplicados.
      * 
-     * @return true si hay ajustes en minutos normales , extras o especiales
+     * <p>Los ajustes manuales permiten corregir errores de fichado
+     * o agregar tiempo no registrado automáticamente.</p>
+     * 
+     * @return true si hay ajustes en minutos normales, extras o especiales
+     * @see AjusteHorasManual
      */
     @Transient
     private boolean tieneAjustesManuales() {
@@ -630,10 +753,16 @@ public class AuditoriaRegistros extends Identifiable {
 
     /**
      * Formatea minutos a formato compacto para mostrar en lista.
-     * Ejemplos: "2h30m", "1h", "45m"
+     * 
+     * <p>Ejemplos:</p>
+     * <ul>
+     *   <li>150 → "2h30m"</li>
+     *   <li>60 → "1h"</li>
+     *   <li>45 → "45m"</li>
+     * </ul>
      * 
      * @param minutos número de minutos a formatear
-     * @return String formateado (ej: "2h30m")
+     * @return String formateado
      */
     @Transient
     private String formatearMinutosCompacto(int minutos) {
@@ -665,8 +794,11 @@ public class AuditoriaRegistros extends Identifiable {
     public String botonAjustarHoras; // El texto lo pone la acción
 
     /**
-     * Muestra los ajustes realizados solo si existen.
-     * Formato: "Normales: +30m | Extras: -15m | Especiales: +60m"
+     * Muestra los ajustes manuales realizados (solo si existen).
+     * 
+     * <p>Formato: "Normales: +30m | Extras: -15m | Especiales: +60m"</p>
+     * 
+     * @return Descripción de ajustes o cadena vacía si no hay
      */
     @Transient
     @ReadOnly

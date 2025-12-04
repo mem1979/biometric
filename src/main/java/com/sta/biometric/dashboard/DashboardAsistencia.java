@@ -10,6 +10,7 @@ import javax.persistence.*;
 import org.openxava.annotations.*;
 import org.openxava.jpa.*;
 
+import com.sta.biometric.acciones.*;
 import com.sta.biometric.anotaciones.*;
 import com.sta.biometric.auxiliares.*;
 import com.sta.biometric.dashboard.auxiliares.*;
@@ -18,31 +19,42 @@ import com.sta.biometric.servicios.*;
 
 import lombok.*;
 
-@View(members =
-"fechaHoraActual, sucursalSeleccionada;" +
-"observacionFeriado;" +
-"Detalles {" +
-"cantidadAgentesHoy, pendientesDeIngresoHoy, cantidadConLicenciaHoy, cantidadLlegadasTardeHoy, cantidadSalidasAnticipadasHoy;" +
-"evaluacionJornadasHoy, distribucionAsistenciaHoy ;" +
-"resumenHoyComoLista;" +
-"}"
-)
-@Getter @Setter
+@View(members = "fechaHoraActual, imprimirInformeDiario, sucursalSeleccionada;" +
+        "observacionFeriado;" +
+        "Detalles {" +
+        "cantidadAgentesHoy, pendientesDeIngresoHoy, cantidadConLicenciaHoy, cantidadLlegadasTardeHoy, cantidadSalidasAnticipadasHoy;"
+        +
+        "evaluacionJornadasHoy, distribucionAsistenciaHoy ;" +
+        "resumenHoyComoLista;" +
+        "}")
+@Getter
+@Setter
+
 public class DashboardAsistencia {
 
+	
+	
+	
     // ================================
     // 1. FILTRO PRINCIPAL POR SUCURSALES
     // ================================
 
     @ManyToOne
     @DescriptionsList
-    @NoCreate @NoModify
+    @NoCreate
+    @NoModify
     @LabelFormat(LabelFormatType.SMALL)
-     private Sucursales sucursalSeleccionada;
+    @OnChange(ActualizarDashboardAction.class)
+    private Sucursales sucursalSeleccionada;
 
     // ================================
     // 2. FECHA Y HORA FORMATEADA
     // ================================
+    
+    @Transient @Label
+	@Action("AuditoriaRegistros.informeDiario")
+	@LabelFormat(LabelFormatType.NO_LABEL)
+	private String imprimirInformeDiario;
 
     @ReadOnly
     @LabelFormat(LabelFormatType.NO_LABEL)
@@ -75,9 +87,9 @@ public class DashboardAsistencia {
         LocalDate hoy = LocalDate.now();
         try {
             Feriados feriado = XPersistence.getManager()
-                .createQuery("SELECT f FROM Feriados f WHERE f.fecha = :fecha", Feriados.class)
-                .setParameter("fecha", hoy)
-                .getSingleResult();
+                    .createQuery("SELECT f FROM Feriados f WHERE f.fecha = :fecha", Feriados.class)
+                    .setParameter("fecha", hoy)
+                    .getSingleResult();
             return "FERIADO: " + feriado.getTipo().toUpperCase() + " - " + feriado.getMotivo();
         } catch (NoResultException e) {
             return "";
@@ -91,12 +103,14 @@ public class DashboardAsistencia {
     private List<Personal> getEmpleadosFiltrados() {
         EntityManager em = XPersistence.getManager();
         if (sucursalSeleccionada != null && sucursalSeleccionada.getId() != null) {
-            return em.createQuery("SELECT e FROM Personal e WHERE e.activo = true AND e.sucursal.id = :id", Personal.class)
-                .setParameter("id", sucursalSeleccionada.getId())
-                .getResultList();
+            return em
+                    .createQuery("SELECT e FROM Personal e WHERE e.activo = true AND e.sucursal.id = :id",
+                            Personal.class)
+                    .setParameter("id", sucursalSeleccionada.getId())
+                    .getResultList();
         } else {
             return em.createQuery("SELECT e FROM Personal e WHERE e.activo = true", Personal.class)
-                .getResultList();
+                    .getResultList();
         }
     }
 
@@ -124,8 +138,8 @@ public class DashboardAsistencia {
     @LargeDisplay(icon = "account-alert")
     public int getPendientesDeIngresoHoy() {
         return (int) getResumenesHoy().stream()
-            .filter(r -> r.isDebeTrabajar() && !r.isConLicencia() && !r.isIngresoRealizado())
-            .count();
+                .filter(r -> r.isDebeTrabajar() && !r.isConLicencia() && !r.isIngresoRealizado())
+                .count();
     }
 
     @Depends("sucursalSeleccionada")
@@ -153,8 +167,8 @@ public class DashboardAsistencia {
         int total = (int) resumenes.stream().filter(ResumenEmpleadoHoy::isDebeTrabajar).count();
         int licencia = (int) resumenes.stream().filter(ResumenEmpleadoHoy::isConLicencia).count();
         int pendientes = (int) resumenes.stream()
-            .filter(r -> r.isDebeTrabajar() && !r.isConLicencia() && !r.isIngresoRealizado())
-            .count();
+                .filter(r -> r.isDebeTrabajar() && !r.isConLicencia() && !r.isIngresoRealizado())
+                .count();
         int presentes = Math.max(0, total - pendientes - licencia);
 
         List<ItemGraficoPorcentageAgentesDashboard> resultado = new ArrayList<>();
@@ -164,11 +178,11 @@ public class DashboardAsistencia {
 
         return resultado;
     }
-    
+
     // ================================
     // 6. evaluacion de registros GRÁFICA
     // ================================
-    
+
     @NoCreate
     @Chart(type = ChartType.BAR, labelProperties = "descripcion", dataProperties = "cantidad")
     @ListProperties("descripcion, cantidad")
@@ -178,19 +192,18 @@ public class DashboardAsistencia {
         // Filtrar por sucursal si hay una seleccionada
         if (sucursalSeleccionada != null && sucursalSeleccionada.getId() != null) {
             resumenes = resumenes.stream()
-                .filter(r -> r.getEmpleado() != null &&
-                             r.getEmpleado().getSucursal() != null &&
-                             r.getEmpleado().getSucursal().getId().equals(sucursalSeleccionada.getId()))
-                .collect(Collectors.toList());
+                    .filter(r -> r.getEmpleado() != null &&
+                            r.getEmpleado().getSucursal() != null &&
+                            r.getEmpleado().getSucursal().getId().equals(sucursalSeleccionada.getId()))
+                    .collect(Collectors.toList());
         }
 
         // Agrupar por evaluación
         Map<String, Long> conteoPorEvaluacion = resumenes.stream()
-            .filter(r -> r.getEvaluacion() != null)
-            .collect(Collectors.groupingBy(
-                r -> r.getEvaluacion().toString(),
-                Collectors.counting()
-            ));
+                .filter(r -> r.getEvaluacion() != null)
+                .collect(Collectors.groupingBy(
+                        r -> r.getEvaluacion().toString(),
+                        Collectors.counting()));
 
         // Armar resultado para el gráfico
         List<ItemGraficoEvaluacionJornadaDashboard> resultado = new ArrayList<>();
@@ -201,28 +214,28 @@ public class DashboardAsistencia {
         return resultado;
     }
 
- // ================================
- // 7. LISTADO MEJORADO DE JORNADAS HOY
- // ================================
+    // ================================
+    // 7. LISTADO MEJORADO DE JORNADAS HOY
+    // ================================
 
- @NoCreate
- @SimpleList
- @ListProperties("empleadoNombre, sucursalNombre, evaluacion, ingresoRealizadoStr, llegadaTardeStr, salidaAnticipadaStr")
- public Collection<ResumenEmpleadoHoy> getResumenHoyComoLista() {
-     List<ResumenEmpleadoHoy> resumenes = getResumenesHoy();
+    @NoCreate
+    @SimpleList
+    @ListProperties("empleadoNombre, turnoStr, horaEntradaStr, horaSalidaStr, estadoIcono, tiempoTranscurrido, sucursalNombre")
+    public Collection<ResumenEmpleadoHoy> getResumenHoyComoLista() {
+        List<ResumenEmpleadoHoy> resumenes = getResumenesHoy();
 
-     // Filtro por sucursal si corresponde
-     if (sucursalSeleccionada != null && sucursalSeleccionada.getId() != null) {
-         resumenes = resumenes.stream()
-             .filter(r -> r.getEmpleado() != null &&
-                          r.getEmpleado().getSucursal() != null &&
-                          r.getEmpleado().getSucursal().getId().equals(sucursalSeleccionada.getId()))
-             .collect(Collectors.toList());
-     }
+        // Filtro por sucursal si corresponde
+        if (sucursalSeleccionada != null && sucursalSeleccionada.getId() != null) {
+            resumenes = resumenes.stream()
+                    .filter(r -> r.getEmpleado() != null &&
+                            r.getEmpleado().getSucursal() != null &&
+                            r.getEmpleado().getSucursal().getId().equals(sucursalSeleccionada.getId()))
+                    .collect(Collectors.toList());
+        }
 
-     // Orden alfabético
-     resumenes.sort(Comparator.comparing(r -> r.getEmpleado().getNombreCompleto()));
+        // Orden alfabético
+        resumenes.sort(Comparator.comparing(r -> r.getEmpleado().getNombreCompleto()));
 
-     return resumenes;
- }
+        return resumenes;
+    }
 }

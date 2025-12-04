@@ -44,9 +44,15 @@ public class ResumenAsistenciaHoyService {
             LocalTime salidaEsperada = (turno != null) ? turno.getSalidaParaDia(dia) : null;
             int tolerancia = (turno != null && turno.getTolerancia() != null) ? turno.getTolerancia() : 5;
 
+            // Usar la descripción detallada del turno desde Personal
+            String turnoDescripcion = e.getTurnoDescripcionParaFecha(fechaEvaluacion);
+
             boolean ingresoRealizado = false;
             boolean llegadaTarde = false;
             boolean salidaAnticipada = false;
+            boolean salidaRealizada = false;
+            LocalTime horaEntradaReal = null;
+            LocalTime horaSalidaReal = null;
 
             // Obtener fichadas si corresponde
             if (esLaboral && !conLicencia) {
@@ -64,8 +70,9 @@ public class ResumenAsistenciaHoyService {
 
                 if (!entradas.isEmpty()) {
                     ingresoRealizado = true;
+                    horaEntradaReal = entradas.get(0);
                     llegadaTarde = entradaEsperada != null
-                            && entradas.get(0).isAfter(entradaEsperada.plusMinutes(tolerancia));
+                            && horaEntradaReal.isAfter(entradaEsperada.plusMinutes(tolerancia));
                 }
 
                 List<LocalTime> salidas = em.createQuery(
@@ -81,13 +88,15 @@ public class ResumenAsistenciaHoyService {
                         .getResultList();
 
                 if (!salidas.isEmpty()) {
+                    salidaRealizada = true;
+                    horaSalidaReal = salidas.get(0);
                     salidaAnticipada = salidaEsperada != null
-                            && salidas.get(0).isBefore(salidaEsperada.minusMinutes(tolerancia));
+                            && horaSalidaReal.isBefore(salidaEsperada.minusMinutes(tolerancia));
                 }
             }
 
             // ================================
-            // Evaluación inteligente
+            // Evaluación inteligente CORREGIDA
             // ================================
             EvaluacionJornada evaluacion;
 
@@ -103,25 +112,38 @@ public class ResumenAsistenciaHoyService {
             } else if (esFeriado) {
                 evaluacion = EvaluacionJornada.FERIADO;
 
+            } else if (!esLaboral && ingresoRealizado) {
+                evaluacion = EvaluacionJornada.DIA_NO_LABORAL_TRABAJADO;
+
             } else if (!esLaboral) {
                 evaluacion = EvaluacionJornada.DIA_NO_LABORAL;
 
             } else if (!ingresoRealizado) {
+                // No marcó entrada aún
                 if (entradaEsperada != null && ahora.isBefore(entradaEsperada.plusMinutes(tolerancia))) {
                     evaluacion = EvaluacionJornada.PENDIENTE;
                 } else {
                     evaluacion = EvaluacionJornada.AUSENTE;
                 }
 
+            } else if (!salidaRealizada) {
+                // ✅ CORRECCIÓN: Marcó entrada pero NO salida → Jornada EN CURSO
+                evaluacion = EvaluacionJornada.EN_CURSO;
+
             } else if (!llegadaTarde && !salidaAnticipada) {
+                // Entrada y salida correctas
                 evaluacion = EvaluacionJornada.COMPLETA;
 
             } else {
+                // Llegó tarde o salió anticipado
                 evaluacion = EvaluacionJornada.INCOMPLETA;
             }
 
+            // Usar constructor extendido con todos los datos
             resumenes.add(new ResumenEmpleadoHoy(
-                    e, esLaboral, conLicencia, ingresoRealizado, llegadaTarde, salidaAnticipada, evaluacion));
+                    e, esLaboral, conLicencia, ingresoRealizado, llegadaTarde, salidaAnticipada,
+                    evaluacion, horaEntradaReal, horaSalidaReal, entradaEsperada, salidaEsperada,
+                    turnoDescripcion, salidaRealizada));
         }
 
         return resumenes;

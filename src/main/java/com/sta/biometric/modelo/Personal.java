@@ -217,7 +217,6 @@ public class Personal extends Identifiable {
      * @see #getCreaUsuario()
      */
     @Column(length = 20)
-    @Mayuscula
     private String usuario;
 
     /**
@@ -228,7 +227,7 @@ public class Personal extends Identifiable {
      * 
      * @return Nombre de usuario generado, o "N/D" si faltan datos
      */
-    @Mayuscula
+    
     @Depends("nombres, apellido, userId")
     public String getCreaUsuario() {
         if ((nombres == null || nombres.isEmpty()) || (apellido == null || apellido.isEmpty())) {
