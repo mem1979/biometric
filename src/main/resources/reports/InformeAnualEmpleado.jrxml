@@ -1,0 +1,1438 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 7.0.3.final using JasperReports Library version 6.0.0  -->
+<!-- 2025-12-03T22:26:29 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="InformeAnualEmpleado" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d">
+	<subDataset name="dsHoras" uuid="a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d">
+		<field name="mes" class="java.lang.String"/>
+		<field name="presentes" class="java.lang.Integer"/>
+		<field name="ausentes" class="java.lang.Integer"/>
+		<field name="tardanzas" class="java.lang.Integer"/>
+		<field name="horasNormales" class="java.lang.Double"/>
+		<field name="horasExtras" class="java.lang.Double"/>
+		<field name="horasEspeciales" class="java.lang.Double"/>
+		<field name="cumplimiento" class="java.lang.Double"/>
+	</subDataset>
+	<subDataset name="dsLicencias" uuid="b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e">
+		<field name="tipo" class="java.lang.String"/>
+		<field name="cantidad" class="java.lang.Integer"/>
+	</subDataset>
+	<parameter name="nombreCompleto" class="java.lang.String"/>
+	<parameter name="userId" class="java.lang.String"/>
+	<parameter name="dni" class="java.lang.String"/>
+	<parameter name="puesto" class="java.lang.String"/>
+	<parameter name="sucursal" class="java.lang.String"/>
+	<parameter name="fechaIngreso" class="java.lang.String"/>
+	<parameter name="antiguedad" class="java.lang.String"/>
+	<parameter name="notasPersonale" class="java.lang.String"/>
+	<parameter name="fotoEmpleado" class="java.io.InputStream"/>
+	<parameter name="presentismoAnual" class="java.lang.String"/>
+	<parameter name="totalAusencias" class="java.lang.Long"/>
+	<parameter name="totalTardanzas" class="java.lang.Long"/>
+	<parameter name="minutosTotalTardanza" class="java.lang.Integer"/>
+	<parameter name="horasNormalesAnual" class="java.lang.String"/>
+	<parameter name="horasExtrasAnual" class="java.lang.String"/>
+	<parameter name="horasEspecialesAnual" class="java.lang.String"/>
+	<parameter name="textoEjecutivo" class="java.lang.String"/>
+	<parameter name="presentesMes" class="int[]"/>
+	<parameter name="ausentesMes" class="int[]"/>
+	<parameter name="tardanzasMes" class="int[]"/>
+	<parameter name="cumplimientoMes" class="double[]"/>
+	<parameter name="analisisTendencias" class="java.lang.String"/>
+	<parameter name="horasNormalesMes" class="double[]"/>
+	<parameter name="horasExtrasMes" class="double[]"/>
+	<parameter name="horasEspecialesMes" class="double[]"/>
+	<parameter name="promedioHorasMensual" class="java.lang.String"/>
+	<parameter name="mesMayorCarga" class="java.lang.String"/>
+	<parameter name="horasMayorCarga" class="java.lang.String"/>
+	<parameter name="totalTardanzasDetalle" class="java.lang.Integer"/>
+	<parameter name="minutosTotalesTardanzaDetalle" class="java.lang.Integer"/>
+	<parameter name="promedioMinutosTardanza" class="java.lang.String"/>
+	<parameter name="analisisPuntualidad" class="java.lang.String"/>
+	<parameter name="totalLicencias" class="java.lang.Integer"/>
+	<parameter name="diasLicenciaMedica" class="java.lang.Integer"/>
+	<parameter name="diasVacaciones" class="java.lang.Integer"/>
+	<parameter name="ausenciasInjustificadas" class="java.lang.Long"/>
+	<parameter name="porcentajeNoTrabajado" class="java.lang.String"/>
+	<parameter name="analisisLicencias" class="java.lang.String"/>
+	<parameter name="totalCorrecciones" class="java.lang.Integer"/>
+	<parameter name="analisisAuditorias" class="java.lang.String"/>
+	<parameter name="costoLaboralDisponible" class="java.lang.Boolean"/>
+	<parameter name="costoNormales" class="java.math.BigDecimal"/>
+	<parameter name="costoExtras" class="java.math.BigDecimal"/>
+	<parameter name="costoEspeciales" class="java.math.BigDecimal"/>
+	<parameter name="costoTotal" class="java.math.BigDecimal"/>
+	<parameter name="costoMensualPromedio" class="java.math.BigDecimal"/>
+	<parameter name="fortalezas" class="java.lang.String"/>
+	<parameter name="debilidades" class="java.lang.String"/>
+	<parameter name="recomendaciones" class="java.lang.String"/>
+	<parameter name="anioInforme" class="java.lang.Integer"/>
+	<parameter name="fechaGeneracion" class="java.lang.String"/>
+	<parameter name="listaMensual" class="java.util.List"/>
+	<parameter name="listaLicencias" class="java.util.List"/>
+	<group name="Seccion1_Resumen">
+		<groupExpression><![CDATA[1]]></groupExpression>
+		<groupHeader>
+			<band height="260">
+				<staticText>
+					<reportElement x="0" y="10" width="555" height="30" forecolor="#1A237E" uuid="f2f2f2f2-f2f2-4f2f-8f2f-f2f2f2f2f2f2"/>
+					<box>
+						<bottomPen lineWidth="2.0" lineStyle="Solid" lineColor="#1A237E"/>
+					</box>
+					<textElement>
+						<font size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[1. RESUMEN EJECUTIVO DEL AÑO]]></text>
+				</staticText>
+				<rectangle radius="5">
+					<reportElement x="0" y="50" width="270" height="200" backcolor="#F5F5F5" uuid="a3a3a3a3-a3a3-4a3a-8a3a-a3a3a3a3a3a3"/>
+					<graphicElement>
+						<pen lineWidth="1.0" lineColor="#BDBDBD"/>
+					</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement x="10" y="60" width="180" height="20" forecolor="#424242" uuid="b3b3b3b3-b3b3-4b3b-8b3b-b3b3b3b3b3b3"/>
+					<textElement>
+						<font size="11" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Presentismo Anual:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="190" y="60" width="70" height="20" forecolor="#1A237E" uuid="c3c3c3c3-c3c3-4c3c-8c3c-c3c3c3c3c3c3"/>
+					<textElement textAlignment="Right">
+						<font size="14" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{presentismoAnual}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="10" y="85" width="180" height="20" forecolor="#424242" uuid="d3d3d3d3-d3d3-4d3d-8d3d-d3d3d3d3d3d3"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+					<text><![CDATA[Total Ausencias:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="190" y="85" width="70" height="20" forecolor="#D32F2F" uuid="e3e3e3e3-e3e3-4e3e-8e3e-e3e3e3e3e3e3"/>
+					<textElement textAlignment="Right">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{totalAusencias}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="10" y="110" width="180" height="20" forecolor="#424242" uuid="f3f3f3f3-f3f3-4f3f-8f3f-f3f3f3f3f3f3"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+					<text><![CDATA[Total Tardanzas:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="190" y="110" width="70" height="20" forecolor="#F57C00" uuid="a4a4a4a4-a4a4-4a4a-8a4a-a4a4a4a4a4a4"/>
+					<textElement textAlignment="Right">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{totalTardanzas}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="10" y="135" width="180" height="20" forecolor="#424242" uuid="b4b4b4b4-b4b4-4b4b-8b4b-b4b4b4b4b4b4"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+					<text><![CDATA[Horas Normales:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="190" y="135" width="70" height="20" forecolor="#388E3C" uuid="c4c4c4c4-c4c4-4c4c-8c4c-c4c4c4c4c4c4"/>
+					<textElement textAlignment="Right">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{horasNormalesAnual}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="10" y="160" width="180" height="20" forecolor="#424242" uuid="d4d4d4d4-d4d4-4d4d-8d4d-d4d4d4d4d4d4"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+					<text><![CDATA[Horas Extras:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="190" y="160" width="70" height="20" forecolor="#1976D2" uuid="e4e4e4e4-e4e4-4e4e-8e4e-e4e4e4e4e4e4"/>
+					<textElement textAlignment="Right">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{horasExtrasAnual}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="10" y="185" width="180" height="20" forecolor="#424242" uuid="f4f4f4f4-f4f4-4f4f-8f4f-f4f4f4f4f4f4"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+					<text><![CDATA[Horas Especiales:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="190" y="185" width="70" height="20" forecolor="#7B1FA2" uuid="a5a5a5a5-a5a5-4a5a-8a5a-a5a5a5a5a5a5"/>
+					<textElement textAlignment="Right">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{horasEspecialesAnual}]]></textFieldExpression>
+				</textField>
+				<rectangle radius="5">
+					<reportElement x="285" y="50" width="270" height="200" backcolor="#E3F2FD" uuid="b5b5b5b5-b5b5-4b5b-8b5b-b5b5b5b5b5b5"/>
+					<graphicElement>
+						<pen lineWidth="1.0" lineColor="#1976D2"/>
+					</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement x="295" y="60" width="250" height="20" forecolor="#1A237E" uuid="c5c5c5c5-c5c5-4c5c-8c5c-c5c5c5c5c5c5"/>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Análisis Ejecutivo]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="295" y="85" width="250" height="155" forecolor="#424242" uuid="d5d5d5d5-d5d5-4d5d-8d5d-d5d5d5d5d5d5"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{textoEjecutivo}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="Seccion2_Asistencia">
+		<groupExpression><![CDATA[1]]></groupExpression>
+		<groupHeader>
+			<band height="460">
+				<staticText>
+					<reportElement x="0" y="0" width="555" height="30" forecolor="#1A237E" uuid="e5e5e5e5-e5e5-4e5e-8e5e-e5e5e5e5e5e5"/>
+					<box>
+						<bottomPen lineWidth="2.0" lineColor="#1A237E"/>
+					</box>
+					<textElement>
+						<font size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[2. ASISTENCIA CONSOLIDADA DEL AÑO]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="0" y="40" width="80" height="25" forecolor="#FFFFFF" backcolor="#1A237E" uuid="f5f5f5f5-f5f5-4f5f-8f5f-f5f5f5f5f5f5"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Mes]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="80" y="40" width="95" height="25" forecolor="#FFFFFF" backcolor="#1A237E" uuid="a6a6a6a6-a6a6-4a6a-8a6a-a6a6a6a6a6a6"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Presentes]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="175" y="40" width="95" height="25" forecolor="#FFFFFF" backcolor="#1A237E" uuid="b6b6b6b6-b6b6-4b6b-8b6b-b6b6b6b6b6b6"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Ausentes]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="270" y="40" width="95" height="25" forecolor="#FFFFFF" backcolor="#1A237E" uuid="c6c6c6c6-c6c6-4c6c-8c6c-c6c6c6c6c6c6"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Tardanzas]]></text>
+				</staticText>
+				<staticText>
+					<reportElement mode="Opaque" x="365" y="40" width="95" height="25" forecolor="#FFFFFF" backcolor="#1A237E" uuid="d6d6d6d6-d6d6-4d6d-8d6d-d6d6d6d6d6d6"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#FFFFFF"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Cumplimiento]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="65" width="80" height="20" uuid="a0000000-0000-0000-0000-000000000101"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Enero]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="80" y="65" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000102"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{presentesMes}[0]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="175" y="65" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000103"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{ausentesMes}[0]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="270" y="65" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000104"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{tardanzasMes}[0]]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement x="365" y="65" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000105"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{cumplimientoMes}[0] / 100.0]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="85" width="80" height="20" uuid="a0000000-0000-0000-0000-000000000201"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Febrero]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="80" y="85" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000202"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{presentesMes}[1]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="175" y="85" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000203"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{ausentesMes}[1]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="270" y="85" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000204"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{tardanzasMes}[1]]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement x="365" y="85" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000205"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{cumplimientoMes}[1] / 100.0]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="105" width="80" height="20" uuid="a0000000-0000-0000-0000-000000000301"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Marzo]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="80" y="105" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000302"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{presentesMes}[2]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="175" y="105" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000303"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{ausentesMes}[2]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="270" y="105" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000304"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{tardanzasMes}[2]]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement x="365" y="105" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000305"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{cumplimientoMes}[2] / 100.0]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="125" width="80" height="20" uuid="a0000000-0000-0000-0000-000000000401"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Abril]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="80" y="125" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000402"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{presentesMes}[3]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="175" y="125" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000403"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{ausentesMes}[3]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="270" y="125" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000404"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{tardanzasMes}[3]]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement x="365" y="125" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000405"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{cumplimientoMes}[3] / 100.0]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="145" width="80" height="20" uuid="a0000000-0000-0000-0000-000000000501"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Mayo]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="80" y="145" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000502"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{presentesMes}[4]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="175" y="145" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000503"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{ausentesMes}[4]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="270" y="145" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000504"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{tardanzasMes}[4]]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement x="365" y="145" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000505"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{cumplimientoMes}[4] / 100.0]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="165" width="80" height="20" uuid="a0000000-0000-0000-0000-000000000601"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Junio]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="80" y="165" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000602"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{presentesMes}[5]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="175" y="165" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000603"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{ausentesMes}[5]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="270" y="165" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000604"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{tardanzasMes}[5]]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement x="365" y="165" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000605"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{cumplimientoMes}[5] / 100.0]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="185" width="80" height="20" uuid="a0000000-0000-0000-0000-000000000701"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Julio]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="80" y="185" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000702"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{presentesMes}[6]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="175" y="185" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000703"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{ausentesMes}[6]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="270" y="185" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000704"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{tardanzasMes}[6]]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement x="365" y="185" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000705"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{cumplimientoMes}[6] / 100.0]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="205" width="80" height="20" uuid="a0000000-0000-0000-0000-000000000801"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Agosto]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="80" y="205" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000802"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{presentesMes}[7]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="175" y="205" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000803"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{ausentesMes}[7]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="270" y="205" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000804"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{tardanzasMes}[7]]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement x="365" y="205" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000805"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{cumplimientoMes}[7] / 100.0]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="225" width="80" height="20" uuid="a0000000-0000-0000-0000-000000000901"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Septiembre]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="80" y="225" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000902"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{presentesMes}[8]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="175" y="225" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000903"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{ausentesMes}[8]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="270" y="225" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000904"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{tardanzasMes}[8]]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement x="365" y="225" width="95" height="20" uuid="a0000000-0000-0000-0000-000000000905"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{cumplimientoMes}[8] / 100.0]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="245" width="80" height="20" uuid="a0000000-0000-0000-0000-000000001001"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Octubre]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="80" y="245" width="95" height="20" uuid="a0000000-0000-0000-0000-000000001002"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{presentesMes}[9]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="175" y="245" width="95" height="20" uuid="a0000000-0000-0000-0000-000000001003"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{ausentesMes}[9]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="270" y="245" width="95" height="20" uuid="a0000000-0000-0000-0000-000000001004"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{tardanzasMes}[9]]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement x="365" y="245" width="95" height="20" uuid="a0000000-0000-0000-0000-000000001005"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{cumplimientoMes}[9] / 100.0]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="265" width="80" height="20" uuid="a0000000-0000-0000-0000-000000001101"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Noviembre]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="80" y="265" width="95" height="20" uuid="a0000000-0000-0000-0000-000000001102"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{presentesMes}[10]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="175" y="265" width="95" height="20" uuid="a0000000-0000-0000-0000-000000001103"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{ausentesMes}[10]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="270" y="265" width="95" height="20" uuid="a0000000-0000-0000-0000-000000001104"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{tardanzasMes}[10]]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement x="365" y="265" width="95" height="20" uuid="a0000000-0000-0000-0000-000000001105"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{cumplimientoMes}[10] / 100.0]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="285" width="80" height="20" uuid="a0000000-0000-0000-0000-000000001201"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Diciembre]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="80" y="285" width="95" height="20" uuid="a0000000-0000-0000-0000-000000001202"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{presentesMes}[11]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="175" y="285" width="95" height="20" uuid="a0000000-0000-0000-0000-000000001203"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{ausentesMes}[11]]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="270" y="285" width="95" height="20" uuid="a0000000-0000-0000-0000-000000001204"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{tardanzasMes}[11]]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.0 %">
+					<reportElement x="365" y="285" width="95" height="20" uuid="a0000000-0000-0000-0000-000000001205"/>
+					<box>
+						<pen lineWidth="0.5" lineColor="#E0E0E0"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{cumplimientoMes}[11] / 100.0]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="0" y="405" width="555" height="40" forecolor="#424242" uuid="f6f6f6f6-f6f6-4f6f-8f6f-f6f6f6f6f6f6"/>
+					<box>
+						<pen lineWidth="1.0" lineColor="#E0E0E0"/>
+					</box>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{analisisTendencias}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="Seccion3_Horas">
+		<groupExpression><![CDATA[1]]></groupExpression>
+		<groupHeader>
+			<band height="320">
+				<staticText>
+					<reportElement x="0" y="0" width="555" height="30" forecolor="#1A237E" uuid="a7a7a7a7-a7a7-4a7a-8a7a-a7a7a7a7a7a7"/>
+					<box>
+						<bottomPen lineWidth="2.0" lineColor="#1A237E"/>
+					</box>
+					<textElement>
+						<font size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[3. HORAS TRABAJADAS]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="10" y="40" width="200" height="20" forecolor="#424242" uuid="b7b7b7b7-b7b7-4b7b-8b7b-b7b7b7b7b7b7"/>
+					<textElement>
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Promedio Mensual:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="210" y="40" width="100" height="20" forecolor="#1976D2" uuid="c7c7c7c7-c7c7-4c7c-8c7c-c7c7c7c7c7c7"/>
+					<textElement>
+						<font size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{promedioHorasMensual} + " horas"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="10" y="65" width="200" height="20" forecolor="#424242" uuid="d7d7d7d7-d7d7-4d7d-8d7d-d7d7d7d7d7d7"/>
+					<textElement>
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Mes con Mayor Carga:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="210" y="65" width="200" height="20" forecolor="#388E3C" uuid="e7e7e7e7-e7e7-4e7e-8e7e-e7e7e7e7e7e7"/>
+					<textElement>
+						<font size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{mesMayorCarga} + " (" + $P{horasMayorCarga} + " hrs)"]]></textFieldExpression>
+				</textField>
+				<barChart>
+					<chart evaluationTime="Report" theme="default">
+						<reportElement x="0" y="95" width="555" height="200" uuid="c1d2e3f4-a5b6-4c7d-8e9f-0a1b2c3d4e5f"/>
+						<chartTitle>
+							<font size="12" isBold="true"/>
+							<titleExpression><![CDATA["Horas Trabajadas por Mes"]]></titleExpression>
+						</chartTitle>
+						<chartSubtitle/>
+						<chartLegend position="Bottom"/>
+					</chart>
+					<categoryDataset>
+						<dataset>
+							<datasetRun subDataset="dsHoras" uuid="d2e3f4a5-b6c7-4d8e-9f0a-1b2c3d4e5f6a">
+								<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{listaMensual})]]></dataSourceExpression>
+							</datasetRun>
+						</dataset>
+						<categorySeries>
+							<seriesExpression><![CDATA["Horas Normales"]]></seriesExpression>
+							<categoryExpression><![CDATA[$F{mes}]]></categoryExpression>
+							<valueExpression><![CDATA[$F{horasNormales}]]></valueExpression>
+						</categorySeries>
+						<categorySeries>
+							<seriesExpression><![CDATA["Horas Extras"]]></seriesExpression>
+							<categoryExpression><![CDATA[$F{mes}]]></categoryExpression>
+							<valueExpression><![CDATA[$F{horasExtras}]]></valueExpression>
+						</categorySeries>
+						<categorySeries>
+							<seriesExpression><![CDATA["Horas Especiales"]]></seriesExpression>
+							<categoryExpression><![CDATA[$F{mes}]]></categoryExpression>
+							<valueExpression><![CDATA[$F{horasEspeciales}]]></valueExpression>
+						</categorySeries>
+					</categoryDataset>
+					<barPlot>
+						<plot labelRotation="0.0"/>
+						<itemLabel/>
+						<categoryAxisFormat labelRotation="0.0">
+							<axisFormat labelColor="#000000" tickLabelColor="#000000" verticalTickLabels="false" axisLineColor="#000000"/>
+						</categoryAxisFormat>
+						<valueAxisFormat>
+							<axisFormat labelColor="#000000" tickLabelColor="#000000" verticalTickLabels="false" axisLineColor="#000000"/>
+						</valueAxisFormat>
+					</barPlot>
+				</barChart>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="Seccion4_Tardanzas">
+		<groupExpression><![CDATA[1]]></groupExpression>
+		<groupHeader>
+			<band height="160">
+				<staticText>
+					<reportElement x="0" y="0" width="555" height="30" forecolor="#1A237E" uuid="f7f7f7f7-f7f7-4f7f-8f7f-f7f7f7f7f7f7"/>
+					<box>
+						<bottomPen lineWidth="2.0" lineColor="#1A237E"/>
+					</box>
+					<textElement>
+						<font size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[4. TARDANZAS Y PUNTUALIDAD]]></text>
+				</staticText>
+				<rectangle radius="5">
+					<reportElement x="0" y="40" width="555" height="110" backcolor="#FFF3E0" uuid="a8a8a8a8-a8a8-4a8a-8a8a-a8a8a8a8a8a8"/>
+					<graphicElement>
+						<pen lineWidth="1.0" lineColor="#F57C00"/>
+					</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement x="10" y="50" width="180" height="20" forecolor="#424242" uuid="b8b8b8b8-b8b8-4b8b-8b8b-b8b8b8b8b8b8"/>
+					<textElement>
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Total Tardanzas:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="190" y="50" width="100" height="20" forecolor="#F57C00" uuid="c8c8c8c8-c8c8-4c8c-8c8c-c8c8c8c8c8c8"/>
+					<textElement>
+						<font size="12" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{totalTardanzasDetalle}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="10" y="75" width="180" height="20" forecolor="#424242" uuid="d8d8d8d8-d8d8-4d8d-8d8d-d8d8d8d8d8d8"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+					<text><![CDATA[Minutos Totales:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="190" y="75" width="100" height="20" forecolor="#424242" uuid="e8e8e8e8-e8e8-4e8e-8e8e-e8e8e8e8e8e8"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{minutosTotalesTardanzaDetalle} + " min"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="10" y="100" width="180" height="20" forecolor="#424242" uuid="f8f8f8f8-f8f8-4f8f-8f8f-f8f8f8f8f8f8"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+					<text><![CDATA[Promedio por Tardanza:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="190" y="100" width="100" height="20" forecolor="#424242" uuid="a9a9a9a9-a9a9-4a9a-8a9a-a9a9a9a9a9a9"/>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{promedioMinutosTardanza} + " min"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="10" y="125" width="100" height="20" forecolor="#424242" uuid="b9b9b9b9-b9b9-4b9b-8b9b-b9b9b9b9b9b9"/>
+					<textElement>
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Análisis:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="110" y="125" width="435" height="20" forecolor="#424242" uuid="c9c9c9c9-c9c9-4c9c-8c9c-c9c9c9c9c9c9"/>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{analisisPuntualidad}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="Seccion5_Licencias">
+		<groupExpression><![CDATA[1]]></groupExpression>
+		<groupHeader>
+			<band height="420">
+				<staticText>
+					<reportElement x="0" y="0" width="555" height="30" forecolor="#1A237E" uuid="d9d9d9d9-d9d9-4d9d-8d9d-d9d9d9d9d9d9"/>
+					<box>
+						<bottomPen lineWidth="2.0" lineColor="#1A237E"/>
+					</box>
+					<textElement>
+						<font size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[5. AUSENCIAS Y LICENCIAS]]></text>
+				</staticText>
+				<rectangle radius="5">
+					<reportElement x="0" y="40" width="270" height="150" backcolor="#F5F5F5" uuid="e9e9e9e9-e9e9-4e9e-8e9e-e9e9e9e9e9e9"/>
+					<graphicElement>
+						<pen lineWidth="1.0" lineColor="#BDBDBD"/>
+					</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement x="10" y="50" width="180" height="20" forecolor="#424242" uuid="f9f9f9f9-f9f9-4f9f-8f9f-f9f9f9f9f9f9"/>
+					<textElement>
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Total Licencias:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="190" y="50" width="70" height="20" forecolor="#1976D2" uuid="a0a0a0a0-a0a0-4a0a-8a0a-a0a0a0a0a0a0"/>
+					<textElement textAlignment="Right">
+						<font size="11" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{totalLicencias}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="10" y="75" width="180" height="20" forecolor="#424242" uuid="b0b0b0b0-b0b0-4b0b-8b0b-b0b0b0b0b0b0"/>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Días Licencia Médica:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="190" y="75" width="70" height="20" forecolor="#424242" uuid="c0c0c0c0-c0c0-4c0c-8c0c-c0c0c0c0c0c0"/>
+					<textElement textAlignment="Right">
+						<font size="10"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{diasLicenciaMedica}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="10" y="100" width="180" height="20" forecolor="#424242" uuid="d0d0d0d0-d0d0-4d0d-8d0d-d0d0d0d0d0d0"/>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Días Vacaciones:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="190" y="100" width="70" height="20" forecolor="#424242" uuid="e0e0e0e0-e0e0-4e0e-8e0e-e0e0e0e0e0e0"/>
+					<textElement textAlignment="Right">
+						<font size="10"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{diasVacaciones}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="10" y="125" width="180" height="20" forecolor="#424242" uuid="f0f0f0f0-f0f0-4f0f-8f0f-f0f0f0f0f0f0"/>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[Ausencias Injustificadas:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="190" y="125" width="70" height="20" forecolor="#D32F2F" uuid="a1a1a1a1-a1a1-4a1a-8a1a-a1a1a1a1a1a1"/>
+					<textElement textAlignment="Right">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{ausenciasInjustificadas}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="10" y="150" width="180" height="20" forecolor="#424242" uuid="b1b1b1b1-b1b1-4b1b-8b1b-b1b1b1b1b1b1"/>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<text><![CDATA[% Año No Trabajado:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="190" y="150" width="70" height="20" forecolor="#F57C00" uuid="c1c1c1c1-c1c1-4c1c-8c1c-c1c1c1c1c1c1"/>
+					<textElement textAlignment="Right">
+						<font size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{porcentajeNoTrabajado}]]></textFieldExpression>
+				</textField>
+				<rectangle radius="5">
+					<reportElement x="285" y="40" width="270" height="150" backcolor="#E8F5E9" uuid="d1d1d1d1-d1d1-4d1d-8d1d-d1d1d1d1d1d1"/>
+					<graphicElement>
+						<pen lineWidth="1.0" lineColor="#388E3C"/>
+					</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement x="295" y="50" width="250" height="20" forecolor="#1A237E" uuid="e1e1e1e1-e1e1-4e1e-8e1e-e1e1e1e1e1e1"/>
+					<textElement>
+						<font size="11" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Análisis de Impacto]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="295" y="75" width="250" height="105" forecolor="#424242" uuid="f1f1f1f1-f1f1-4f1f-8f1f-f1f1f1f1f1f1"/>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{analisisLicencias}]]></textFieldExpression>
+				</textField>
+				<pieChart>
+					<chart evaluationTime="Report" theme="default">
+						<reportElement x="140" y="200" width="280" height="200" uuid="e3f4a5b6-c7d8-4e9f-0a1b-2c3d4e5f6a7b"/>
+						<chartTitle>
+							<font size="12" isBold="true"/>
+							<titleExpression><![CDATA["Distribución de Licencias"]]></titleExpression>
+						</chartTitle>
+						<chartSubtitle/>
+						<chartLegend position="Bottom"/>
+					</chart>
+					<pieDataset>
+						<dataset>
+							<datasetRun subDataset="dsLicencias" uuid="f4a5b6c7-d8e9-4f0a-1b2c-3d4e5f6a7b8c">
+								<dataSourceExpression><![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($P{listaLicencias})]]></dataSourceExpression>
+							</datasetRun>
+						</dataset>
+						<keyExpression><![CDATA[$F{tipo}]]></keyExpression>
+						<valueExpression><![CDATA[$F{cantidad}]]></valueExpression>
+						<labelExpression><![CDATA[$F{tipo} + ": " + $F{cantidad} + " días"]]></labelExpression>
+					</pieDataset>
+					<piePlot>
+						<plot/>
+						<itemLabel/>
+					</piePlot>
+				</pieChart>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="Seccion6_Auditorias">
+		<groupExpression><![CDATA[1]]></groupExpression>
+		<groupHeader>
+			<band height="120">
+				<staticText>
+					<reportElement x="0" y="0" width="555" height="30" forecolor="#1A237E" uuid="a2a2a2a2-a2a2-4a2a-8a2a-a2a2a2a2a2a2"/>
+					<box>
+						<bottomPen lineWidth="2.0" lineColor="#1A237E"/>
+					</box>
+					<textElement>
+						<font size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[6. AUDITORÍAS Y CORRECCIONES]]></text>
+				</staticText>
+				<rectangle radius="5">
+					<reportElement x="0" y="40" width="555" height="70" backcolor="#FFF8E1" uuid="b2b2b2b2-b2b2-4b2b-8b2b-b2b2b2b2b2b2"/>
+					<graphicElement>
+						<pen lineWidth="1.0" lineColor="#FFA000"/>
+					</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement x="10" y="50" width="200" height="20" forecolor="#424242" uuid="c2c2c2c2-c2c2-4c2c-8c2c-c2c2c2c2c2c2"/>
+					<textElement>
+						<font size="11" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Total de Correcciones:]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="210" y="50" width="100" height="20" forecolor="#F57C00" uuid="d2d2d2d2-d2d2-4d2d-8d2d-d2d2d2d2d2d2"/>
+					<textElement>
+						<font size="13" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{totalCorrecciones}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="10" y="80" width="100" height="20" forecolor="#424242" uuid="e2e2e2e2-e2e2-4e2e-8e2e-e2e2e2e2e2e2"/>
+					<textElement>
+						<font size="10" isBold="true"/>
+					</textElement>
+					<text><![CDATA[Análisis:]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="110" y="80" width="435" height="30" forecolor="#424242" uuid="f2f2f2f2-f2f2-4f2f-8f2f-f2f2f2f2f2f2"/>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{analisisAuditorias}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="Seccion7_Costos">
+		<groupExpression><![CDATA[1]]></groupExpression>
+		<groupHeader>
+			<band height="240">
+				<staticText>
+					<reportElement x="0" y="0" width="555" height="30" forecolor="#1A237E" uuid="a3a3a3a3-a3a3-4a3a-8a3a-a3a3a3a3a3a3"/>
+					<box>
+						<bottomPen lineWidth="2.0" lineColor="#1A237E"/>
+					</box>
+					<textElement>
+						<font size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[7. COSTO LABORAL INDIVIDUAL]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="0" y="40" width="555" height="190" forecolor="#424242" uuid="b3b3b3b3-b3b3-4b3b-8b3b-b3b3b3b3b3b3">
+						<printWhenExpression><![CDATA[$P{costoLaboralDisponible}]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font size="10"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Costo Horas Normales: $" + $P{costoNormales} + "\n" +
+"Costo Horas Extras: $" + $P{costoExtras} + "\n" +
+"Costo Horas Especiales: $" + $P{costoEspeciales} + "\n\n" +
+"COSTO TOTAL ANUAL: $" + $P{costoTotal} + "\n" +
+"Promedio Mensual: $" + $P{costoMensualPromedio}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="40" width="555" height="30" forecolor="#757575" uuid="c3c3c3c3-c3c3-4c3c-8c3c-c3c3c3c3c3c3">
+						<printWhenExpression><![CDATA[!$P{costoLaboralDisponible}]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font size="11" isItalic="true"/>
+					</textElement>
+					<text><![CDATA[Información de costos no disponible (valor hora no configurado)]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="Seccion8_Conclusiones">
+		<groupExpression><![CDATA[1]]></groupExpression>
+		<groupHeader>
+			<band height="280">
+				<staticText>
+					<reportElement x="0" y="0" width="555" height="30" forecolor="#1A237E" uuid="d3d3d3d3-d3d3-4d3d-8d3d-d3d3d3d3d3d3"/>
+					<box>
+						<bottomPen lineWidth="2.0" lineColor="#1A237E"/>
+					</box>
+					<textElement>
+						<font size="16" isBold="true"/>
+					</textElement>
+					<text><![CDATA[8. CONCLUSIONES Y RECOMENDACIONES]]></text>
+				</staticText>
+				<rectangle radius="5">
+					<reportElement x="0" y="40" width="270" height="200" backcolor="#E8F5E9" uuid="e3e3e3e3-e3e3-4e3e-8e3e-e3e3e3e3e3e3"/>
+					<graphicElement>
+						<pen lineWidth="1.0" lineColor="#388E3C"/>
+					</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement x="10" y="50" width="250" height="25" forecolor="#388E3C" uuid="f3f3f3f3-f3f3-4f3f-8f3f-f3f3f3f3f3f3"/>
+					<textElement>
+						<font size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[✓ FORTALEZAS]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="10" y="80" width="250" height="150" forecolor="#424242" uuid="a4a4a4a4-a4a4-4a4a-8a4a-a4a4a4a4a4a4"/>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{fortalezas}]]></textFieldExpression>
+				</textField>
+				<rectangle radius="5">
+					<reportElement x="285" y="40" width="270" height="200" backcolor="#FFEBEE" uuid="b4b4b4b4-b4b4-4b4b-8b4b-b4b4b4b4b4b4"/>
+					<graphicElement>
+						<pen lineWidth="1.0" lineColor="#D32F2F"/>
+					</graphicElement>
+				</rectangle>
+				<staticText>
+					<reportElement x="295" y="50" width="250" height="25" forecolor="#D32F2F" uuid="c4c4c4c4-c4c4-4c4c-8c4c-c4c4c4c4c4c4"/>
+					<textElement>
+						<font size="13" isBold="true"/>
+					</textElement>
+					<text><![CDATA[⚠ DEBILIDADES]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="295" y="80" width="250" height="150" forecolor="#424242" uuid="d4d4d4d4-d4d4-4d4d-8d4d-d4d4d4d4d4d4"/>
+					<textElement>
+						<font size="9"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$P{debilidades}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="200" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="0" width="555" height="80" backcolor="#1A237E" uuid="a1a1a1a1-a1a1-4a1a-8a1a-a1a1a1a1a1a1"/>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="20" y="15" width="400" height="35" forecolor="#FFFFFF" uuid="b1b1b1b1-b1b1-4b1b-8b1b-b1b1b1b1b1b1"/>
+				<textElement verticalAlignment="Middle">
+					<font size="24" isBold="true"/>
+				</textElement>
+				<text><![CDATA[INFORME ANUAL DE DESEMPEÑO LABORAL]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="20" y="50" width="200" height="20" forecolor="#E3F2FD" uuid="c1c1c1c1-c1c1-4c1c-8c1c-c1c1c1c1c1c1"/>
+				<textElement>
+					<font size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Año " + $P{anioInforme}]]></textFieldExpression>
+			</textField>
+			<image scaleImage="FillFrame" onErrorType="Blank">
+				<reportElement x="20" y="90" width="100" height="100" uuid="d1d1d1d1-d1d1-4d1d-8d1d-d1d1d1d1d1d1"/>
+				<box>
+					<pen lineWidth="2.0" lineColor="#1A237E"/>
+				</box>
+				<imageExpression><![CDATA[$P{fotoEmpleado}]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement x="140" y="98" width="400" height="25" forecolor="#1A237E" uuid="e1e1e1e1-e1e1-4e1e-8e1e-e1e1e1e1e1e1"/>
+				<textElement>
+					<font size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{nombreCompleto}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="140" y="128" width="400" height="20" forecolor="#424242" uuid="f1f1f1f1-f1f1-4f1f-8f1f-f1f1f1f1f1f1"/>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Legajo: " + $P{userId} + " | DNI: " + $P{dni}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="140" y="148" width="400" height="20" forecolor="#424242" uuid="a2a2a2a2-a2a2-4a2a-8a2a-a2a2a2a2a2a2"/>
+				<textElement>
+					<font size="11"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{puesto} + " - " + $P{sucursal}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="140" y="168" width="400" height="20" forecolor="#757575" uuid="b2b2b2b2-b2b2-4b2b-8b2b-b2b2b2b2b2b2"/>
+				<textElement>
+					<font size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Ingreso: " + $P{fechaIngreso} + " | Antigüedad: " + $P{antiguedad}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="40" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="0" width="555" height="30" backcolor="#E8EAF6" uuid="c2c2c2c2-c2c2-4c2c-8c2c-c2c2c2c2c2c2"/>
+				<graphicElement>
+					<pen lineWidth="0.0"/>
+				</graphicElement>
+			</rectangle>
+			<textField>
+				<reportElement x="10" y="5" width="400" height="20" forecolor="#1A237E" uuid="d2d2d2d2-d2d2-4d2d-8d2d-d2d2d2d2d2d2"/>
+				<textElement verticalAlignment="Middle">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{nombreCompleto} + " - Informe Anual " + $P{anioInforme}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="450" y="5" width="100" height="20" forecolor="#757575" uuid="e2e2e2e2-e2e2-4e2e-8e2e-e2e2e2e2e2e2"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band splitType="Stretch"/>
+	</detail>
+	<pageFooter>
+		<band height="40" splitType="Stretch">
+			<line>
+				<reportElement x="0" y="5" width="555" height="1" forecolor="#BDBDBD" uuid="d5d5d5d5-d5d5-4d5d-8d5d-d5d5d5d5d5d5"/>
+			</line>
+			<textField>
+				<reportElement x="0" y="10" width="400" height="20" forecolor="#757575" uuid="e5e5e5e5-e5e5-4e5e-8e5e-e5e5e5e5e5e5"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Generado el: " + $P{fechaGeneracion} + " | Sistema Biométrico - Informe Anual " + $P{anioInforme}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="450" y="10" width="100" height="20" forecolor="#757575" uuid="f5f5f5f5-f5f5-4f5f-8f5f-f5f5f5f5f5f5"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER} + " de " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+</jasperReport>

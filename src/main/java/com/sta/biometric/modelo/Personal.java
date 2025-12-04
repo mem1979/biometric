@@ -93,7 +93,9 @@ import lombok.*;
         "}; " +
 
         "INCIDENCIAS_Y_OBSERVACIONES { " +
-        "notasPersonale; nota;" +
+        "  Desempeno[promedioDesempeno, evaluacionDesempeno]; " +
+        "  notasDesempeno; " +
+        "  notasPersonale; nota;" +
         "}")
 
 @View(name = "VerMapa", members = "direccion")
@@ -494,6 +496,39 @@ public class Personal extends Identifiable {
 
     @TextArea
     private String notasPersonale;
+
+    // =================== NOTAS DE DESEMPEÑO ===================
+
+    @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ListProperties("fechaHora, calificacion, contenido, autor")
+    @OrderBy("fechaHora DESC")
+    private Collection<NotaDesempeno> notasDesempeno = new ArrayList<>();
+
+    @Transient
+    @Depends("notasDesempeno")
+    @Stereotype("MONEY")
+    public double getPromedioDesempeno() {
+        if (notasDesempeno == null || notasDesempeno.isEmpty()) {
+            return 0.0;
+        }
+        double suma = notasDesempeno.stream()
+                .mapToInt(n -> n.getCalificacion().getPeso())
+                .sum();
+        return suma / notasDesempeno.size();
+    }
+
+    @Transient
+    @Depends("notasDesempeno")
+    public String getEvaluacionDesempeno() {
+        double promedio = getPromedioDesempeno();
+        if (promedio >= 2.5)
+            return "Excelente";
+        if (promedio >= 2.0)
+            return "Bueno";
+        if (promedio >= 1.5)
+            return "Regular";
+        return "Requiere Mejora";
+    }
 
     @ElementCollection
     @ListProperties("turno.codigo, turno.detalleJornadaHoras, fechaInicio, fechaFin")
