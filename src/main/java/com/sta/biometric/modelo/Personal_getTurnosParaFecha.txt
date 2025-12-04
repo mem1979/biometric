@@ -1,0 +1,59 @@
+
+    /**
+     * Devuelve TODOS los turnos aplicables para una fecha dada.
+     * Esto permite manejar casos donde un empleado tiene multiples turnos en el mismo dia
+     * (ej: turno normal + guardia especial).
+     * 
+     * @param fecha La fecha para la cual buscar turnos
+     * @return Lista de turnos aplicables (puede estar vacia)
+     */
+    public List<TurnosHorarios> getTurnosParaFecha(LocalDate fecha) {
+        if (jornadasAsignadas == null || jornadasAsignadas.isEmpty())
+            return Collections.emptyList();
+
+        List<TurnosHorarios> turnosAplicables = new ArrayList<>();
+
+        // 1. Buscar jornadas puntuales (con fecha fin explicita y valida)
+        List<JornadaAsignada> jornadasFijas = jornadasAsignadas.stream()
+                .filter(j -> j.getFechaFin() != null &&
+                        !fecha.isBefore(j.getFechaInicio()) &&
+                        !fecha.isAfter(j.getFechaFin()))
+                .collect(Collectors.toList());
+
+        for (JornadaAsignada jf : jornadasFijas) {
+            if (jf.getTurno() != null && !turnosAplicables.contains(jf.getTurno())) {
+                turnosAplicables.add(jf.getTurno());
+            }
+        }
+
+        // 2. Buscar rotaciones activas (fechaFin == null o posterior)
+        List<JornadaAsignada> rotativas = jornadasAsignadas.stream()
+                .filter(j -> (j.getFechaFin() == null || !fecha.isAfter(j.getFechaFin())) &&
+                        !fecha.isBefore(j.getFechaInicio()))
+                .sorted(Comparator.comparing(JornadaAsignada::getFechaInicio))
+                .collect(Collectors.toList());
+
+        if (!rotativas.isEmpty()) {
+            // Si solo hay una rotacion, agregarla directamente
+            if (rotativas.size() == 1) {
+                TurnosHorarios turno = rotativas.get(0).getTurno();
+                if (turno != null && !turnosAplicables.contains(turno)) {
+                    turnosAplicables.add(turno);
+                }
+            } else {
+                // Aplicar rotacion semanal
+                LocalDate lunesBase = rotativas.get(0).getFechaInicio().with(DayOfWeek.MONDAY);
+                LocalDate lunesActual = fecha.with(DayOfWeek.MONDAY);
+
+                long semanasTranscurridas = ChronoUnit.WEEKS.between(lunesBase, lunesActual);
+                int indice = (int) (semanasTranscurridas % rotativas.size());
+
+                TurnosHorarios turno = rotativas.get(indice).getTurno();
+                if (turno != null && !turnosAplicables.contains(turno)) {
+                    turnosAplicables.add(turno);
+                }
+            }
+        }
+
+        return turnosAplicables;
+    }

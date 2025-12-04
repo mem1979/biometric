@@ -27,9 +27,61 @@ import com.sta.biometric.servicios.*;
 
 import lombok.*;
 
+/**
+ * Entidad principal que representa un empleado en el sistema biométrico.
+ * 
+ * <p>Esta clase centraliza toda la información relacionada con un empleado, incluyendo:</p>
+ * <ul>
+ *   <li><b>Datos personales:</b> Nombre, DNI, CUIL, fecha de nacimiento, dirección, contacto</li>
+ *   <li><b>Información laboral:</b> Sucursal, puesto, fecha de inicio, antigüedad</li>
+ *   <li><b>Credenciales:</b> Usuario, contraseña, deviceId para autenticación móvil</li>
+ *   <li><b>Jornadas laborales:</b> Turnos asignados, horarios, pausas</li>
+ *   <li><b>Honorarios:</b> Valor hora, bonificaciones por horas extras y especiales</li>
+ *   <li><b>Licencias:</b> Historial de licencias y permisos</li>
+ *   <li><b>Desempeño:</b> Evaluaciones y notas de desempeño</li>
+ *   <li><b>Reportes:</b> Cálculos de horas trabajadas, asistencia, llegadas tarde</li>
+ * </ul>
+ * 
+ * <p><b>Responsabilidades principales:</b></p>
+ * <ul>
+ *   <li>Almacenar y gestionar datos del empleado (entidad JPA)</li>
+ *   <li>Calcular métricas laborales (horas trabajadas, extras, especiales)</li>
+ *   <li>Gestionar turnos y jornadas asignadas</li>
+ *   <li>Generar reportes e informes de asistencia</li>
+ *   <li>Validar datos de entrada (DNI, CUIL, fechas)</li>
+ * </ul>
+ * 
+ * <p><b>Relaciones con otras entidades:</b></p>
+ * <ul>
+ *   <li>{@link Sucursales} - Sucursal donde trabaja el empleado</li>
+ *   <li>{@link TurnosHorarios} - Turnos asignados mediante {@link JornadaAsignada}</li>
+ *   <li>{@link Licencia} - Licencias y permisos solicitados</li>
+ *   <li>{@link AuditoriaRegistros} - Registros de entrada/salida diarios</li>
+ *   <li>{@link NotaDesempeno} - Evaluaciones de desempeño</li>
+ * </ul>
+ * 
+ * <p><b>Vistas OpenXava configuradas:</b></p>
+ * <ul>
+ *   <li><b>Vista principal:</b> Información completa del empleado</li>
+ *   <li><b>VerMapa:</b> Visualización de dirección en mapa</li>
+ *   <li><b>VerCalendario:</b> Eventos y calendario del empleado</li>
+ *   <li><b>simple:</b> Vista resumida para selección rápida</li>
+ * </ul>
+ * 
+ * <p><b>Nota importante:</b> Esta clase tiene múltiples responsabilidades y es candidata
+ * para refactorización futura, dividiendo la lógica de cálculo en servicios separados.</p>
+ * 
+ * @author Sistema STARH - Mosquera, Marcelo 
+ * @version 2.0
+ * @since 1.0
+ * @see TurnosHorarios
+ * @see AuditoriaRegistros
+ * @see Licencia
+ * @see JornadaAsignada
+ */
+
 @Entity
-@Getter
-@Setter
+@Getter @Setter
 @View(members = "nombreCompleto, turnoActivoHoy;" +
         "InformacionPersonal { " +
         "InformacionPersonal[" +
@@ -46,7 +98,7 @@ import lombok.*;
         "]; " +
         "direccion;" +
         "contacto;" +
-        "documentacionPersonal;" +
+        "notasPersonale, documentacionPersonal;" +
         "}; " +
 
         "InformacionLaboral { " +
@@ -95,7 +147,7 @@ import lombok.*;
         "INCIDENCIAS_Y_OBSERVACIONES { " +
         "  Desempeno[promedioDesempeno, evaluacionDesempeno]; " +
         "  notasDesempeno; " +
-        "  notasPersonale; nota;" +
+        "  nota;" +
         "}")
 
 @View(name = "VerMapa", members = "direccion")
@@ -109,6 +161,18 @@ import lombok.*;
 
 public class Personal extends Identifiable {
 
+	/**
+	 * Indica si el empleado está activo en el sistema.
+	 * 
+	 * <p>Un empleado inactivo:</p>
+	 * <ul>
+	 *   <li>No puede registrar asistencia</li>
+	 *   <li>No aparece en listados activos</li>
+	 *   <li>Mantiene su historial para consultas</li>
+	 * </ul>
+	 * 
+	 * @see PersonalOnChangeActivoAction
+	 */
     @DefaultValueCalculator(TrueCalculator.class)
     @OnChange(PersonalOnChangeActivoAction.class)
     @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
@@ -118,21 +182,52 @@ public class Personal extends Identifiable {
     @Transient
     private String userIdOriginal;
 
+  
     @Required
     @SearchKey
     @Column(length = 10, unique = true)
     @DefaultValueCalculator(GeneradorCodigoUserIdCalculator.class)
     private String userId;
 
+    /**
+     * Identificador único del dispositivo móvil del empleado.
+     * 
+     * <p>Se genera automáticamente al instalar la app móvil y se usa para:</p>
+     * <ul>
+     *   <li>Autenticación del dispositivo</li>
+     *   <li>Validación de registros de asistencia</li>
+     *   <li>Prevención de uso no autorizado</li>
+     * </ul>
+     * 
+     * <p>Puede ser blanqueado mediante la acción {@code Personal.borrarDeviceId}</p>
+     * 
+     * @see DeviceIdProvider
+     */
     @ReadOnly // @Password
     @Column(length = 20)
     @Action(value = "Personal.borrarDeviceId", alwaysEnabled = true)
     private String deviceId;
 
+    /**
+     * Nombre de usuario para acceso al sistema.
+     * 
+     * <p>Se genera automáticamente con el formato: <code>INICIAL_NOMBRE + APELLIDO</code></p>
+     * <p>Ejemplo: Juan Pérez → JPérez</p>
+     * 
+     * @see #getCreaUsuario()
+     */
     @Column(length = 20)
     @Mayuscula
     private String usuario;
 
+    /**
+     * Genera el nombre de usuario para el empleado.
+     * 
+     * <p>Formato: INICIAL_NOMBRE + APELLIDO + @ + userId</p>
+     * <p>Ejemplo: Juan Pérez con userId EMP001 → "JPérez@EMP001"</p>
+     * 
+     * @return Nombre de usuario generado, o "N/D" si faltan datos
+     */
     @Mayuscula
     @Depends("nombres, apellido, userId")
     public String getCreaUsuario() {
@@ -144,6 +239,12 @@ public class Personal extends Identifiable {
         return inicialNombre + apellidoCompleto + "@" + userId;
     }
 
+    /**
+     * Contraseña encriptada del empleado.
+     * 
+     * <p>Se almacena de forma segura y puede ser blanqueada por un administrador
+     * mediante la acción {@code Personal.borrarContrasena}</p>
+     */
     @Password
     @ReadOnly
     @Column(length = 20)
@@ -151,26 +252,58 @@ public class Personal extends Identifiable {
     @DefaultValueCalculator(CalculadorPassword.class)
     private String contrasena;
 
+    /**
+     * Indica si el empleado acepta pausas durante su jornada laboral.
+     * 
+     * <p>Si es {@code true}, el sistema permitirá registrar pausas que no cuentan
+     * como tiempo trabajado.</p>
+     * 
+     * @see PersonalOnChangePausaAction
+     */
     @OnChange(PersonalOnChangePausaAction.class)
     @DefaultValueCalculator(TrueCalculator.class)
     @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean aceptaPausa;
 
+    
+    /**
+     * Nombre(s) del empleado.
+     * 
+     * <p>Se almacena en capitalizado automáticamente mediante {@link Capitalizar}</p>
+     */
     @Capitalizar
     @Required
     @DisplaySize(40)
     private String nombres;
 
+    /**
+     * Apellido del empleado.
+     * 
+     * <p>Se almacena Capitalizado automáticamente mediante {@link Capitalizar}</p>
+     */
     @Capitalizar
     @Required
     @DisplaySize(40)
     @Column(length = 30)
     private String apellido;
 
+    /**
+     * Nombre completo del empleado (calculado como APELLIDO, NOMBRES).
+     * 
+     * <p>Se actualiza automáticamente antes de guardar.</p>
+     * 
+     * @see #getApellidoNombre()
+     * @see #preGuardar()
+     */
     @DisplaySize(40)
     @MiLabel(medida = "extra", negrita = true, recuadro = true, icon = "account")
     private String nombreCompleto;
 
+   /**
+     * Retorna el nombre completo en formato "APELLIDO, NOMBRES".
+     * 
+     * @return Nombre completo formateado
+     */
     @DisplaySize(40)
     @MiLabel(medida = "extra", negrita = true, recuadro = true, icon = "account-box")
     @Depends("nombres, apellido")
@@ -178,9 +311,23 @@ public class Personal extends Identifiable {
         return apellido + ", " + nombres;
     }
 
+    /**
+     * Fecha de nacimiento del empleado.
+     * 
+     * <p>Se usa para calcular:</p>
+     * <ul>
+     *   <li>Edad actual ({@link #getEdad()})</li>
+     *   <li>Próximo cumpleaños ({@link #getProximoCumpleanos()})</li>
+     * </ul>
+     */
     @DefaultValueCalculator(CurrentLocalDateCalculator.class)
     private LocalDate fechaNacimiento;
 
+    /**
+     * Calcula la edad actual del empleado.
+     * 
+     * @return Edad en formato " Edad: X Años " o cadena vacía si no hay fecha
+     */
     @DisplaySize(15)
     @MiLabel(medida = "mediana", negrita = true, recuadro = false)
     @Depends("fechaNacimiento")
@@ -217,31 +364,56 @@ public class Personal extends Identifiable {
         return "(Cumpleaños en " + meses + " meses y " + dias + " días)";
     }
 
+    /**
+     * Estado civil del empleado.
+     * 
+     * @see EstadoCivil
+     */
     @Enumerated(EnumType.STRING)
     private EstadoCivil estadoCivil;
 
-    @NoCreate
-    @NoModify
+    /**
+     * Nacionalidad del empleado.
+     * 
+     * @see Nacionalidades
+     */
+    @NoCreate @NoModify
     @DefaultValueCalculator(NacionalidadPorDefectoCalculator.class)
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @DescriptionsList(descriptionProperties = "nacionalidad") // Muestra nacionalidad como texto
     private Nacionalidades nacionalidad;
 
-    // Relación OneToOne con Dni
-    @NoFrame
-    @NoSearch
-    @NoCreate
-    @NoModify
+    /**
+     * Número de Documento Nacional de Identidad (DNI).
+     * 
+     * <p>Debe cumplir con el formato argentino (7-8 dígitos).</p>
+     * <p>Es único en el sistema y se valida automáticamente.</p>
+     * 
+     * @see Dni
+     */
     @AsEmbedded
+    @NoFrame @NoSearch @NoCreate @NoModify
     @ReferenceView("simple")
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL) // 'CascadeType.ALL' permite que las operaciones como
-                                                                 // persist y remove se propaguen a la entidad 'Dni'
-    @JoinColumn(name = "dni_id") // Crea una columna 'dni_id' que almacena la clave primaria de 'Dni'
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL) 
+    @JoinColumn(name = "dni_id") 
     private Dni dni;
 
+    /**
+     * Código Único de Identificación Laboral (CUIL).
+     * 
+     * <p>Formato: XX-XXXXXXXX-X (11 dígitos con guiones)</p>
+     * <p>Se valida automáticamente y debe ser único.</p>
+     */
     @Mask("00-00000000-0")
     private String cuil; // Código Único de Identificación Laboral
 
+    /**
+     * Dirección del empleado (calle, número, localidad, provincia).
+     * 
+     * <p>Se usa para visualización en mapa (vista VerMapa).</p>
+     * 
+     * @see Direccion
+     */
     @Embedded
     @ReferenceView(forViews = "VerMapa", value = "VerMapa")
     private Direccion direccion;
@@ -249,6 +421,12 @@ public class Personal extends Identifiable {
     @Embedded
     private DatosContacto contacto;
 
+    
+    /**
+     * Puesto o cargo del empleado.
+     * 
+     * <p>Ejemplos: Gerente, Vendedor, Administrativo, etc.</p>
+     */
     @DisplaySize(30)
     @Capitalizar
     @ReadOnly(forViews = "Simple")
@@ -256,11 +434,22 @@ public class Personal extends Identifiable {
     @Column(length = 50)
     private String puesto;
 
+    
+    /**
+     * Fecha de inicio de actividades laborales.
+     * 
+     * <p>Se usa para calcular la antigüedad laboral mediante {@link #getAntiguedadLaboral()}</p>
+     */
     @Required
     @Stereotype("FECHA")
     @DefaultValueCalculator(CurrentLocalDateCalculator.class)
     private LocalDate inicioActividades;
 
+    /**
+     * Calcula la antigüedad laboral desde la fecha de inicio.
+     * 
+     * @return Antigüedad en formato "X años, Y meses y Z días"
+     */
     @Label
     @Depends("inicioActividades")
     public String getAntiguedadLaboral() {
@@ -292,22 +481,50 @@ public class Personal extends Identifiable {
         return sb.length() > 0 ? sb.toString() : "Menos de un dia";
     }
 
+    /**
+     * Sucursal donde trabaja el empleado.
+     * 
+     * <p>Determina la ubicación física de trabajo y se usa para:</p>
+     * <ul>
+     *   <li>Validación de geolocalización en registros</li>
+     *   <li>Reportes por sucursal</li>
+     *   <li>Asignación de turnos específicos</li>
+     * </ul>
+     * 
+     * @see Sucursales
+     */
     @Capitalizar
     @LabelFormat(forViews = "simple", value = LabelFormatType.SMALL)
     @DescriptionsList
     @ManyToOne(fetch = FetchType.LAZY)
     private Sucursales sucursal;
 
+    /**
+     * Foto del empleado (archivo de imagen).
+     * 
+     * <p>Acepta formatos de imagen con tamaño máximo de 200KB.</p>
+     */
     @ReadOnly(forViews = "Simple")
     @LabelFormat(LabelFormatType.NO_LABEL)
     @File(acceptFileTypes = "image/*", maxFileSizeInKb = 200)
     @Column(length = 32)
     private String foto;
 
+    /**
+     * Archivos de documentación personal (contratos, certificados, etc.) con tamaño máximo de 200KB.
+     */
     @Files(maxFileSizeInKb = 200)
     @Column(length = 32)
     private String documentacionPersonal;
 
+    /**
+     * Obtiene todos los eventos del empleado para el calendario anual.
+     * 
+     * <p>Incluye feriados, licencias y auditorías diarias.</p>
+     * 
+     * @return Colección de eventos para el editor de calendario
+     * @see DtoLicenciasFeriados
+     */
     @Editor("yearCalendarEditor")
     public Collection<DtoLicenciasFeriados> getEventos() {
 
@@ -379,6 +596,16 @@ public class Personal extends Identifiable {
         return out;
     }
 
+    
+    /**
+     * Colección de licencias del empleado para el año actual.
+     * 
+     * <p>Solo muestra licencias cuya fecha de inicio sea del año en curso
+     * (filtro automático por Hibernate @Where).</p>
+     * 
+     * @see Licencia
+     * @see TipoLicenciaAR
+     */
     @ListAction("Licencia.VerCalendario")
     @ListAction("Licencia.crearLista")
     @DeleteSelectedAction("")
@@ -433,14 +660,29 @@ public class Personal extends Identifiable {
         return resultado;
     }
 
+    /**
+     * Valor de la hora normal de trabajo.
+     * 
+     * <p>Se usa como base para calcular:</p>
+     * <ul>
+     *   <li>Horas extras (con {@link #porcentajeHoraExtra})</li>
+     *   <li>Horas especiales (con {@link #porcentajeHoraEspecial})</li>
+     * </ul>
+     */
     @Money
     private BigDecimal valorHora;
 
+    /**
+     * Porcentaje de bonificación para horas extras.
+     * 
+     * <p>Ejemplo: 50.0 = 50% adicional sobre {@link #valorHora}</p>
+     * <p>El valor total se calcula en {@link #getValorHoraExtra()}</p>
+     */
     @Digits(integer = 3, fraction = 1)
     @Min(0)
     @Max(100)
     private BigDecimal porcentajeHoraExtra;
-
+    
     @Label
     @Depends("valorHora, porcentajeHoraExtra")
     public BigDecimal getValorHoraExtra() {
@@ -452,6 +694,12 @@ public class Personal extends Identifiable {
         return BigDecimal.ZERO;
     }
 
+    /**
+     * Porcentaje de bonificación para horas especiales (feriados, días no laborales).
+     * 
+     * <p>Ejemplo: 100.0 = 100% adicional sobre {@link #valorHora}</p>
+     * <p>El valor total se calcula en {@link #getValorHoraEspecial()}</p>
+     */
     @Digits(integer = 3, fraction = 1)
     @Min(0)
     @Max(100)
@@ -530,6 +778,26 @@ public class Personal extends Identifiable {
         return "Requiere Mejora";
     }
 
+    
+    /**
+     * Colección de jornadas asignadas al empleado.
+     * 
+     * <p>Cada {@link JornadaAsignada} vincula un {@link TurnosHorarios} con un rango de fechas,
+     * permitiendo:</p>
+     * <ul>
+     *   <li>Turnos rotativos (sin fecha fin)</li>
+     *   <li>Turnos puntuales (con fecha inicio y fin)</li>
+     *   <li>Múltiples turnos simultáneos</li>
+     * </ul>
+     * 
+     * <p><b>Importante:</b> Los cambios en esta colección pueden perderse si no se persisten
+     * correctamente. Ver issue relacionado en el código.</p>
+     * 
+     * @see JornadaAsignada
+     * @see TurnosHorarios
+     * @see #getTurnoParaFecha(LocalDate)
+     * @see #getTurnosParaFecha(LocalDate)
+     */
     @ElementCollection
     @ListProperties("turno.codigo, turno.detalleJornadaHoras, fechaInicio, fechaFin")
     @OrderBy("fechaInicio")
@@ -560,7 +828,26 @@ public class Personal extends Identifiable {
     }
 
     // =============================================================================================
-
+    /**
+     * Obtiene el turno principal asignado para una fecha específica.
+     * 
+     * <p>Este método aplica la siguiente lógica de prioridad:</p>
+     * <ol>
+     *   <li><b>Jornadas puntuales:</b> Busca jornadas con fecha fin explícita que incluyan la fecha</li>
+     *   <li><b>Rotaciones activas:</b> Si no hay jornadas puntuales, busca rotaciones sin fecha fin</li>
+     *   <li><b>Rotación semanal:</b> Si hay múltiples rotaciones, aplica lógica de rotación por semanas</li>
+     * </ol>
+     * 
+     * <p><b>Nota:</b> Este método retorna solo UN turno. Para obtener todos los turnos
+     * aplicables (en caso de múltiples asignaciones), usar {@link #getTurnosParaFecha(LocalDate)}</p>
+     * 
+     * @param fecha Fecha para la cual buscar el turno (no puede ser null)
+     * @return El turno asignado para la fecha, o {@code null} si no hay turno
+     * @throws NullPointerException si fecha es null
+     * @see #getTurnosParaFecha(LocalDate)
+     * @see JornadaAsignada
+     * @see TurnosHorarios
+     */
     public TurnosHorarios getTurnoParaFecha(LocalDate fecha) {
         if (jornadasAsignadas == null || jornadasAsignadas.isEmpty())
             return null;
@@ -597,6 +884,69 @@ public class Personal extends Identifiable {
 
         return rotativas.get(indice).getTurno();
     }
+
+    /**
+     * Obtiene TODOS los turnos aplicables para una fecha dada.
+     * 
+     * <p>A diferencia de {@link #getTurnoParaFecha(LocalDate)}, este método retorna
+     * una lista con todos los turnos que aplican para la fecha, permitiendo manejar
+     * casos donde un empleado tiene múltiples turnos en el mismo día.</p>
+     * 
+     * <p><b>Casos de uso:</b></p>
+     * <ul>
+     *   <li>Turno normal + guardia especial</li>
+     *   <li>Múltiples turnos rotativos</li>
+     *   <li>Turnos puntuales superpuestos</li>
+     * </ul>
+     * 
+     * <p><b>Lógica aplicada:</b></p>
+     * <ol>
+     *   <li>Busca jornadas puntuales (con fecha fin) que incluyan la fecha</li>
+     *   <li>Busca jornadas rotativas (sin fecha fin) activas en la fecha</li>
+     *   <li>Para cada turno encontrado, verifica si es laboral para el día de la semana</li>
+     *   <li>Retorna todos los turnos que cumplan las condiciones</li>
+     * </ol>
+     * 
+     * @param fecha Fecha para la cual buscar turnos (no puede ser null)
+     * @return Lista de turnos aplicables (nunca null, puede estar vacía)
+     * @throws NullPointerException si fecha es null
+     * @see #getTurnoParaFecha(LocalDate)
+     * @see TurnosHorarios#esLaboral(DayOfWeek)
+     * @since 2.0
+     */
+public List<TurnosHorarios> getTurnosParaFecha(LocalDate fecha) {
+    if (jornadasAsignadas == null || jornadasAsignadas.isEmpty())
+        return Collections.emptyList();
+    List<TurnosHorarios> turnosAplicables = new ArrayList<>();
+    // 1. Buscar jornadas puntuales (con fecha fin explicita y valida)
+    List<JornadaAsignada> jornadasFijas = jornadasAsignadas.stream()
+            .filter(j -> j.getFechaFin() != null &&
+                    !fecha.isBefore(j.getFechaInicio()) &&
+                    !fecha.isAfter(j.getFechaFin()))
+            .collect(Collectors.toList());
+    for (JornadaAsignada jf : jornadasFijas) {
+        if (jf.getTurno() != null && !turnosAplicables.contains(jf.getTurno())) {
+            turnosAplicables.add(jf.getTurno());
+        }
+    }
+    // 2. Buscar rotaciones activas (fechaFin == null o posterior)
+    // CAMBIO IMPORTANTE: Evaluar CADA rotación individualmente
+    List<JornadaAsignada> rotativas = jornadasAsignadas.stream()
+            .filter(j -> (j.getFechaFin() == null || !fecha.isAfter(j.getFechaFin())) &&
+                    !fecha.isBefore(j.getFechaInicio()))
+            .collect(Collectors.toList());
+    for (JornadaAsignada rotacion : rotativas) {
+        TurnosHorarios turno = rotacion.getTurno();
+        if (turno != null && !turnosAplicables.contains(turno)) {
+            // Verificar si este turno es laboral para el día de la semana de la fecha
+            DayOfWeek diaSemana = fecha.getDayOfWeek();
+            if (turno.esLaboral(diaSemana)) {
+                turnosAplicables.add(turno);
+            }
+        }
+    }
+    return turnosAplicables;
+}
 
     // =============================================================================================
 
@@ -1213,7 +1563,17 @@ public class Personal extends Identifiable {
     // ========== MÉTODOS AUXILIARES ==========
 
     /**
-     * Convierte formato "HH:MM" a minutos totales.
+     * Convierte minutos totales a formato HH:MM.
+     * 
+     * <p><b>Ejemplos:</b></p>
+     * <ul>
+     *   <li>90 minutos → "01:30"</li>
+     *   <li>480 minutos → "08:00"</li>
+     *   <li>0 minutos → "00:00"</li>
+     * </ul>
+     * 
+     * @param minutos Total de minutos a convertir
+     * @return String en formato HH:MM
      */
     private int convertirHHMMaMinutos(String hhMM) {
         if (hhMM == null || hhMM.isEmpty())
@@ -1229,7 +1589,18 @@ public class Personal extends Identifiable {
     }
 
     /**
-     * Convierte formato "HH:MM" a BigDecimal de horas.
+     * Convierte formato HH:MM a minutos totales.
+     * 
+     * <p><b>Ejemplos:</b></p>
+     * <ul>
+     *   <li>"01:30" → 90 minutos</li>
+     *   <li>"08:00" → 480 minutos</li>
+     *   <li>"00:00" → 0 minutos</li>
+     * </ul>
+     * 
+     * @param horasMinutos String en formato HH:MM
+     * @return Total de minutos
+     * @throws NumberFormatException si el formato es inválido
      */
     private BigDecimal convertirHHMMaBigDecimal(String hhMM) {
         if (hhMM == null || hhMM.isEmpty())
@@ -1251,6 +1622,17 @@ public class Personal extends Identifiable {
 
     // ===============================================================================================
 
+    /**
+     * Callback JPA antes de persistir o actualizar el empleado.
+     * 
+     * <p>Acciones realizadas:</p>
+     * <ul>
+     *   <li>Actualiza 'usuario' con getCreaUsuario()</li>
+     *   <li>Actualiza 'nombreCompleto' con getApellidoNombre()</li>
+     *   <li>Añade prefijo "x-" al userId si está inactivo</li>
+     *   <li>Asigna coordenadas a la dirección si faltan</li>
+     * </ul>
+     */
     @PrePersist
     @PreUpdate
     private void preGuardar() {
@@ -1275,6 +1657,11 @@ public class Personal extends Identifiable {
         }
     }
 
+    /**
+     * Callback JPA antes de eliminar el empleado.
+     * 
+     * <p>Elimina los comentarios de discusión asociados.</p>
+     */
     @PreRemove
     private void borrarDiscusion() {
         DiscussionComment.removeForDiscussion(nota);

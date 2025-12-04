@@ -1,0 +1,52 @@
+/**
+ * Entidad principal que representa un empleado en el sistema biométrico.
+ * 
+ * <p>Esta clase centraliza toda la información relacionada con un empleado, incluyendo:</p>
+ * <ul>
+ *   <li><b>Datos personales:</b> Nombre, DNI, CUIL, fecha de nacimiento, dirección, contacto</li>
+ *   <li><b>Información laboral:</b> Sucursal, puesto, fecha de inicio, antigüedad</li>
+ *   <li><b>Credenciales:</b> Usuario, contraseña, deviceId para autenticación móvil</li>
+ *   <li><b>Jornadas laborales:</b> Turnos asignados, horarios, pausas</li>
+ *   <li><b>Honorarios:</b> Valor hora, bonificaciones por horas extras y especiales</li>
+ *   <li><b>Licencias:</b> Historial de licencias y permisos</li>
+ *   <li><b>Desempeño:</b> Evaluaciones y notas de desempeño</li>
+ *   <li><b>Reportes:</b> Cálculos de horas trabajadas, asistencia, llegadas tarde</li>
+ * </ul>
+ * 
+ * <p><b>Responsabilidades principales:</b></p>
+ * <ul>
+ *   <li>Almacenar y gestionar datos del empleado (entidad JPA)</li>
+ *   <li>Calcular métricas laborales (horas trabajadas, extras, especiales)</li>
+ *   <li>Gestionar turnos y jornadas asignadas</li>
+ *   <li>Generar reportes e informes de asistencia</li>
+ *   <li>Validar datos de entrada (DNI, CUIL, fechas)</li>
+ * </ul>
+ * 
+ * <p><b>Relaciones con otras entidades:</b></p>
+ * <ul>
+ *   <li>{@link Sucursales} - Sucursal donde trabaja el empleado</li>
+ *   <li>{@link TurnosHorarios} - Turnos asignados mediante {@link JornadaAsignada}</li>
+ *   <li>{@link Licencia} - Licencias y permisos solicitados</li>
+ *   <li>{@link AuditoriaRegistros} - Registros de entrada/salida diarios</li>
+ *   <li>{@link NotaDesempeno} - Evaluaciones de desempeño</li>
+ * </ul>
+ * 
+ * <p><b>Vistas OpenXava configuradas:</b></p>
+ * <ul>
+ *   <li><b>Vista principal:</b> Información completa del empleado</li>
+ *   <li><b>VerMapa:</b> Visualización de dirección en mapa</li>
+ *   <li><b>VerCalendario:</b> Eventos y calendario del empleado</li>
+ *   <li><b>simple:</b> Vista resumida para selección rápida</li>
+ * </ul>
+ * 
+ * <p><b>Nota importante:</b> Esta clase tiene múltiples responsabilidades y es candidata
+ * para refactorización futura, dividiendo la lógica de cálculo en servicios separados.</p>
+ * 
+ * @author Sistema Biométrico STA
+ * @version 2.0
+ * @since 1.0
+ * @see TurnosHorarios
+ * @see AuditoriaRegistros
+ * @see Licencia
+ * @see JornadaAsignada
+ */
