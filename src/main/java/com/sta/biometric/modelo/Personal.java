@@ -620,8 +620,16 @@ public class Personal extends Identifiable {
     @org.hibernate.annotations.Where(clause = "YEAR(fechaInicio) = YEAR(CURDATE())")
     private Collection<Licencia> licencias;
 
-    @NoCreate
-    @SimpleList
+    /**
+     * Obtiene un resumen de licencias por tipo para el año actual.
+     * 
+     * <p>Para cada tipo de licencia muestra total de días utilizados
+     * y días restantes disponibles.</p>
+     * 
+     * @return Colección de resúmenes por tipo de licencia
+     * @see LicenciaResumenPorTipo
+     */
+    @NoCreate @SimpleList
     public Collection<LicenciaResumenPorTipo> getLicenciasResumenAnual() {
         Map<TipoLicenciaAR, Integer> totalDias = new TreeMap<>();
         Map<TipoLicenciaAR, Licencia> ultimaLicenciaPorTipo = new TreeMap<>();
@@ -683,6 +691,13 @@ public class Personal extends Identifiable {
     @Max(100)
     private BigDecimal porcentajeHoraExtra;
     
+    /**
+     * Calcula el valor de la hora extra.
+     * 
+     * <p>Fórmula: valorHora + (valorHora × porcentajeHoraExtra / 100)</p>
+     * 
+     * @return Valor hora con bonificación extra, o ZERO si faltan datos
+     */
     @Label
     @Depends("valorHora, porcentajeHoraExtra")
     public BigDecimal getValorHoraExtra() {
@@ -705,6 +720,13 @@ public class Personal extends Identifiable {
     @Max(100)
     private BigDecimal porcentajeHoraEspecial;
 
+    /**
+     * Calcula el valor de la hora especial (feriados, días no laborales).
+     * 
+     * <p>Fórmula: valorHora + (valorHora × porcentajeHoraEspecial / 100)</p>
+     * 
+     * @return Valor hora con bonificación especial, o ZERO si faltan datos
+     */
     @Label
     @Depends("valorHora, porcentajeHoraEspecial")
     public BigDecimal getValorHoraEspecial() {
@@ -739,22 +761,46 @@ public class Personal extends Identifiable {
         return valorHora.add(bonificacion);
     }
 
+    
+    /**
+     * Notas/observaciones generales sobre el empleado.
+     * 
+     * <p>Usa el formato Discussion de OpenXava para comentarios colaborativos.</p>
+     */
     @Discussion
     private String nota;
 
+    /**
+     * Notas personales sobre el empleado (texto libre).
+     * 
+     * <p>Campo de texto sin formato para observaciones adicionales.</p>
+     */
     @TextArea
     private String notasPersonale;
 
     // =================== NOTAS DE DESEMPEÑO ===================
 
+    /**
+     * Colección de notas de desempeño del empleado.
+     * 
+     * <p>Cada nota incluye calificación, contenido y autor.
+     * Se usa para calcular {@link #getPromedioDesempeno()} y 
+     * {@link #getEvaluacionDesempeno()}.</p>
+     * 
+     * @see NotaDesempeno
+     */
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL, orphanRemoval = true)
     @ListProperties("fechaHora, calificacion, contenido, autor")
     @OrderBy("fechaHora DESC")
     private Collection<NotaDesempeno> notasDesempeno = new ArrayList<>();
 
+    /**
+     * Calcula el promedio de calificaciones de desempeño.
+     * 
+     * @return Promedio de calificaciones (0.0 a 3.0), o 0.0 si no hay notas
+     */
     @Transient
     @Depends("notasDesempeno")
-    @Stereotype("MONEY")
     public double getPromedioDesempeno() {
         if (notasDesempeno == null || notasDesempeno.isEmpty()) {
             return 0.0;
@@ -765,6 +811,19 @@ public class Personal extends Identifiable {
         return suma / notasDesempeno.size();
     }
 
+    /**
+     * Obtiene la evaluación textual del desempeño.
+     * 
+     * <p>Criterios:</p>
+     * <ul>
+     *   <li>≥ 2.5: "Excelente"</li>
+     *   <li>≥ 2.0: "Bueno"</li>
+     *   <li>≥ 1.5: "Regular"</li>
+     *   <li>< 1.5: "Requiere Mejora"</li>
+     * </ul>
+     * 
+     * @return Evaluación textual basada en promedio
+     */
     @Transient
     @Depends("notasDesempeno")
     public String getEvaluacionDesempeno() {
@@ -803,10 +862,22 @@ public class Personal extends Identifiable {
     @OrderBy("fechaInicio")
     private List<JornadaAsignada> jornadasAsignadas = new ArrayList<>();
 
+    /**
+     * Fecha de inicio para filtros de informes/dashboard.
+     * 
+     * <p>Por defecto: primer día del mes actual.</p>
+     * 
+     * @see ActualizarDashboardAction
+     */
     @Transient
     @OnChange(ActualizarDashboardAction.class)
     public LocalDate desde;
 
+    /**
+     * Obtiene la fecha de inicio para filtros de informes.
+     * 
+     * @return Fecha desde configurada, o primer día del mes actual si es null
+     */
     @Depends("inicioActividades, desde")
     public LocalDate getDesde() {
         if (desde == null) {
@@ -815,10 +886,22 @@ public class Personal extends Identifiable {
         return desde;
     }
 
+    /**
+     * Fecha de fin para filtros de informes/dashboard.
+     * 
+     * <p>Por defecto: fecha actual.</p>
+     * 
+     * @see ActualizarDashboardAction
+     */
     @Transient
     @OnChange(ActualizarDashboardAction.class)
     public LocalDate hasta;
 
+    /**
+     * Obtiene la fecha de fin para filtros de informes.
+     * 
+     * @return Fecha hasta configurada, o fecha actual si es null
+     */
     @Depends("hasta")
     public LocalDate getHasta() {
         if (hasta == null) {
@@ -949,7 +1032,12 @@ public List<TurnosHorarios> getTurnosParaFecha(LocalDate fecha) {
 }
 
     // =============================================================================================
-
+/**
+ * Obtiene la descripción del turno activo para hoy.
+ * 
+ * @return Descripción del turno actual o mensaje de estado
+ * @see #getTurnoDescripcionParaFecha(LocalDate)
+ */
     @DisplaySize(40)
     @MiLabel(medida = "grande", negrita = true, recuadro = true, icon = "clock")
     public String getTurnoActivoHoy() {
@@ -992,12 +1080,18 @@ public List<TurnosHorarios> getTurnosParaFecha(LocalDate fecha) {
     }
 
     // =============================================================================================
-
+    /**
+     * Genera datos para el gráfico anual de asistencia por mes.
+     * 
+     * <p>Para cada mes del año actual cuenta: jornadas completas,
+     * incompletas, licencias, ausencias y feriados trabajados.</p>
+     * 
+     * @return Colección de resúmenes mensuales para gráfico de barras
+     * @see ResumenAnualGrafico
+     */
+    @Transient @ReadOnly
     @Chart(type = ChartType.BAR, labelProperties = "mesEtiqueta", dataProperties = "completas, incompletas, licencias, ausentes, feriadosTrabajados")
     @ListProperties("mesEtiqueta, completas, incompletas, licencias, ausentes, feriadosTrabajados")
-
-    @Transient
-    @ReadOnly
     public Collection<ResumenAnualGrafico> getLicenciasGraficoAnual() {
         if (getId() == null)
             return Collections.emptyList(); // Entidad no persistida
@@ -1066,8 +1160,10 @@ public List<TurnosHorarios> getTurnosParaFecha(LocalDate fecha) {
     // ========== MÉTRICAS @LargeDisplay ==========
 
     /**
-     * Cuenta el total de días trabajados (evaluación COMPLETA) en el rango de
-     * fechas.
+     * Cuenta el total de días trabajados (evaluación COMPLETA) en el rango de fechas.
+     * 
+     * @return Número de días con jornada completa
+     * @see EvaluacionJornada#COMPLETA
      */
     @Depends("desde, hasta")
     @LargeDisplay(icon = "calendar-check")
@@ -1097,7 +1193,10 @@ public List<TurnosHorarios> getTurnosParaFecha(LocalDate fecha) {
 
     /**
      * Calcula la tasa de asistencia como porcentaje.
-     * Fórmula: (Días trabajados / Días laborales esperados) * 100
+     * 
+     * <p>Fórmula: (Días trabajados / Días laborales esperados) × 100</p>
+     * 
+     * @return Tasa de asistencia formateada (ej: "95.5%")
      */
     @Depends("desde, hasta")
     @LargeDisplay(icon = "percent")
@@ -1137,6 +1236,8 @@ public List<TurnosHorarios> getTurnosParaFecha(LocalDate fecha) {
 
     /**
      * Suma total de horas trabajadas (normales + extras + especiales) en el rango.
+     * 
+     * @return Total de horas en formato "HH:MM"
      */
     @Depends("desde, hasta")
     @LargeDisplay(icon = "clock-outline")
@@ -1187,6 +1288,11 @@ public List<TurnosHorarios> getTurnosParaFecha(LocalDate fecha) {
 
     /**
      * Cuenta la cantidad de llegadas tarde en el rango de fechas.
+     * 
+     * <p>Se considera llegada tarde cuando la hora de entrada supera
+     * la hora esperada más la tolerancia configurada.</p>
+     * 
+     * @return Número de llegadas tarde
      */
     @Depends("desde, hasta")
     @LargeDisplay(icon = "clock-alert")
@@ -1243,6 +1349,8 @@ public List<TurnosHorarios> getTurnosParaFecha(LocalDate fecha) {
 
     /**
      * Cuenta los días de licencia utilizados en el rango.
+     * 
+     * @return Número de días con evaluación LICENCIA
      */
     @Depends("desde, hasta")
     @LargeDisplay(icon = "calendar-remove")
@@ -1273,7 +1381,12 @@ public List<TurnosHorarios> getTurnosParaFecha(LocalDate fecha) {
     // ========== GRÁFICOS @Chart ==========
 
     /**
-     * Evolución mensual de asistencia (COMPLETA, LICENCIA, AUSENTE).
+     * Evolución mensual de asistencia (gráfico de barras).
+     * 
+     * <p>Para cada mes cuenta: días trabajados, licencias y ausencias.</p>
+     * 
+     * @return Colección de resúmenes mensuales
+     * @see ResumenMensualAsistencia
      */
     @Chart(type = ChartType.BAR, labelProperties = "mes", dataProperties = "diasTrabajados, diasLicencia, diasAusente")
     @ListProperties("mes, diasTrabajados, diasLicencia, diasAusente")
@@ -1335,6 +1448,11 @@ public List<TurnosHorarios> getTurnosParaFecha(LocalDate fecha) {
 
     /**
      * Distribución de tipos de jornada (gráfico circular).
+     * 
+     * <p>Cuenta la cantidad de cada tipo de evaluación en el rango.</p>
+     * 
+     * @return Colección de distribución por tipo
+     * @see DistribucionJornada
      */
     @Chart(type = ChartType.PIE)
     @ListProperties("tipoJornada, cantidad")
@@ -1452,6 +1570,9 @@ public List<TurnosHorarios> getTurnosParaFecha(LocalDate fecha) {
 
     /**
      * Top 10 días con más horas extras.
+     * 
+     * @return Lista ordenada de días con más horas extras
+     * @see DetalleHorasExtras
      */
     @SimpleList
     @ListProperties("fecha, diaSemana, turnoNombre, horasExtras, montoExtras")
@@ -1498,7 +1619,12 @@ public List<TurnosHorarios> getTurnosParaFecha(LocalDate fecha) {
     }
 
     /**
-     * Registro de todas las llegadas tarde en el período.
+     * Registro detallado de todas las llegadas tarde en el período.
+     * 
+     * <p>Incluye fecha, hora esperada, hora real y minutos de retraso.</p>
+     * 
+     * @return Lista de llegadas tarde con detalles
+     * @see DetalleLlegadaTarde
      */
     @SimpleList
     @ListProperties("fecha, horaEsperada, horaReal, minutosRetraso, justificado")
