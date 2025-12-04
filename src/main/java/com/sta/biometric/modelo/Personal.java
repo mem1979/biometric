@@ -72,7 +72,7 @@ import lombok.*;
         "}; " +
 
         "LICENCIAS { " +
-        "licencias, licenciasResumenAnual; licenciasGraficoAnual; " +
+        "licencias, licenciasResumenAnual; " +
         "}; " +
 
         "informes { " +
@@ -82,6 +82,7 @@ import lombok.*;
         "  cantidadLlegadasTardeInformes, diasLicenciaUtilizados;" +
         "};" +
         "Graficos {" +
+        "  licenciasGraficoAnual;" +
         "  evolucionMensualAsistencia;" +
         "  distribucionTiposJornada, horasPorMes;" +
         "};" +
