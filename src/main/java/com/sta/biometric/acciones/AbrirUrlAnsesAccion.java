@@ -1,9 +1,13 @@
-package com.sta.biometric.acciones;
-import org.openxava.actions.*;
-import org.openxava.controller.*;
-import org.openxava.util.*;
+ï»¿package com.sta.biometric.acciones;
 
-public class AbrirUrlAnsesAccion  implements IForwardAction {
+import org.openxava.actions.*;
+
+public class AbrirUrlAnsesAccion extends ViewBaseAction implements IForwardAction {
+
+    @Override
+    public void execute() throws Exception {
+        // No se requiere logica adicional, solo redirigir
+    }
 
     @Override
     public String getForwardURI() {
@@ -13,43 +17,6 @@ public class AbrirUrlAnsesAccion  implements IForwardAction {
 
     @Override
     public boolean inNewWindow() {
-        return true; // Abre la URL en una nueva ventana o pestaña.
+        return true; // Abre la URL en una nueva ventana o pestana.
     }
-
-	@Override
-	public void execute() throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setErrors(Messages errors) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public Messages getErrors() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setMessages(Messages messages) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public Messages getMessages() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setEnvironment(Environment environment) {
-		// TODO Auto-generated method stub
-		
-	}
-    
 }
