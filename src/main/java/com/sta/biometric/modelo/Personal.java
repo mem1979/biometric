@@ -168,6 +168,8 @@ import lombok.*;
         "  Desempeno[promedioDesempeno, evaluacionDesempeno]; " +
         "  notasDesempeno; " +
         "  nota;" +
+        "}; " +
+        "Contratos { contratos }; " +
         "}")
 
 @View(name = "VerMapa", members = "direccion")
@@ -180,6 +182,11 @@ import lombok.*;
         @RowStyle(style = "empleadoInactivo", property = "activo", value = "false") })
 
 public class Personal extends Identifiable {
+
+    // --- Integración RRHH (Contratos) ---
+    @OneToMany(mappedBy = "personal")
+    @ListProperties("regimen, modalidadLiquidacion, convenio.sigla, activo")
+    private Collection<com.sta.biometric.modelo.rrhh.Contrato> contratos;
 
     /**
      * Indica si el empleado está activo en el sistema.
