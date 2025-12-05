@@ -14,7 +14,7 @@ import com.sta.biometric.modelo.*;
 /**
  * Tarea programada para generar la apertura de jornada diaria para todos los
  * empleados activos.
- * Ejecutada automáticamente a las 00:01 hs o manualmente desde una acción.
+ * Ejecutada automáticamente a las 00:00 hs .
  */
 @DisallowConcurrentExecution
 public class AperturaJornadaJob implements Job {
@@ -120,7 +120,7 @@ public class AperturaJornadaJob implements Job {
             asistencia.setEvaluacion(EvaluacionJornada.DIA_NO_LABORAL);
             asistencia.setJustificado(false);
         } else {
-            asistencia.setEvaluacion(EvaluacionJornada.EN_CURSO);
+            asistencia.setEvaluacion(EvaluacionJornada.PENDIENTE);
             asistencia.setJustificado(false);
             if (asistencia.getNota() == null || asistencia.getNota().isBlank()) {
                 asistencia.setNota("Pendiente de ingreso.");
