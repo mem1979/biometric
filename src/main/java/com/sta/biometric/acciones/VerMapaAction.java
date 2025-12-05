@@ -20,12 +20,12 @@ public class VerMapaAction extends ViewBaseAction {
         try {
             direccionObj = obj.getClass().getMethod("getDireccion").invoke(obj);
         } catch (Exception e) {
-            addError("No se pudo acceder a la dirección embebida.");
+            addError("No se pudo acceder a la direccion embebida.");
             return;
         }
 
         if (!(direccionObj instanceof Direccion)) {
-            addError("La dirección embebida no es válida.");
+            addError("La direccion embebida no es valida.");
             return;
         }
 
@@ -33,14 +33,13 @@ public class VerMapaAction extends ViewBaseAction {
 
         // Si no hay coordenadas, ejecutar accion que las obtenga
         if (direccion.getUbicacion() == null || direccion.getUbicacion().trim().isEmpty()) {
-            // Ejecutar la accion ObtenerCoordenadasGenericaAction programaticamente
             executeAction("Coordenadas.ObtenerCoordenadas");
         }
 
         // Mostrar dialogo con la vista de direccion
         showDialog();
         getView().setModel(obj);
-        getView().setViewName("VerMapa"); // AsegÃºrate que esta vista estÃ© definida
+        getView().setViewName("VerMapa");
         getView().setValues(clave);
         getView().findObject();
         getView().setKeyEditable(false);

@@ -7,16 +7,13 @@ import org.openxava.jpa.*;
 
 public class NacionalidadPorDefectoCalculator implements ICalculator {
 
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	@Override
+    @Override
     public Object calculate() throws Exception {
         Query query = XPersistence.getManager()
             .createQuery("from Nacionalidades n where n.nacionalidad = :nombre");
         query.setParameter("nombre", "Argentino/a");
-        return query.getSingleResult(); // Asegúrate de que existe en la base
+        return query.getSingleResult();
     }
 }

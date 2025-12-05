@@ -137,6 +137,11 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
 
     </controlador>
 
+    <controlador nombre="JornadaAsignada">
+        <accion nombre="Add" oculta="true" clase="com.sta.biometric.acciones.JornadaAsignadaAddAction">
+        </accion>
+    </controlador>
+
 
     <controlador nombre="AuditoriaRegistros">
         <hereda-de controlador="Print"/>

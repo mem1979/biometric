@@ -18,7 +18,7 @@ public class ImportadorFeriadosService {
         int anio = LocalDate.now().getYear();
         String apiUrl = "https://api.argentinadatos.com/v1/feriados/" + anio;
 
-        // === Limpiar feriados fuera del año actual ===
+        // === Limpiar feriados fuera del anio actual ===
         LocalDate desde = LocalDate.of(anio, 1, 1);
         LocalDate hasta = LocalDate.of(anio, 12, 31);
 
@@ -58,7 +58,7 @@ public class ImportadorFeriadosService {
                 f.setFecha(fecha);
                 f.setTipo(obj.getString("tipo", "SIN CLASIFICAR"));
                 f.setMotivo(obj.getString("nombre", "Sin motivo"));
-                f.setInfoAdicional("Importado automóticamente desde ArgentinaDatos.com");
+                f.setInfoAdicional("Importado automaticamente desde ArgentinaDatos.com");
 
                 em.persist(f);
             }

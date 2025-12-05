@@ -11,17 +11,16 @@ public class LicenciasGenerateReportAction extends GenerateReportAction {
     public void execute() throws Exception {
 
         // 1. Buscar el empleado a partir de la clave que hay en la vista
-        String id = getView().getRoot().getValueString("id");   // o el tipo que uses
+        String id = getView().getRoot().getValueString("id");
         Personal emp = XPersistence.getManager()
                           .find(Personal.class, id);
 
-        // 2. Cambiar el título del Tab antes de exportar
+        // 2. Cambiar el titulo del Tab antes de exportar
         if (emp != null) {
             getTab().setTitle("Licencias de " + emp.getNombreCompleto());
-            // setTitle() sustituye automáticamente el que usaría el PDF :contentReference[oaicite:3]{index=3}
         }
 
-        // 3. Ejecutar la lógica estándar (genera PDF/XLS/CSV)
+        // 3. Ejecutar la logica estandar (genera PDF/XLS/CSV)
         super.execute();
     }
 }

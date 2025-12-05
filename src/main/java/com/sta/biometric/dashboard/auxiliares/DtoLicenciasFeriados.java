@@ -14,7 +14,7 @@ public class DtoLicenciasFeriados {
 
 	    private LocalDate fechaInicio;   // para feriados = fecha; para licencias = desde
 	    private LocalDate fechaFin;      // para feriados = fecha; para licencias = hasta
-	    private String    motivo;        // descripción o motivo
+	    private String    motivo;        // descripcion o motivo
 	    private String    tipo;          // "FERIADO" | "LICENCIA"
 	    private String 	  color;
 	    private String    titulo;
@@ -42,12 +42,12 @@ public class DtoLicenciasFeriados {
 	        return e;
 	    }
 	
-	 // Ajustá imports y nombres a tu DTO real
+	 // Ajuste imports y nombres a tu DTO real
 	    public static DtoLicenciasFeriados ofCompleta(AuditoriaRegistros a) {
 	        DtoLicenciasFeriados dto = new DtoLicenciasFeriados();
 	        dto.setTitulo("Completa");
 	        dto.setTipo("COMPLETA");
-	        dto.setFechaInicio(a.getFecha()); // LocalDate; si es Date, convertí a LocalDate
+	        dto.setFechaInicio(a.getFecha()); // LocalDate; si es Date, converti a LocalDate
 	        dto.setFechaFin(a.getFecha());
 	        dto.setAllDay(true);
 	        dto.setColor("#3574f0"); // azul
@@ -73,7 +73,7 @@ public class DtoLicenciasFeriados {
 	        dto.setFechaFin(a.getFecha());
 	        dto.setAllDay(true);
 	        dto.setColor("#E53935"); // rojo
-	        dto.motivo = "Día laborable sin registros";
+	        dto.motivo = "Dia laborable sin registros";
 	        return dto;
 	    }
 	    public static DtoLicenciasFeriados ofFeriadoTrabajado(AuditoriaRegistros a) {
@@ -84,7 +84,7 @@ public class DtoLicenciasFeriados {
 	        dto.setFechaFin(a.getFecha());
 	        dto.setAllDay(true);
 	        dto.setColor("#8E24AA"); // violeta
-	        dto.motivo = "Trabajo en día feriado";
+	        dto.motivo = "Trabajo en dia feriado";
 	        return dto;
 	    }
 

@@ -10,8 +10,8 @@ import org.quartz.*;
 import com.sta.biometric.modelo.*;
 
 /**
- * Tarea programada para cerrar automáticamente la jornada diaria consolidando los registros.
- * Se ejecuta todos los días a las 23:59 hs mediante Quartz Scheduler.
+ * Tarea programada para cerrar automaticamente la jornada diaria consolidando los registros.
+ * Se ejecuta todos los dias a las 23:59 hs mediante Quartz Scheduler.
  */
 @DisallowConcurrentExecution
 public class CierreJornadaJob implements Job {
@@ -56,4 +56,3 @@ public class CierreJornadaJob implements Job {
         }
     }
 }
-

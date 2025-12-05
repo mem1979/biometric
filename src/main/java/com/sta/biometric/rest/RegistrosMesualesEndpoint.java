@@ -23,7 +23,7 @@ public class RegistrosMesualesEndpoint {
     private static final String BEARER = "Bearer ";
 
     @GET
-    @Path("/{anio}/{mes}")                 //  path params
+    @Path("/{anio}/{mes}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response historialMensual(
         @PathParam("anio")  int anio,
@@ -32,7 +32,7 @@ public class RegistrosMesualesEndpoint {
     ) {
         /* Validar JWT  obtener login */
         String login = extraerLogin(authHeader);
-        if (login == null) return Response.status(Response.Status.UNAUTHORIZED).entity("Token inválido").build();
+        if (login == null) return Response.status(Response.Status.UNAUTHORIZED).entity("Token invalido").build();
 
         /* Obtener empleado */
         Personal emp = XPersistence.getManager()
@@ -60,10 +60,10 @@ public class RegistrosMesualesEndpoint {
             .setParameter("fin", fin)
             .getResultList();
 
-        /* Agrupar por día */
+        /* Agrupar por dia */
         Map<String,List<Map<String,Object>>> dias = new HashMap<>();
         for (ColeccionRegistros r : lista) {
-            String key = r.getFecha().toString();                  // yyyy-MM-dd
+            String key = r.getFecha().toString();
             Map<String,Object> dto = new HashMap<>();
             dto.put("hora", TiempoUtils.formatearHora(r.getHora()));
             dto.put("tipo", r.getTipoMovimiento() != null ? r.getTipoMovimiento().name()
@@ -86,4 +86,3 @@ public class RegistrosMesualesEndpoint {
         return JWTUtil.validarTokenYObtenerUsuario(header.substring(BEARER.length()));
     }
 }
-

@@ -1,4 +1,4 @@
-﻿package com.sta.biometric.acciones;
+package com.sta.biometric.acciones;
 
 import org.openxava.actions.*;
 
