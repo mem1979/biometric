@@ -81,6 +81,8 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         <accion nombre="informeAnual" clase="com.sta.biometric.acciones.PersonalInformeAnualAction" icono="assessment" modo="detail">
         </accion>
 
+        <accion nombre="GenerarLiquidacion" oculta="true" clase="com.sta.biometric.acciones.GenerarLiquidacionAction" icono="file-document-outline" confirmar="true">
+        </accion>
 
     </controlador>
 
@@ -166,5 +168,19 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
     </controlador>
 
 
+    <controlador nombre="LiquidacionJornadas">
+        <hereda-de controlador="Print"/>
+
+        <accion nombre="Recalcular" oculta="true" clase="com.sta.biometric.acciones.RecalcularLiquidacionAction" icono="refresh" confirmar="true">
+        </accion>
+
+        <accion nombre="Cerrar" oculta="true" clase="com.sta.biometric.acciones.CerrarLiquidacionAction" icono="lock" confirmar="true">
+        </accion>
+
+        <accion nombre="editarLiquidacion" oculta="true" clase="org.openxava.actions.EditElementInCollectionAction">
+        </accion>
+    </controlador>
+
 
 </controladores>
+

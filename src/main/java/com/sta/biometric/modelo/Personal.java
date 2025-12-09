@@ -146,6 +146,11 @@ import lombok.*;
         "licencias, licenciasResumenAnual; " +
         "}; " +
 
+        "LIQUIDACION_JORNADAS { " +
+        "Personal.GenerarLiquidacion(ALWAYS); " +
+        "liquidaciones; " +
+        "}; " +
+
         "informes { " +
         "desde, hasta;" +
         "IndicadoresClave {" +
@@ -969,6 +974,30 @@ public class Personal extends Identifiable {
     @ListProperties("turno.codigo, turno.detalleJornadaHoras, fechaInicio, fechaFin")
     @OrderBy("fechaInicio")
     private List<JornadaAsignada> jornadasAsignadas = new ArrayList<>();
+
+    // ==================================================================================
+    // LIQUIDACIONES DE JORNADAS
+    // ==================================================================================
+
+    /**
+     * Colección de liquidaciones de jornadas del empleado.
+     * 
+     * <p>
+     * Cada liquidación consolida las horas trabajadas (normales, extras,
+     * especiales)
+     * para un período determinado, junto con los valores monetarios
+     * correspondientes.
+     * </p>
+     * 
+     * @see LiquidacionJornadas
+     */
+    @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL)
+    @ListProperties("periodoDesde, periodoHasta, estadoPeriodo, horasNormalesFormatted, horasExtrasFormatted, montoGranTotal")
+    @OrderBy("periodoDesde desc")
+    @EditAction("LiquidacionJornadas.editarLiquidacion")
+    @DetailAction("LiquidacionJornadas.Recalcular")
+    @DetailAction("LiquidacionJornadas.Cerrar")
+    private Collection<LiquidacionJornadas> liquidaciones;
 
     /**
      * Fecha de inicio para filtros de informes/dashboard.
