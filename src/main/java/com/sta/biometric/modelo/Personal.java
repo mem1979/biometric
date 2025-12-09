@@ -14,7 +14,6 @@ import org.openxava.annotations.*;
 import org.openxava.calculators.*;
 import org.openxava.jpa.*;
 import org.openxava.model.*;
-import org.openxava.web.editors.*;
 
 import com.sta.biometric.acciones.*;
 import com.sta.biometric.anotaciones.*;
@@ -165,9 +164,8 @@ import lombok.*;
         "}; " +
 
         "INCIDENCIAS_Y_OBSERVACIONES { " +
-        "  Desempeno[promedioDesempeno, evaluacionDesempeno]; " +
-        "  notasDesempeno; " +
-        "  nota;" +
+        "evaluacionDesempenoAnual; " +
+        "notasDesempeno; " +
         "}")
 
 @View(name = "VerMapa", members = "direccion")
@@ -868,16 +866,6 @@ public class Personal extends Identifiable {
     }
 
     /**
-     * Notas/observaciones generales sobre el empleado.
-     * 
-     * <p>
-     * Usa el formato Discussion de OpenXava para comentarios colaborativos.
-     * </p>
-     */
-    @Discussion
-    private String nota;
-
-    /**
      * Notas personales sobre el empleado (texto libre).
      * 
      * <p>
@@ -900,54 +888,55 @@ public class Personal extends Identifiable {
      * 
      * @see NotaDesempeno
      */
+
+    @NoDefaultActions
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ListProperties("fechaHora, calificacion, contenido, autor")
+    @ListProperties("autor, fechaHora, calificacion")
     @OrderBy("fechaHora DESC")
     private Collection<NotaDesempeno> notasDesempeno = new ArrayList<>();
 
     /**
-     * Calcula el promedio de calificaciones de desempeño.
+     * Filtra las notas del año actual.
+     * 
+     * @return Lista de notas de desempeño del año en curso
+     */
+    @Transient
+    private List<NotaDesempeno> getNotasDelAnioActual() {
+        if (notasDesempeno == null || notasDesempeno.isEmpty()) {
+            return Collections.emptyList();
+        }
+        int anioActual = LocalDate.now().getYear();
+        return notasDesempeno.stream()
+                .filter(n -> n.getFechaHora() != null && n.getFechaHora().getYear() == anioActual)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Calcula el promedio de calificaciones de desempeño del año actual.
      * 
      * @return Promedio de calificaciones (0.0 a 3.0), o 0.0 si no hay notas
      */
     @Transient
     @Depends("notasDesempeno")
-    public double getPromedioDesempeno() {
-        if (notasDesempeno == null || notasDesempeno.isEmpty()) {
-            return 0.0;
-        }
-        double suma = notasDesempeno.stream()
-                .mapToInt(n -> n.getCalificacion().getPeso())
-                .sum();
-        return suma / notasDesempeno.size();
+    public double getPromedioDesempenoAnual() {
+        return NotaDesempeno.calcularPromedio(getNotasDelAnioActual());
     }
 
     /**
-     * Obtiene la evaluación textual del desempeño.
+     * Obtiene la evaluación textual del desempeño del año actual.
      * 
-     * <p>
-     * Criterios:
-     * </p>
-     * <ul>
-     * <li>≥ 2.5: "Excelente"</li>
-     * <li>≥ 2.0: "Bueno"</li>
-     * <li>≥ 1.5: "Regular"</li>
-     * <li>< 1.5: "Requiere Mejora"</li>
-     * </ul>
-     * 
-     * @return Evaluación textual basada en promedio
+     * @return Evaluación textual basada en promedio anual, o mensaje si no hay
+     *         evaluaciones
      */
     @Transient
     @Depends("notasDesempeno")
-    public String getEvaluacionDesempeno() {
-        double promedio = getPromedioDesempeno();
-        if (promedio >= 2.5)
-            return "Excelente";
-        if (promedio >= 2.0)
-            return "Bueno";
-        if (promedio >= 1.5)
-            return "Regular";
-        return "Requiere Mejora";
+    @MiLabel(medida = "chica", negrita = true, recuadro = true, icon = "account-star-outline")
+    public String getEvaluacionDesempenoAnual() {
+        List<NotaDesempeno> notasAnio = getNotasDelAnioActual();
+        if (notasAnio.isEmpty()) {
+            return "No se realizaron evaluaciones en este año";
+        }
+        return NotaDesempeno.calcularEvaluacion(notasAnio);
     }
 
     /**
@@ -1066,34 +1055,46 @@ public class Personal extends Identifiable {
         if (jornadasAsignadas == null || jornadasAsignadas.isEmpty())
             return null;
 
-        // 1. Priorizar jornadas puntuales (con fecha fin explícita y válida)
-        Optional<JornadaAsignada> jornadaFija = jornadasAsignadas.stream()
-                .filter(j -> j.getFechaFin() != null &&
-                        !fecha.isBefore(j.getFechaInicio()) &&
-                        !fecha.isAfter(j.getFechaFin()))
-                .findFirst();
+        // 1. Obtener TODAS las jornadas vigentes para la fecha
+        List<JornadaAsignada> vigentes = jornadasAsignadas.stream()
+                .filter(j -> !fecha.isBefore(j.getFechaInicio()) &&
+                        (j.getFechaFin() == null || !fecha.isAfter(j.getFechaFin())))
+                .collect(Collectors.toList());
 
-        if (jornadaFija.isPresent()) {
-            return jornadaFija.get().getTurno();
+        if (vigentes.isEmpty()) {
+            return null;
         }
 
-        // 2. Buscar rotaciones activas (fechaFin == null o posterior)
-        List<JornadaAsignada> rotativas = jornadasAsignadas.stream()
-                .filter(j -> (j.getFechaFin() == null || !fecha.isAfter(j.getFechaFin())) &&
-                        !fecha.isBefore(j.getFechaInicio()))
+        // 2. PRIORIDAD: Turnos programados (con fecha fin) tienen prioridad
+        // sobre turnos indefinidos. Actúan como "override temporal".
+        List<JornadaAsignada> programadas = vigentes.stream()
+                .filter(j -> j.getFechaFin() != null)
+                .sorted(Comparator.comparing(JornadaAsignada::getFechaInicio).reversed())
+                .collect(Collectors.toList());
+
+        if (!programadas.isEmpty()) {
+            // Retornar la más reciente (por fecha inicio)
+            return programadas.get(0).getTurno();
+        }
+
+        // 3. Solo quedan jornadas indefinidas (rotativas)
+        List<JornadaAsignada> rotativas = vigentes.stream()
+                .filter(j -> j.getFechaFin() == null)
                 .sorted(Comparator.comparing(JornadaAsignada::getFechaInicio))
                 .collect(Collectors.toList());
 
-        if (rotativas.isEmpty())
-            return null;
-        if (rotativas.size() == 1)
+        if (rotativas.size() == 1) {
             return rotativas.get(0).getTurno();
+        }
 
-        // 3. Aplicar rotación semanal
+        // 4. Múltiples rotativas: aplicar rotación semanal
         LocalDate lunesBase = rotativas.get(0).getFechaInicio().with(DayOfWeek.MONDAY);
         LocalDate lunesActual = fecha.with(DayOfWeek.MONDAY);
 
         long semanasTranscurridas = ChronoUnit.WEEKS.between(lunesBase, lunesActual);
+        if (semanasTranscurridas < 0)
+            semanasTranscurridas = 0;
+
         int indice = (int) (semanasTranscurridas % rotativas.size());
 
         return rotativas.get(indice).getTurno();
@@ -1939,18 +1940,6 @@ public class Personal extends Identifiable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Callback JPA antes de eliminar el empleado.
-     * 
-     * <p>
-     * Elimina los comentarios de discusión asociados.
-     * </p>
-     */
-    @PreRemove
-    private void borrarDiscusion() {
-        DiscussionComment.removeForDiscussion(nota);
     }
 
 }

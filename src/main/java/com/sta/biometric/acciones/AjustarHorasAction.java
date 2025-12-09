@@ -1,9 +1,12 @@
 package com.sta.biometric.acciones;
 
 import org.openxava.actions.*;
+
+import com.sta.biometric.enums.*;
 import com.sta.biometric.modelo.*;
 
-import com.sta.biometric.enums.EvaluacionJornada;
+
+
 
 public class AjustarHorasAction extends ViewBaseAction {
 

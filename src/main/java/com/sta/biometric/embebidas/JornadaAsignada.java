@@ -48,9 +48,6 @@ public class JornadaAsignada extends Identifiable {
      * Turno asignado al empleado para este período.
      */
     @Required
-    @NoCreate
-    @NoModify
-    @SearchAction("TurnosHorarios.BuscarCrearTurno")
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "turno_id")
     @DescriptionsList(descriptionProperties = "codigo, detalleJornadaHoras")

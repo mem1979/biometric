@@ -1,5 +1,6 @@
 package com.sta.biometric.acciones;
 
+
 import java.math.*;
 import java.time.*;
 import java.time.format.*;
@@ -12,9 +13,9 @@ import org.openxava.jpa.*;
 import org.openxava.model.*;
 
 import com.sta.biometric.auxiliares.*;
+import com.sta.biometric.dto.*;
 import com.sta.biometric.enums.*;
 import com.sta.biometric.modelo.*;
-import com.sta.biometric.dto.*;
 
 import net.sf.jasperreports.engine.*;
 

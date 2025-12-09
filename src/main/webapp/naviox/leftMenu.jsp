@@ -1,38 +1,38 @@
-<%-- 
-NaviOX. Navigation and security for OpenXava applications.
---%>
+<%-- NaviOX. Navigation and security for OpenXava applications. --%>
 
-<%@ page import="org.openxava.util.Users"%>
-<%@ page import="com.openxava.naviox.util.NaviOXPreferences"%>
-<%@ page import="java.util.List"%>
-<%@ page import="java.util.Arrays"%>
+    <%@ page import="org.openxava.util.Users" %>
+        <%@ page import="com.openxava.naviox.util.NaviOXPreferences" %>
+            <%@ page import="java.util.List" %>
+                <%@ page import="java.util.Arrays" %>
 
-<%@ include file="../xava/imports.jsp" %>
+                    <%@ include file="../xava/imports.jsp" %>
 
-<jsp:useBean id="modules" class="com.openxava.naviox.Modules" scope="session"/>
+                        <jsp:useBean id="modules" class="com.openxava.naviox.Modules" scope="session" />
 
-<%
-boolean isFirstSteps = com.openxava.naviox.Modules.FIRST_STEPS.equals(modules.getCurrentModuleName());
-String display = isFirstSteps ? "class='ox-display-block-important'" : "";
+                        <% boolean
+                            isFirstSteps=com.openxava.naviox.Modules.FIRST_STEPS.equals(modules.getCurrentModuleName());
+                            String display=isFirstSteps ? "class='ox-display-block-important'" : "" ; /* Lista de
+                            modulos que deseas ocultar (usa los nombres exactos de los modulos como "biometric/Cuil"
+                            , "biometric/DatosPersonales" ) */ List<String> modulosOcultos = Arrays.asList(
+                            "biometric/Provincias",
+                            "biometric/Localidades",
+                            "biometric/Partidos",
+                            "biometric/Sucursales",
+                            "biometric/TurnosNombres",
+                            "biometric/Feriados",
+                            "biometric/ColeccionRegistros",
+                            "biometric/TurnosHorarios",
+                            "biometric/Nacionalidades",
+                            "biometric/Dni",
+                            "biometric/JornadaAsignada",
+                            "biometric/NotaDesempeno",
+                            "biometric/Licencia"
 
-// Lista de modulos que deseas ocultar (usa los nombres exactos de los modulos como "starh/Cuil", "starh/DatosPersonales")
-List<String> modulosOcultos = Arrays.asList(
-		"biometric/Provincias",
-		"biometric/Localidades",
-		"biometric/Partidos",
-		"biometric/Sucursales",
-		"biometric/TurnosNombres",
-		"biometric/Feriados",
-		"biometric/ColeccionRegistros",
-		"biometric/TurnosHorarios",
-		"biometric/Nacionalidades",
-		"biometric/Dni",
-		"biometric/Licencia"
-	
-		);
+                            );
 
-// Obtenemos la lista de modulos
-List<?> listaModulos = modules.getAll(request);
+                            // Obtenemos la lista de modulos
+                            List
+                            <?> listaModulos = modules.getAll(request);
 %>
 
 <div id="modules_list" <%= display %>>  

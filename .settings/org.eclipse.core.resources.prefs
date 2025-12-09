@@ -24,6 +24,7 @@ encoding//src/main/java/com/sta/biometric/servicios/ConfiguracionesPreferencias.
 encoding//src/main/java/com/sta/biometric/servicios/ResumenAsistenciaHoyService.java=UTF-8
 encoding//src/main/java/com/sta/biometric/util/JWTUtil.java=UTF-8
 encoding//src/main/resources=UTF-8
+encoding//src/main/resources/i18n/biometric-labels_es.properties=UTF-8
 encoding//src/test/java=UTF-8
 encoding//src/test/resources=UTF-8
 encoding/<project>=UTF-8

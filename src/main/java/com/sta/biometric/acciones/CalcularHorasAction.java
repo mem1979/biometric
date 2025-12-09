@@ -7,7 +7,6 @@ import javax.persistence.*;
 
 import org.openxava.actions.*;
 import org.openxava.jpa.*;
-// Importación añadida
 import org.openxava.view.*;
 
 import com.sta.biometric.formateadores.*;

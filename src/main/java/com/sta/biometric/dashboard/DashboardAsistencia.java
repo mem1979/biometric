@@ -32,9 +32,6 @@ import lombok.*;
 
 public class DashboardAsistencia {
 
-	
-	
-	
     // ================================
     // 1. FILTRO PRINCIPAL POR SUCURSALES
     // ================================
@@ -50,11 +47,12 @@ public class DashboardAsistencia {
     // ================================
     // 2. FECHA Y HORA FORMATEADA
     // ================================
-    
-    @Transient @Label
-	@Action("AuditoriaRegistros.informeDiario")
-	@LabelFormat(LabelFormatType.NO_LABEL)
-	private String imprimirInformeDiario;
+
+    @Transient
+    @Label
+    @Action("AuditoriaRegistros.informeDiario")
+    @LabelFormat(LabelFormatType.NO_LABEL)
+    private String imprimirInformeDiario;
 
     @ReadOnly
     @LabelFormat(LabelFormatType.NO_LABEL)
@@ -198,11 +196,11 @@ public class DashboardAsistencia {
                     .collect(Collectors.toList());
         }
 
-        // Agrupar por evaluación
+        // Agrupar por evaluación usando la descripción amigable
         Map<String, Long> conteoPorEvaluacion = resumenes.stream()
                 .filter(r -> r.getEvaluacion() != null)
                 .collect(Collectors.groupingBy(
-                        r -> r.getEvaluacion().toString(),
+                        r -> r.getEvaluacion().getDescripcion(),
                         Collectors.counting()));
 
         // Armar resultado para el gráfico

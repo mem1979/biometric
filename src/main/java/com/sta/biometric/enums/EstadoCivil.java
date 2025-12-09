@@ -16,12 +16,12 @@ public enum EstadoCivil {
         this.estadoCivil = estadoCivil;
     }
 
-    // M�todo para obtener la descripci�n
+    // Método para obtener la descripción
     public String getEstadoCivil() {
         return estadoCivil;
     }
 
-    // Sobrescribimos el m�todo toString para devolver la descripci�n
+    // Sobrescribimos el método toString para devolver la descripción
     @Override
     public String toString() {
         return estadoCivil;

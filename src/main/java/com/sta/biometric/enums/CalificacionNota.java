@@ -5,9 +5,9 @@ package com.sta.biometric.enums;
  * Permite categorizar cada observación y calcular un promedio de desempeño.
  */
 public enum CalificacionNota {
-    BUENA("Positiva", 3),
-    NORMAL("Neutra", 2),
-    MALA("Negativa", 1);
+    BUENA("👍 Positiva", 3),
+    NORMAL("➖ Neutra", 2),
+    MALA("👎 Negativa", 1);
 
     private final String descripcion;
     private final int peso;

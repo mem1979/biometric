@@ -1,10 +1,14 @@
 package com.sta.biometric.rest;
 
+
 import java.time.*;
 import java.util.*;
+
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
+
 import org.openxava.jpa.*;
+
 import com.sta.biometric.auxiliares.*;
 import com.sta.biometric.modelo.*;
 import com.sta.biometric.util.*;
