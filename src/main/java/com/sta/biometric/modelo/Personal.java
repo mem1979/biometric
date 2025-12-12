@@ -969,8 +969,9 @@ public class Personal extends Identifiable {
      * @see #getTurnoParaFecha(LocalDate)
      * @see #getTurnosParaFecha(LocalDate)
      */
+    @NoDefaultActions
     @OneToMany(mappedBy = "personal", cascade = CascadeType.ALL, orphanRemoval = true)
-    @AddAction("JornadaAsignada.Add")
+    //@AddAction("JornadaAsignada.Add")
     @ListProperties("turno.codigo, turno.detalleJornadaHoras, fechaInicio, fechaFin")
     @OrderBy("fechaInicio")
     private List<JornadaAsignada> jornadasAsignadas = new ArrayList<>();

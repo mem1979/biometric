@@ -31,6 +31,7 @@
     <parameter name="porcentajePresentismo" class="java.lang.String"/>
     <parameter name="listaDetalle" class="net.sf.jasperreports.engine.JRDataSource"/>
     <parameter name="cantidadRegistros" class="java.lang.Integer"/>
+    <parameter name="esFechaActual" class="java.lang.Boolean"/>
 
     <!-- Campos del datasource de detalle -->
     <field name="empleadoNombre" class="java.lang.String"/>
@@ -192,22 +193,28 @@
                 <textFieldExpression><![CDATA[$P{totalLicencias}]]></textFieldExpression>
             </textField>
 
-            <!-- En Curso -->
+            <!-- En Curso (solo visible si es fecha actual) -->
             <rectangle radius="5">
-                <reportElement x="415" y="115" width="90" height="50" backcolor="#BEE3F8" uuid="11111111-1111-1111-1111-111111111120"/>
+                <reportElement x="415" y="115" width="90" height="50" backcolor="#BEE3F8" uuid="11111111-1111-1111-1111-111111111120">
+                    <printWhenExpression><![CDATA[$P{esFechaActual} != null && $P{esFechaActual} == true]]></printWhenExpression>
+                </reportElement>
                 <graphicElement>
                     <pen lineColor="#3182CE"/>
                 </graphicElement>
             </rectangle>
             <staticText>
-                <reportElement x="415" y="118" width="90" height="12" forecolor="#2A4365" uuid="11111111-1111-1111-1111-111111111121"/>
+                <reportElement x="415" y="118" width="90" height="12" forecolor="#2A4365" uuid="11111111-1111-1111-1111-111111111121">
+                    <printWhenExpression><![CDATA[$P{esFechaActual} != null && $P{esFechaActual} == true]]></printWhenExpression>
+                </reportElement>
                 <textElement textAlignment="Center">
                     <font fontName="Arial" size="7" isBold="true"/>
                 </textElement>
                 <text><![CDATA[EN CURSO]]></text>
             </staticText>
             <textField>
-                <reportElement x="415" y="130" width="90" height="25" forecolor="#2A4365" uuid="11111111-1111-1111-1111-111111111122"/>
+                <reportElement x="415" y="130" width="90" height="25" forecolor="#2A4365" uuid="11111111-1111-1111-1111-111111111122">
+                    <printWhenExpression><![CDATA[$P{esFechaActual} != null && $P{esFechaActual} == true]]></printWhenExpression>
+                </reportElement>
                 <textElement textAlignment="Center">
                     <font fontName="Arial" size="18" isBold="true"/>
                 </textElement>
@@ -296,17 +303,22 @@
                 <text><![CDATA[ESTADO]]></text>
             </staticText>
             <staticText>
-                <reportElement style="EncabezadoTabla" x="550" y="5" width="50" height="15" uuid="11111111-1111-1111-1111-111111111136"/>
+                <reportElement style="EncabezadoTabla" x="545" y="5" width="40" height="15" uuid="11111111-1111-1111-1111-111111111136"/>
                 <textElement textAlignment="Center"/>
                 <text><![CDATA[HS.TURNO]]></text>
             </staticText>
             <staticText>
-                <reportElement style="EncabezadoTabla" x="605" y="5" width="50" height="15" uuid="11111111-1111-1111-1111-111111111137"/>
+                <reportElement style="EncabezadoTabla" x="590" y="5" width="40" height="15" uuid="11111111-1111-1111-1111-111111111137"/>
                 <textElement textAlignment="Center"/>
                 <text><![CDATA[HS.EXTRA]]></text>
             </staticText>
             <staticText>
-                <reportElement style="EncabezadoTabla" x="660" y="5" width="135" height="15" uuid="11111111-1111-1111-1111-111111111138"/>
+                <reportElement style="EncabezadoTabla" x="635" y="5" width="40" height="15" uuid="11111111-1111-1111-1111-111111111160"/>
+                <textElement textAlignment="Center"/>
+                <text><![CDATA[HS.ESP.]]></text>
+            </staticText>
+            <staticText>
+                <reportElement style="EncabezadoTabla" x="680" y="5" width="115" height="15" uuid="11111111-1111-1111-1111-111111111138"/>
                 <text><![CDATA[OBSERVACIONES]]></text>
             </staticText>
         </band>
@@ -357,17 +369,22 @@
                 <textFieldExpression><![CDATA[$F{estadoJornada}]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
-                <reportElement style="FilaDetalle" x="550" y="2" width="50" height="14" uuid="11111111-1111-1111-1111-111111111147"/>
+                <reportElement style="FilaDetalle" x="545" y="2" width="40" height="14" uuid="11111111-1111-1111-1111-111111111147"/>
                 <textElement textAlignment="Center"/>
                 <textFieldExpression><![CDATA[$F{horasTurno}]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
-                <reportElement style="FilaDetalle" x="605" y="2" width="50" height="14" uuid="11111111-1111-1111-1111-111111111148"/>
+                <reportElement style="FilaDetalle" x="590" y="2" width="40" height="14" uuid="11111111-1111-1111-1111-111111111148"/>
                 <textElement textAlignment="Center"/>
                 <textFieldExpression><![CDATA[$F{horasExtras}]]></textFieldExpression>
             </textField>
             <textField isBlankWhenNull="true">
-                <reportElement style="FilaDetalle" x="660" y="2" width="135" height="14" uuid="11111111-1111-1111-1111-111111111149"/>
+                <reportElement style="FilaDetalle" x="635" y="2" width="40" height="14" uuid="11111111-1111-1111-1111-111111111161"/>
+                <textElement textAlignment="Center"/>
+                <textFieldExpression><![CDATA[$F{horasEspeciales}]]></textFieldExpression>
+            </textField>
+            <textField isBlankWhenNull="true">
+                <reportElement style="FilaDetalle" x="680" y="2" width="115" height="14" uuid="11111111-1111-1111-1111-111111111149"/>
                 <textFieldExpression><![CDATA[$F{nota}]]></textFieldExpression>
             </textField>
         </band>

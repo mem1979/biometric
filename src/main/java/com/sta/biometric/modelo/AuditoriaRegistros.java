@@ -817,14 +817,21 @@ public class AuditoriaRegistros extends Identifiable {
     }
 
     /**
-     * Verifica si la jornada corresponde a un día especial (feriado o domingo).
+     * Verifica si la jornada corresponde a un día especial (solo feriados).
      * 
-     * @return true si es día especial con bonificación
+     * <p>
+     * Según Ley de Contrato de Trabajo Argentina (Art. 201):
+     * - Solo los feriados nacionales trabajados aplican como horas especiales
+     * (extras al 100%)
+     * - Los días sin turno asignado trabajados se computan como horas extras
+     * normales (50%)
+     * </p>
+     * 
+     * @return true si es feriado trabajado con bonificación especial
      */
     @Transient
     private boolean esJornadaEspecial() {
-        return evaluacion == EvaluacionJornada.FERIADO_TRABAJADO ||
-                evaluacion == EvaluacionJornada.DIA_NO_LABORAL_TRABAJADO;
+        return evaluacion == EvaluacionJornada.FERIADO_TRABAJADO;
     }
 
     /**

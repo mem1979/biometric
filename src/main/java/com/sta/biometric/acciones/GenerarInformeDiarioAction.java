@@ -103,7 +103,10 @@ public class GenerarInformeDiarioAction extends JasperReportBaseAction {
         // 1. INFORMACIÓN DEL ENCABEZADO
         agregarDatosEncabezado(params, fechaInforme);
 
-        // 2. RESUMEN EJECUTIVO
+        // 2. PARÁMETRO PARA VISIBILIDAD CONDICIONAL DE "EN CURSO"
+        params.put("esFechaActual", fechaInforme.equals(LocalDate.now()));
+
+        // 3. RESUMEN EJECUTIVO
         agregarResumenEjecutivo(params, registros);
 
         return params;
@@ -169,15 +172,14 @@ public class GenerarInformeDiarioAction extends JasperReportBaseAction {
                         r.getEvaluacion() == EvaluacionJornada.SIN_TURNO_ASIGNADO)
                 .count();
 
-        // Calcular horas totales especiales (feriados y días no laborales trabajados)
+        // Calcular horas totales especiales (incluye ajustes manuales)
         int minutosTotalesEspeciales = registros.stream()
-                .filter(r -> r.getEvaluacion() == EvaluacionJornada.FERIADO_TRABAJADO ||
-                        r.getEvaluacion() == EvaluacionJornada.DIA_NO_LABORAL_TRABAJADO)
-                .mapToInt(r -> r.getMinutosTrabajados())
+                .mapToInt(r -> parsearHorasAMinutos(r.getHorasEspeciales()))
                 .sum();
 
+        // Calcular horas totales extras (incluye ajustes manuales)
         int minutosTotalesExtras = registros.stream()
-                .mapToInt(r -> r.getMinutosExtras())
+                .mapToInt(r -> parsearHorasAMinutos(r.getHorasExtras()))
                 .sum();
 
         params.put("totalEmpleados", totalEmpleados);
@@ -239,5 +241,25 @@ public class GenerarInformeDiarioAction extends JasperReportBaseAction {
         int horas = minutos / 60;
         int mins = minutos % 60;
         return String.format("%d:%02d", horas, mins);
+    }
+
+    /**
+     * Parsea un string en formato "HH:MM" a minutos totales.
+     * 
+     * @param horasEnFormatoHHmm Tiempo en formato "HH:MM" (ej: "2:30")
+     * @return Minutos totales (ej: 150)
+     */
+    private int parsearHorasAMinutos(String horasEnFormatoHHmm) {
+        if (horasEnFormatoHHmm == null || horasEnFormatoHHmm.isEmpty()) {
+            return 0;
+        }
+        try {
+            String[] partes = horasEnFormatoHHmm.split(":");
+            int horas = Integer.parseInt(partes[0]);
+            int minutos = partes.length > 1 ? Integer.parseInt(partes[1]) : 0;
+            return horas * 60 + minutos;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 }

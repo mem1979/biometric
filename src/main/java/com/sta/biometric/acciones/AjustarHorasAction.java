@@ -5,9 +5,6 @@ import org.openxava.actions.*;
 import com.sta.biometric.enums.*;
 import com.sta.biometric.modelo.*;
 
-
-
-
 public class AjustarHorasAction extends ViewBaseAction {
 
     @Override
@@ -65,10 +62,14 @@ public class AjustarHorasAction extends ViewBaseAction {
         setControllers("AjusteHoras");
     }
 
+    /**
+     * Verifica si la jornada es especial (solo feriados trabajados).
+     * Según LCT Art. 201, solo feriados aplican como horas especiales (extras
+     * 100%).
+     */
     private boolean isJornadaEspecial(AuditoriaRegistros reg) {
         if (reg.getEvaluacion() == null)
             return false;
-        EvaluacionJornada eval = reg.getEvaluacion();
-        return eval == EvaluacionJornada.FERIADO_TRABAJADO || eval == EvaluacionJornada.DIA_NO_LABORAL_TRABAJADO;
+        return reg.getEvaluacion() == EvaluacionJornada.FERIADO_TRABAJADO;
     }
 }

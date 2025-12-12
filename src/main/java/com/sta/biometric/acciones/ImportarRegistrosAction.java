@@ -7,7 +7,7 @@ import java.util.*;
 
 import javax.persistence.*;
 
-import org.apache.commons.lang3.tuple.*;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.ss.usermodel.*;
 import org.openxava.actions.*;
 import org.openxava.jpa.*;
@@ -19,9 +19,11 @@ import com.sta.biometric.modelo.*;
 import com.sta.biometric.servicios.*;
 
 /**
- * Accion personalizada para importar registros de fichadas desde un archivo Excel.
+ * Accion personalizada para importar registros de fichadas desde un archivo
+ * Excel.
  * Refactorizada para trabajar con las nuevas clases `AuditoriaRegistros` y
- * `ColeccionRegistros` utilizando `LocalDate` y `LocalTime` en lugar de `LocalDateTime`.
+ * `ColeccionRegistros` utilizando `LocalDate` y `LocalTime` en lugar de
+ * `LocalDateTime`.
  */
 public class ImportarRegistrosAction extends ViewBaseAction {
 
@@ -53,32 +55,36 @@ public class ImportarRegistrosAction extends ViewBaseAction {
 
             for (int i = 1; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
-                if (row == null) continue;
+                if (row == null)
+                    continue;
 
                 try {
                     // === PARSEO DE DATOS ===
                     LocalDate fecha = parsearFecha(row.getCell(columnas.colFecha), formatoCorto, formatoLargo);
                     LocalTime hora = parsearHora(row.getCell(columnas.colHora));
-                    if (fecha == null || hora == null) throw new IllegalArgumentException("Fecha u hora invalida");
+                    if (fecha == null || hora == null)
+                        throw new IllegalArgumentException("Fecha u hora invalida");
 
                     String userId = getCellValueAsString(row.getCell(columnas.colUserId)).trim();
-                    if (userId.isEmpty()) throw new IllegalArgumentException("UserId vacio");
+                    if (userId.isEmpty())
+                        throw new IllegalArgumentException("UserId vacio");
 
                     Personal empleado = em.createQuery(
-                        "SELECT e FROM Personal e WHERE e.userId = :userId", Personal.class)
-                        .setParameter("userId", userId)
-                        .getSingleResult();
+                            "SELECT e FROM Personal e WHERE e.userId = :userId", Personal.class)
+                            .setParameter("userId", userId)
+                            .getSingleResult();
 
                     String ubicacion = getCellValueAsString(row.getCell(columnas.colUbicacion)).trim();
                     if (ubicacion.equalsIgnoreCase("local") || ubicacion.isEmpty()) {
                         ubicacion = Optional.ofNullable(empleado.getSucursal())
-                            .map(s -> s.getDireccion().getUbicacion())
-                            .orElse("Local");
+                                .map(s -> s.getDireccion().getUbicacion())
+                                .orElse("Local");
                     }
 
                     String descripcion = getCellValueAsString(row.getCell(columnas.colTipoMovimiento)).trim();
                     TipoMovimiento tipo = InterpreteFichadasService.deducirTipoMovimiento(descripcion);
-                    if (tipo == null) throw new IllegalArgumentException("No se pudo deducir tipo de movimiento");
+                    if (tipo == null)
+                        throw new IllegalArgumentException("No se pudo deducir tipo de movimiento");
 
                     // === CREACION DEL REGISTRO ===
                     ColeccionRegistros cr = new ColeccionRegistros();
@@ -109,8 +115,8 @@ public class ImportarRegistrosAction extends ViewBaseAction {
 
                 } catch (Exception ex) {
                     addWarning("No se pudo consolidar asistencia para " +
-                        entry.getKey().getLeft().getNombreCompleto() + " el " + entry.getKey().getRight() +
-                        ": " + ex.getMessage());
+                            entry.getKey().getLeft().getNombreCompleto() + " el " + entry.getKey().getRight() +
+                            ": " + ex.getMessage());
                     ex.printStackTrace();
                 }
             }
@@ -130,24 +136,24 @@ public class ImportarRegistrosAction extends ViewBaseAction {
             }
 
             String texto = getCellValueAsString(cell).trim()
-                .replaceAll("[\\\"']", "")
-                .replace("-", "/")
-                .replace(".", "/")
-                .replaceAll("\\s+", "");
+                    .replaceAll("[\\\"']", "")
+                    .replace("-", "/")
+                    .replace(".", "/")
+                    .replaceAll("\\s+", "");
 
             List<DateTimeFormatter> formatos = Arrays.asList(
-                DateTimeFormatter.ofPattern("dd/MM/yyyy"),
-                DateTimeFormatter.ofPattern("d/M/yyyy"),
-                DateTimeFormatter.ofPattern("dd/MM/yy"),
-                DateTimeFormatter.ofPattern("d/M/yy"),
-                DateTimeFormatter.ofPattern("yyyy-MM-dd"),
-                DateTimeFormatter.ofPattern("yyyy/MM/dd")
-            );
+                    DateTimeFormatter.ofPattern("dd/MM/yyyy"),
+                    DateTimeFormatter.ofPattern("d/M/yyyy"),
+                    DateTimeFormatter.ofPattern("dd/MM/yy"),
+                    DateTimeFormatter.ofPattern("d/M/yy"),
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+                    DateTimeFormatter.ofPattern("yyyy/MM/dd"));
 
             for (DateTimeFormatter fmt : formatos) {
                 try {
                     return LocalDate.parse(texto, fmt);
-                } catch (DateTimeParseException ignored) {}
+                } catch (DateTimeParseException ignored) {
+                }
             }
 
             return LocalDate.parse(texto); // fallback
@@ -172,14 +178,18 @@ public class ImportarRegistrosAction extends ViewBaseAction {
     }
 
     private String getCellValueAsString(Cell cell) {
-        if (cell == null) return "";
+        if (cell == null)
+            return "";
         switch (cell.getCellType()) {
-            case STRING: return cell.getStringCellValue();
+            case STRING:
+                return cell.getStringCellValue();
             case NUMERIC:
                 double d = cell.getNumericCellValue();
-                if (d == (long) d) return String.valueOf((long) d);
+                if (d == (long) d)
+                    return String.valueOf((long) d);
                 return String.valueOf(d);
-            case BOOLEAN: return String.valueOf(cell.getBooleanCellValue());
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
             case FORMULA:
                 try {
                     return cell.getStringCellValue();
@@ -187,8 +197,8 @@ public class ImportarRegistrosAction extends ViewBaseAction {
                     double fd = cell.getNumericCellValue();
                     return (fd == (long) fd) ? String.valueOf((long) fd) : String.valueOf(fd);
                 }
-            default: return "";
+            default:
+                return "";
         }
     }
 }
-
