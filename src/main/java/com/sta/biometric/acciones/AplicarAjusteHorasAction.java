@@ -72,7 +72,7 @@ public class AplicarAjusteHorasAction extends ViewBaseAction {
 
         // 7. Cerrar y refrescar
         closeDialog();
-        getPreviousView().refresh();
+        getView().refresh(); // Después de closeDialog(), getView() retorna la vista de AuditoriaRegistros
 
         addMessage("✅ Ajustes aplicados correctamente.");
     }
