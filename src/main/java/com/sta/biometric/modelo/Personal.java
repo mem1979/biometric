@@ -144,11 +144,27 @@ import lombok.*;
 
         "LICENCIAS { " +
         "licencias, licenciasResumenAnual; " +
-        "licenciasGraficoAnual; " +
         "}; " +
 
         "LIQUIDACION_JORNADAS { " +
         "liquidaciones; " +
+        "}; " +
+
+        "informes { " +
+        "desde, hasta;" +
+        "IndicadoresClave {" +
+        "  totalDiasTrabajados,  totalHorasTrabajadasInformes, tasaAsistencia;" +
+        "  cantidadLlegadasTardeInformes, diasLicenciaUtilizados;" +
+        "};" +
+        "Graficos {" +
+        "  licenciasGraficoAnual;" +
+        "  evolucionMensualAsistencia;" +
+        "  distribucionTiposJornada, horasPorMes;" +
+        "};" +
+        "Detalles {" +
+        "  topDiasHorasExtras;" +
+        "  registroLlegadasTarde;" +
+        "};" +
         "}; " +
 
         "INCIDENCIAS_Y_OBSERVACIONES { " +
@@ -987,6 +1003,58 @@ public class Personal extends Identifiable {
     @DetailAction("LiquidacionJornadas.CerrarLiquidacion")
     private Collection<LiquidacionJornadas> liquidaciones;
 
+    /**
+     * Fecha de inicio para filtros de informes/dashboard.
+     * 
+     * <p>
+     * Por defecto: primer día del mes actual.
+     * </p>
+     * 
+     * @see ActualizarDashboardAction
+     */
+    @Transient
+    @OnChange(ActualizarDashboardAction.class)
+    public LocalDate desde;
+
+    /**
+     * Obtiene la fecha de inicio para filtros de informes.
+     * 
+     * @return Fecha desde configurada, o primer día del mes actual si es null
+     */
+    @Depends("inicioActividades, desde")
+    public LocalDate getDesde() {
+        if (desde == null) {
+            return LocalDate.now().withDayOfMonth(1);
+        }
+        return desde;
+    }
+
+    /**
+     * Fecha de fin para filtros de informes/dashboard.
+     * 
+     * <p>
+     * Por defecto: fecha actual.
+     * </p>
+     * 
+     * @see ActualizarDashboardAction
+     */
+    @Transient
+    @OnChange(ActualizarDashboardAction.class)
+    public LocalDate hasta;
+
+    /**
+     * Obtiene la fecha de fin para filtros de informes.
+     * 
+     * @return Fecha hasta configurada, o fecha actual si es null
+     */
+    @Depends("hasta")
+    public LocalDate getHasta() {
+        if (hasta == null) {
+            return LocalDate.now();
+        }
+        return hasta;
+    }
+
     // =============================================================================================
     /**
      * Obtiene el turno principal asignado para una fecha específica.
@@ -1261,6 +1329,10 @@ public class Personal extends Identifiable {
     }
 
     // ===============================================================================================
+    // DASHBOARD DE INFORMES - MÉTRICAS VISUALES
+    // ===============================================================================================
+
+    // ========== MÉTRICAS @LargeDisplay ==========
 
     /**
      * Cuenta el total de días trabajados (evaluación COMPLETA) en el rango de
