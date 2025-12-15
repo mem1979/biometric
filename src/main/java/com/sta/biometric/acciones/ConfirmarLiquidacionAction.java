@@ -91,7 +91,7 @@ public class ConfirmarLiquidacionAction extends ViewBaseAction {
 
             // Cerrar diálogo y refrescar vista principal
             closeDialog();
-            getPreviousView().refresh();
+            getView().refresh();
 
         } catch (IllegalArgumentException e) {
             addError(e.getMessage());

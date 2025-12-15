@@ -88,7 +88,7 @@ public class GenerarInformeDiarioAction extends JasperReportBaseAction {
     }
 
     @Override
-    @SuppressWarnings({ "rawtypes" })
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Map getParameters() throws Exception {
         Map params = new HashMap();
 
