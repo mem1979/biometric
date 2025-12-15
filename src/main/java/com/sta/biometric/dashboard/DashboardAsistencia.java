@@ -48,12 +48,6 @@ public class DashboardAsistencia {
     // 2. FECHA Y HORA FORMATEADA
     // ================================
 
-    @Transient
-    @Label
-    @Action("AuditoriaRegistros.informeDiario")
-    @LabelFormat(LabelFormatType.NO_LABEL)
-    private String imprimirInformeDiario;
-
     @ReadOnly
     @LabelFormat(LabelFormatType.NO_LABEL)
     @Depends("sucursalSeleccionada")

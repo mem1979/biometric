@@ -6,8 +6,8 @@ import org.openxava.actions.*;
  * Acción que muestra el diálogo para seleccionar el período de liquidación.
  * 
  * <p>
- * Abre un diálogo con campos fecha desde/hasta y guarda el ID del empleado
- * en el contexto para que la acción de confirmación lo use.
+ * Abre un diálogo con campos fecha desde/hasta, configura el título
+ * y asigna el controlador para las acciones dentro del diálogo.
  * </p>
  * 
  * @author Sistema STARH
@@ -30,8 +30,17 @@ public class MostrarDialogoLiquidacionAction extends ViewBaseAction {
 
         // Mostrar el diálogo con el formulario de selección de período
         showDialog();
+
+        // Configurar título del diálogo
+        getView().setTitle("📅 Seleccionar Período de Liquidación");
+
+        // Configurar el modelo y controlador del diálogo
         getView().setModelName("PeriodoLiquidacionDialog");
         getView().setViewName("");
+
+        // Asignar el controlador para las acciones del diálogo
+        setControllers("PeriodoLiquidacion");
+
         getView().reset();
     }
 }
