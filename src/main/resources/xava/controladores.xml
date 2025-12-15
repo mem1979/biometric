@@ -136,7 +136,7 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         <accion nombre="FiltroMesActualFecha" oculta="true" clase="com.sta.biometric.acciones.FiltroMesActualFechaAction" al-iniciar="true" modo="list">
         </accion>
 
-        <accion nombre="ajustarHoras" clase="com.sta.biometric.acciones.AjustarHorasAction" icono="clock-edit-outline" oculta="true"/>
+        <accion nombre="ajustarHoras" clase="com.sta.biometric.acciones.AjustarHorasAction" icono="clock-edit-outline" modo="detail"/>
 
         <accion nombre="informeDiario" clase="com.sta.biometric.acciones.MostrarDialogoInformeDiarioAction" icono="file-document-outline" modo="list">
         </accion>
@@ -176,7 +176,7 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         <accion nombre="nuevaLiquidacion" oculta="true" clase="com.sta.biometric.acciones.MostrarDialogoLiquidacionAction" icono="plus">
         </accion>
 
-        
+
         <accion nombre="eliminarLiquidacion" oculta="true" clase="org.openxava.actions.RemoveElementFromCollectionAction" confirmar="true">
         </accion>
 
