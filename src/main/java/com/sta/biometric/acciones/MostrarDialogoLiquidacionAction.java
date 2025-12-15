@@ -34,8 +34,8 @@ public class MostrarDialogoLiquidacionAction extends ViewBaseAction {
         // Configurar título del diálogo
         getView().setTitle("📅 Seleccionar Período de Liquidación");
 
-        // Configurar el modelo y controlador del diálogo
-        getView().setModelName("PeriodoLiquidacionDialog");
+        // Configurar el modelo y controlador del diálogo (reutilizamos RangoFechas)
+        getView().setModelName("RangoFechas");
         getView().setViewName("");
 
         // Asignar el controlador para las acciones del diálogo

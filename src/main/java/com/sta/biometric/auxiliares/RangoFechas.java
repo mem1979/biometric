@@ -9,20 +9,21 @@ import com.sta.biometric.calculadores.*;
 import lombok.*;
 
 /**
- * Clase auxiliar para el diálogo de selección de período de liquidación.
+ * Clase auxiliar para el diálogo de selección de período entre fechas.
  * 
  * <p>
- * Permite al usuario especificar el rango de fechas para generar
+ * Permite al usuario especificar el rango de fechas por ejemplo para generar
  * una liquidación de jornadas.
  * </p>
  * 
  * @author Sistema STARH
  * @since 2.0
  */
+
 @Getter
 @Setter
 @View(members = "periodoDesde; periodoHasta")
-public class PeriodoLiquidacionDialog {
+public class RangoFechas {
 
     /**
      * Fecha de inicio del período.
