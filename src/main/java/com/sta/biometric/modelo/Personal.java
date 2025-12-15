@@ -147,7 +147,6 @@ import lombok.*;
         "}; " +
 
         "LIQUIDACION_JORNADAS { " +
-        "Personal.GenerarLiquidacion(ALWAYS); " +
         "liquidaciones; " +
         "}; " +
 
@@ -245,7 +244,8 @@ public class Personal extends Identifiable {
      * 
      * @see DeviceIdProvider
      */
-    @ReadOnly  @Password
+    @ReadOnly
+    @Password
     @Column(length = 20)
     @Action(value = "Personal.borrarDeviceId", alwaysEnabled = true)
     private String deviceId;
@@ -994,7 +994,9 @@ public class Personal extends Identifiable {
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL)
     @ListProperties("periodoDesde, periodoHasta, estadoPeriodo, horasNormalesFormatted, horasExtrasFormatted, horasEspecialesFormatted, montoGranTotal")
     @OrderBy("periodoDesde desc")
+    @NewAction("LiquidacionJornadas.nuevaLiquidacion")
     @EditAction("LiquidacionJornadas.editarLiquidacion")
+    @RemoveAction("LiquidacionJornadas.eliminarLiquidacion")
     @DetailAction("LiquidacionJornadas.Recalcular")
     @DetailAction("LiquidacionJornadas.Cerrar")
     private Collection<LiquidacionJornadas> liquidaciones;
