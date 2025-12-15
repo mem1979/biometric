@@ -40,14 +40,15 @@ public class MostrarDialogoLiquidacionAction extends CollectionElementViewBaseAc
         // Configurar título del diálogo
         getView().setTitle("📅 Seleccionar Período de Liquidación");
 
-        // Configurar el modelo y controlador del diálogo (reutilizamos RangoFechas)
+        // Configurar el modelo del diálogo (reutilizamos RangoFechas)
         getView().setModelName("RangoFechas");
-        getView().setViewName("");
 
         // Asignar el controlador para las acciones del diálogo
         setControllers("PeriodoLiquidacion");
 
-        // Establecer valores por defecto del período (mes actual)
+        // Inicializar la vista y establecer valores por defecto del período (mes
+        // actual)
+        getView().reset();
         LocalDate hoy = LocalDate.now();
         getView().setValue("periodoDesde", hoy.withDayOfMonth(1));
         getView().setValue("periodoHasta", hoy.withDayOfMonth(hoy.lengthOfMonth()));
