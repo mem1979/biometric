@@ -994,10 +994,10 @@ public class Personal extends Identifiable {
     @NoDefaultActions
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL)
     @ListProperties("periodoDesde, periodoHasta, estadoPeriodo, " +
-            "horasNormalesFormatted[personal.totalHorasNormalesLiquidaciones], " +
-            "horasExtrasFormatted[personal.totalHorasExtrasLiquidaciones], " +
-            "horasEspecialesFormatted[personal.totalHorasEspecialesLiquidaciones], " +
-            "montoGranTotal+[personal.totalMontoLiquidaciones]")
+            "horasNormalesFormatted[empleado.totalHorasNormalesLiquidaciones], " +
+            "horasExtrasFormatted[empleado.totalHorasExtrasLiquidaciones], " +
+            "horasEspecialesFormatted[empleado.totalHorasEspecialesLiquidaciones], " +
+            "montoGranTotal+[empleado.totalMontoLiquidaciones]")
     @OrderBy("periodoDesde desc")
     @NewAction("LiquidacionJornadas.nuevaLiquidacion")
     @RemoveSelectedAction("")
