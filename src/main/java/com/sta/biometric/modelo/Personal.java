@@ -993,13 +993,93 @@ public class Personal extends Identifiable {
      */
     @NoDefaultActions
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL)
-    @ListProperties("periodoDesde, periodoHasta, estadoPeriodo, horasNormalesFormatted, horasExtrasFormatted, horasEspecialesFormatted, montoGranTotal")
+    @ListProperties("periodoDesde, periodoHasta, estadoPeriodo, " +
+            "horasNormalesFormatted[personal.totalHorasNormalesLiquidaciones], " +
+            "horasExtrasFormatted[personal.totalHorasExtrasLiquidaciones], " +
+            "horasEspecialesFormatted[personal.totalHorasEspecialesLiquidaciones], " +
+            "montoGranTotal+[personal.totalMontoLiquidaciones]")
     @OrderBy("periodoDesde desc")
     @NewAction("LiquidacionJornadas.nuevaLiquidacion")
+    @RemoveSelectedAction("")
+    @DeleteSelectedAction("")
     @RemoveAction("LiquidacionJornadas.eliminarLiquidacion")
     @DetailAction("LiquidacionJornadas.Recalcular")
     @DetailAction("LiquidacionJornadas.CerrarLiquidacion")
     private Collection<LiquidacionJornadas> liquidaciones;
+
+    // ==================================================================================
+    // TOTALES DE LIQUIDACIONES (para mostrar en pie de colección)
+    // ==================================================================================
+
+    /**
+     * Total de horas normales de todas las liquidaciones (formato HH:MM).
+     */
+    @Transient
+    @Hidden
+    public String getTotalHorasNormalesLiquidaciones() {
+        if (liquidaciones == null || liquidaciones.isEmpty()) {
+            return "0:00";
+        }
+        int totalMinutos = liquidaciones.stream()
+                .mapToInt(LiquidacionJornadas::getTotalMinutosNormales)
+                .sum();
+        return formatearMinutosAHoras(totalMinutos);
+    }
+
+    /**
+     * Total de horas extras de todas las liquidaciones (formato HH:MM).
+     */
+    @Transient
+    @Hidden
+    public String getTotalHorasExtrasLiquidaciones() {
+        if (liquidaciones == null || liquidaciones.isEmpty()) {
+            return "0:00";
+        }
+        int totalMinutos = liquidaciones.stream()
+                .mapToInt(LiquidacionJornadas::getTotalMinutosExtras)
+                .sum();
+        return formatearMinutosAHoras(totalMinutos);
+    }
+
+    /**
+     * Total de horas especiales de todas las liquidaciones (formato HH:MM).
+     */
+    @Transient
+    @Hidden
+    public String getTotalHorasEspecialesLiquidaciones() {
+        if (liquidaciones == null || liquidaciones.isEmpty()) {
+            return "0:00";
+        }
+        int totalMinutos = liquidaciones.stream()
+                .mapToInt(LiquidacionJornadas::getTotalMinutosEspeciales)
+                .sum();
+        return formatearMinutosAHoras(totalMinutos);
+    }
+
+    /**
+     * Total monetario de todas las liquidaciones.
+     */
+    @Transient
+    @Hidden
+    @Money
+    public BigDecimal getTotalMontoLiquidaciones() {
+        if (liquidaciones == null || liquidaciones.isEmpty()) {
+            return BigDecimal.ZERO;
+        }
+        return liquidaciones.stream()
+                .map(LiquidacionJornadas::getMontoGranTotal)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /**
+     * Formatea minutos totales a formato HH:MM.
+     */
+    private String formatearMinutosAHoras(int totalMinutos) {
+        int horas = totalMinutos / 60;
+        int minutos = totalMinutos % 60;
+        return String.format("%d:%02d", horas, minutos);
+    }
 
     /**
      * Fecha de inicio para filtros de informes/dashboard.
