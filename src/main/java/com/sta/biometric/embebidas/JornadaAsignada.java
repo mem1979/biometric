@@ -50,7 +50,12 @@ public class JornadaAsignada extends Identifiable {
     @Required
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "turno_id")
-    @DescriptionsList(descriptionProperties = "codigo, detalleJornadaHoras")
+    @DescriptionsList(descriptionProperties = "codigo, detalleJornadaHoras", order = "CASE " +
+            "WHEN ${codigo} LIKE 'TM%' THEN 1 " +
+            "WHEN ${codigo} LIKE 'TT%' THEN 2 " +
+            "WHEN ${codigo} LIKE 'TN%' THEN 3 " +
+            "WHEN ${codigo} LIKE 'TE%' THEN 4 " +
+            "ELSE 5 END, ${codigo}")
     private TurnosHorarios turno;
 
     /**
