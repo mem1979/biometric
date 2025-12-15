@@ -1,4 +1,4 @@
-package com.sta.biometric.auxiliares;
+package com.sta.biometric.modelo;
 
 import java.time.*;
 
