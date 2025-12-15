@@ -62,8 +62,9 @@ public class TiempoUtils {
     }
 
     /**
-     * Parsea una cadena en formato "HH:MM" y devuelve el total de minutos.
-     * Por ejemplo: "02:30" -> 150 minutos
+     * Parsea una cadena en formato "HH:MM" o "-HH:MM" y devuelve el total de
+     * minutos.
+     * Por ejemplo: "02:30" -> 150 minutos, "-01:30" -> -90 minutos
      * Si la cadena es nula, vacía o mal formateada, devuelve 0.
      */
     public static int parsearHHMMaMinutos(String horaFormato) {
@@ -71,14 +72,21 @@ public class TiempoUtils {
             return 0;
 
         try {
-            String[] partes = horaFormato.split(":");
+            String input = horaFormato.trim();
+            boolean negativo = input.startsWith("-");
+            if (negativo) {
+                input = input.substring(1); // Quitar el signo
+            }
+
+            String[] partes = input.split(":");
             if (partes.length != 2)
                 return 0;
 
             int horas = Integer.parseInt(partes[0].trim());
             int minutos = Integer.parseInt(partes[1].trim());
 
-            return (horas * 60) + minutos;
+            int total = (horas * 60) + minutos;
+            return negativo ? -total : total;
         } catch (NumberFormatException e) {
             return 0;
         }

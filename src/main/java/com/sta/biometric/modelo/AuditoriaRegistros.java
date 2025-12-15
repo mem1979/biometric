@@ -48,10 +48,9 @@ import lombok.*;
         "Registros { registros; estadoJornada };" +
         "};" +
         "Calculos_Y_Ajustes { " +
-        "horasTrabajadasTurno, ajusteMinutosNormales, totalHorasTurno ; " +
-        "horasExtras, ajusteMinutosExtras, totalHorasExtras; " +
-        "horasEspeciales, ajusteMinutosEspeciales, totalHorasEspeciales; " +
-        "botonAjustarHoras; " +
+        "Horas_Normales { horasTrabajadasTurno, totalHorasTurno }; " +
+        "Horas_Extras { horasExtras, totalHorasExtras }; " +
+        "Horas_Especiales { horasEspeciales, totalHorasEspeciales }; " +
         "ajustesRealizados " +
         "};" +
         "Notas { nota };")
@@ -190,12 +189,15 @@ public class AuditoriaRegistros extends Identifiable {
     // Permite al supervisor corregir horas sin alterar las fichadas originales.
 
     @Column(columnDefinition = "INTEGER DEFAULT 0")
+    @Hidden
     private int ajusteMinutosNormales; // Minutos a sumar/restar a normales
 
     @Column(columnDefinition = "INTEGER DEFAULT 0")
+    @Hidden
     private int ajusteMinutosExtras; // Minutos a sumar/restar a extras
 
     @Column(columnDefinition = "INTEGER DEFAULT 0")
+    @Hidden
     private int ajusteMinutosEspeciales; // Minutos a sumar/restar a especiales
 
     @Stereotype("MEMO")

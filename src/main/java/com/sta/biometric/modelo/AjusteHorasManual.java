@@ -1,27 +1,29 @@
 package com.sta.biometric.modelo;
 
+import javax.persistence.Transient;
 import org.openxava.annotations.*;
 import com.sta.biometric.formateadores.TiempoUtils;
 import lombok.*;
 
 /**
  * Modelo transitorio para el diálogo de ajuste manual de horas.
+ * Usa formato HH:MM para entrada de usuario.
  */
 @Getter
 @Setter
-@View(members = "minutosNormalesBase, minutosExtrasBase, minutosEspecialesBase;" +
-        "Resumen_Actual {" +
-        "  resultadoNormales; resultadoExtras; resultadoEspeciales" +
-        "}" +
+@View(members = "Horas_Base { horasNormalesBase; horasExtrasBase; horasEspecialesBase };" +
         "Ajustes_a_Aplicar {" +
         "  ajusteNormales; " +
         "  ajusteExtras; " +
         "  ajusteEspeciales" +
-        "}" +
-        "Motivo_Del_Ajuste {" +
-        "  motivo" +
-        "}")
+        "};" +
+        "Vista_Previa { resultadoNormales; resultadoExtras; resultadoEspeciales };" +
+        "Motivo_Del_Ajuste { motivo }")
 public class AjusteHorasManual {
+
+    // ==================================================================================
+    // VALORES BASE (SOLO LECTURA - MOSTRADOS AL USUARIO)
+    // ==================================================================================
 
     @Hidden
     private int minutosNormalesBase;
@@ -32,17 +34,42 @@ public class AjusteHorasManual {
     @Hidden
     private int minutosEspecialesBase;
 
-    @Label
-    @OnChange(RecalcularPreviewAction.class)
-    private int ajusteNormales;
+    @Transient
+    @ReadOnly
+    @LabelFormat(LabelFormatType.SMALL)
+    public String getHorasNormalesBase() {
+        return TiempoUtils.formatearMinutosComoHHMM(minutosNormalesBase);
+    }
 
-    @Label
-    @OnChange(RecalcularPreviewAction.class)
-    private int ajusteExtras;
+    @Transient
+    @ReadOnly
+    @LabelFormat(LabelFormatType.SMALL)
+    public String getHorasExtrasBase() {
+        return TiempoUtils.formatearMinutosComoHHMM(minutosExtrasBase);
+    }
 
-    @Label
+    @Transient
+    @ReadOnly
+    @LabelFormat(LabelFormatType.SMALL)
+    public String getHorasEspecialesBase() {
+        return TiempoUtils.formatearMinutosComoHHMM(minutosEspecialesBase);
+    }
+
+    // ==================================================================================
+    // AJUSTES EN FORMATO HH:MM (PUEDEN SER NEGATIVOS: -01:30)
+    // ==================================================================================
+
+    @Stereotype("TIEMPO_AJUSTE")
     @OnChange(RecalcularPreviewAction.class)
-    private int ajusteEspeciales;
+    private String ajusteNormales = "00:00";
+
+    @Stereotype("TIEMPO_AJUSTE")
+    @OnChange(RecalcularPreviewAction.class)
+    private String ajusteExtras = "00:00";
+
+    @Stereotype("TIEMPO_AJUSTE")
+    @OnChange(RecalcularPreviewAction.class)
+    private String ajusteEspeciales = "00:00";
 
     @Stereotype("MEMO")
     @Required
@@ -52,34 +79,65 @@ public class AjusteHorasManual {
     // PREVIEWS CALCULADOS
     // ==================================================================================
 
-    @Label
+    @Transient
+    @ReadOnly
     @Depends("minutosNormalesBase, ajusteNormales")
     public String getResultadoNormales() {
-        int total = Math.max(0, minutosNormalesBase + ajusteNormales);
-        return TiempoUtils.formatearMinutosComoHHMM(minutosNormalesBase) + "  ➜  " +
+        int ajusteMin = TiempoUtils.parsearHHMMaMinutos(ajusteNormales);
+        int total = Math.max(0, minutosNormalesBase + ajusteMin);
+        String signo = ajusteMin >= 0 ? "+" : "";
+        return TiempoUtils.formatearMinutosComoHHMM(minutosNormalesBase) +
+                " (" + signo + ajusteNormales + ") = " +
                 TiempoUtils.formatearMinutosComoHHMM(total);
     }
 
-    @Label
+    @Transient
+    @ReadOnly
     @Depends("minutosExtrasBase, ajusteExtras")
     public String getResultadoExtras() {
-        int total = Math.max(0, minutosExtrasBase + ajusteExtras);
-        return TiempoUtils.formatearMinutosComoHHMM(minutosExtrasBase) + "  ➜  " +
+        int ajusteMin = TiempoUtils.parsearHHMMaMinutos(ajusteExtras);
+        int total = Math.max(0, minutosExtrasBase + ajusteMin);
+        String signo = ajusteMin >= 0 ? "+" : "";
+        return TiempoUtils.formatearMinutosComoHHMM(minutosExtrasBase) +
+                " (" + signo + ajusteExtras + ") = " +
                 TiempoUtils.formatearMinutosComoHHMM(total);
     }
 
-    @Label
+    @Transient
+    @ReadOnly
     @Depends("minutosEspecialesBase, ajusteEspeciales")
     public String getResultadoEspeciales() {
-        int total = Math.max(0, minutosEspecialesBase + ajusteEspeciales);
-        return TiempoUtils.formatearMinutosComoHHMM(minutosEspecialesBase) + "  ➜  " +
+        int ajusteMin = TiempoUtils.parsearHHMMaMinutos(ajusteEspeciales);
+        int total = Math.max(0, minutosEspecialesBase + ajusteMin);
+        String signo = ajusteMin >= 0 ? "+" : "";
+        return TiempoUtils.formatearMinutosComoHHMM(minutosEspecialesBase) +
+                " (" + signo + ajusteEspeciales + ") = " +
                 TiempoUtils.formatearMinutosComoHHMM(total);
     }
 
-    // Clase de acción vacía solo para disparar el refresco de la vista
+    // ==================================================================================
+    // MÉTODOS UTILITARIOS PARA CONVERSIÓN
+    // ==================================================================================
+
+    /**
+     * Convierte el ajuste HH:MM a minutos (puede ser negativo).
+     */
+    public int getAjusteNormalesMinutos() {
+        return TiempoUtils.parsearHHMMaMinutos(ajusteNormales);
+    }
+
+    public int getAjusteExtrasMinutos() {
+        return TiempoUtils.parsearHHMMaMinutos(ajusteExtras);
+    }
+
+    public int getAjusteEspecialesMinutos() {
+        return TiempoUtils.parsearHHMMaMinutos(ajusteEspeciales);
+    }
+
+    // Clase de acción para disparar el refresco de la vista
     public static class RecalcularPreviewAction extends org.openxava.actions.OnChangePropertyBaseAction {
         public void execute() throws Exception {
-            // No hace nada, solo refresca la vista al ejecutarse
+            // Solo refresca la vista al ejecutarse
         }
     }
 }
