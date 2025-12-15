@@ -1,5 +1,7 @@
 package com.sta.biometric.acciones;
 
+import java.time.*;
+
 import org.openxava.actions.*;
 
 /**
@@ -45,6 +47,9 @@ public class MostrarDialogoLiquidacionAction extends CollectionElementViewBaseAc
         // Asignar el controlador para las acciones del diálogo
         setControllers("PeriodoLiquidacion");
 
-        getView().reset();
+        // Establecer valores por defecto del período (mes actual)
+        LocalDate hoy = LocalDate.now();
+        getView().setValue("periodoDesde", hoy.withDayOfMonth(1));
+        getView().setValue("periodoHasta", hoy.withDayOfMonth(hoy.lengthOfMonth()));
     }
 }
