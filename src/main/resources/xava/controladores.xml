@@ -176,16 +176,14 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         <accion nombre="nuevaLiquidacion" oculta="true" clase="com.sta.biometric.acciones.MostrarDialogoLiquidacionAction" icono="plus">
         </accion>
 
-        <accion nombre="editarLiquidacion" oculta="true" clase="org.openxava.actions.EditElementInCollectionAction">
-        </accion>
-
+        
         <accion nombre="eliminarLiquidacion" oculta="true" clase="org.openxava.actions.RemoveElementFromCollectionAction" confirmar="true">
         </accion>
 
         <accion nombre="Recalcular" oculta="true" clase="com.sta.biometric.acciones.RecalcularLiquidacionAction" icono="refresh" confirmar="true">
         </accion>
 
-        <accion nombre="Cerrar" oculta="true" clase="com.sta.biometric.acciones.CerrarLiquidacionAction" icono="lock" confirmar="true">
+        <accion nombre="CerrarLiquidacion" oculta="true" clase="com.sta.biometric.acciones.CerrarLiquidacionAction" icono="lock" confirmar="true">
         </accion>
     </controlador>
 

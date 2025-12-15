@@ -6,19 +6,23 @@ import org.openxava.actions.*;
  * Acción que muestra el diálogo para seleccionar el período de liquidación.
  * 
  * <p>
- * Abre un diálogo con campos fecha desde/hasta, configura el título
- * y asigna el controlador para las acciones dentro del diálogo.
+ * Se ejecuta desde el botón "Nueva liquidación" de la colección de
+ * liquidaciones
+ * en Personal. Al ser una acción de colección, extiende de
+ * {@link CollectionElementViewBaseAction}
+ * para tener acceso a la vista padre (Personal) y poder obtener el ID del
+ * empleado.
  * </p>
  * 
  * @author Sistema STARH
  * @since 2.0
  */
-public class MostrarDialogoLiquidacionAction extends ViewBaseAction {
+public class MostrarDialogoLiquidacionAction extends CollectionElementViewBaseAction {
 
     @Override
     public void execute() throws Exception {
-        // Guardar el ID del empleado en el contexto del request
-        String empleadoId = getView().getValueString("id");
+        // Obtener el ID del empleado desde la vista padre (Personal)
+        String empleadoId = getParentView().getValueString("id");
 
         if (empleadoId == null || empleadoId.isEmpty()) {
             addError("Debe guardar el empleado antes de generar una liquidación");
