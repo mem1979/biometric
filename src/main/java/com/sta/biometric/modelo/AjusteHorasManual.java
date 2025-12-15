@@ -11,7 +11,8 @@ import lombok.*;
  */
 @Getter
 @Setter
-@View(members = "Horas_Base { horasNormalesBase; horasExtrasBase; horasEspecialesBase };" +
+@View(members = "minutosNormalesBase; minutosExtrasBase; minutosEspecialesBase;" +
+        "Horas_Base { horasNormalesBase; horasExtrasBase; horasEspecialesBase };" +
         "Ajustes_a_Aplicar {" +
         "  ajusteNormales; " +
         "  ajusteExtras; " +
