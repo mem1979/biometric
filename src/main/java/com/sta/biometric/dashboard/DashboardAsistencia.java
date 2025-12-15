@@ -19,7 +19,7 @@ import com.sta.biometric.servicios.*;
 
 import lombok.*;
 
-@View(members = "fechaHoraActual, imprimirInformeDiario, sucursalSeleccionada;" +
+@View(members = "fechaHoraActual, sucursalSeleccionada, AuditoriaRegistros.informeDiario();" +
         "observacionFeriado;" +
         "Detalles {" +
         "cantidadAgentesHoy, pendientesDeIngresoHoy, cantidadConLicenciaHoy, cantidadLlegadasTardeHoy, cantidadSalidasAnticipadasHoy;"

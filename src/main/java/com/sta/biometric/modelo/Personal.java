@@ -971,7 +971,6 @@ public class Personal extends Identifiable {
      */
     @NoDefaultActions
     @OneToMany(mappedBy = "personal", cascade = CascadeType.ALL, orphanRemoval = true)
-    //@AddAction("JornadaAsignada.Add")
     @ListProperties("turno.codigo, turno.detalleJornadaHoras, fechaInicio, fechaFin")
     @OrderBy("fechaInicio")
     private List<JornadaAsignada> jornadasAsignadas = new ArrayList<>();
