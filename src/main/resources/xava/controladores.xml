@@ -54,15 +54,21 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
 
 
     <controlador nombre="Personal">
-        <hereda-de controlador="MiTypicalNoResetNoNavNoImport"/>
+        <hereda-de controlador="MiTypicalNoResetNoNavNoImport" acciones-excluidas="list"/>
 
-        <accion nombre="borrarContrasena" oculta="true" clase="com.sta.biometric.acciones.BlanquearContrasenaAction" icono="lock-reset" confirmar="true">
+        <!-- Accion para Nuevo: cambia a vista simplificada "Crear" -->
+        <accion nombre="new" icono="library-plus" atajo-de-teclado="Control N" clase="com.sta.biometric.acciones.PersonalNuevoAction" modo="list" disponible-en-nuevo="false" pierde-datos-cambiados="true"/>
+
+        <!-- Accion search: cambia a vista completa al editar -->
+        <accion nombre="search" oculta="true" por-defecto="si-posible" clase="com.sta.biometric.acciones.PersonalBuscarVistaAction"/>
+
+        <accion nombre="borrarContrasena" oculta="true" clase="com.sta.biometric.acciones.BlanquearContrasenaAction" icono="lock-reset" confirmar="true" disponible-en-nuevo="false">
         </accion>
 
-        <accion nombre="borrarDeviceId" oculta="true" clase="com.sta.biometric.acciones.BlanquearDeviceIdAction" icono="lock-reset" confirmar="true">
+        <accion nombre="borrarDeviceId" oculta="true" clase="com.sta.biometric.acciones.BlanquearDeviceIdAction" icono="lock-reset" confirmar="true" disponible-en-nuevo="false">
         </accion>
 
-        <accion nombre="dni" oculta="true" clase="com.sta.biometric.acciones.DniEditarEnDialogoAction" icono="camera-account" confirmar="false">
+        <accion nombre="dni" oculta="true" clase="com.sta.biometric.acciones.DniEditarEnDialogoAction" icono="camera-account" confirmar="false" disponible-en-nuevo="false">
         </accion>
 
         <accion nombre="IrANSES" oculta="true" clase="com.sta.biometric.acciones.AbrirUrlAnsesAccion">
@@ -75,12 +81,23 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         <accion nombre="buscar" oculta="true" modo="detail" clase="com.sta.biometric.acciones.PersonalBuscarAction">
         </accion>
 
-        <accion nombre="imprimirFicha" clase="com.sta.biometric.acciones.PersonalImprimirFichaAction" icono="printer" modo="detail">
+        <accion nombre="imprimirFicha" clase="com.sta.biometric.acciones.PersonalImprimirFichaAction" icono="printer" modo="detail" disponible-en-nuevo="false" por-defecto ="nunca">
         </accion>
 
-        <accion nombre="informeAnual" clase="com.sta.biometric.acciones.PersonalInformeAnualAction" icono="assessment" modo="detail">
+        <accion nombre="informeAnual" clase="com.sta.biometric.acciones.PersonalInformeAnualAction" icono="account-file-text" modo="detail" disponible-en-nuevo="false" por-defecto ="nunca">
         </accion>
 
+        <!-- Redefinir acciones heredadas para que las etiquetas Personal.X funcionen -->
+        <accion nombre="save" modo="detail" confirmar="true" clase="org.openxava.actions.SaveAction" icono="content-save" disponible-en-nuevo="true" por-defecto="nunca" atajo-de-teclado="Control S">
+            <poner propiedad="resetAfter" valor="false"/>
+        </accion>
+
+    </controlador>
+
+    <!-- Controlador de modo para Personal: sobrescribe la accion list -->
+    <controlador nombre="PersonalMode">
+        <hereda-de controlador="Mode"/>
+        <accion nombre="list" por-defecto ="siempre" clase="org.openxava.actions.GoListAction" icono="chevron-left" modo="detail" atajo-de-teclado="F9" pierde-datos-cambiados="true"/>
     </controlador>
 
     <controlador nombre="PeriodoLiquidacion">
@@ -94,6 +111,11 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
     </controlador>
     <controlador nombre="DialogoCerrar">
         <accion nombre="cerrar" clase="org.openxava.actions.CancelAction" atajo-de-teclado="ESCAPE"/>
+    </controlador>
+
+    <controlador nombre="DialogoDni">
+        <accion nombre="guardarYSalir" clase="org.openxava.actions.SaveAndCloseDialogAction" icono="content-save" atajo-de-teclado="ENTER"/>
+        <accion nombre="cancelar" clase="org.openxava.actions.CancelAction" icono="close" atajo-de-teclado="ESCAPE"/>
     </controlador>
 
     <controlador nombre="Feriados">

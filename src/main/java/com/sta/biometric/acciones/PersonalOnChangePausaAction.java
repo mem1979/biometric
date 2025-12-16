@@ -11,15 +11,23 @@ public class PersonalOnChangePausaAction extends OnChangePropertyBaseAction {
         if (aceptaPausa == null)
             return;
 
+        // Actualizar etiqueta siempre
         if (!aceptaPausa) {
-            getView().setLabelId("aceptaPausa", "▶️ SIN PAUSAS");// PLAY
-            addWarning("Los turnos NO permitiran registrar pausas.");
+            getView().setLabelId("aceptaPausa", "▶️ SIN PAUSAS");
         } else {
-            getView().setLabelId("aceptaPausa", "⏸️ CON PAUSAS");// PAUSE
-            addInfo("Los turnos permitiran registrar pausas.");
+            getView().setLabelId("aceptaPausa", "⏸️ CON PAUSAS");
         }
 
-        MapFacade.setValues(getModelName(), getView().getKeyValues(), getView().getValues());
-        addMessage("Datos guardados correctamente.");
+        // Solo mostrar mensajes y guardar si la entidad ya existe (tiene id)
+        if (getView().getKeyValues() != null && !getView().getKeyValues().isEmpty()
+                && getView().getKeyValues().get("id") != null) {
+            if (!aceptaPausa) {
+                addWarning("Los turnos NO permitiran registrar pausas.");
+            } else {
+                addInfo("Los turnos permitiran registrar pausas.");
+            }
+            MapFacade.setValues(getModelName(), getView().getKeyValues(), getView().getValues());
+            addMessage("Datos guardados correctamente.");
+        }
     }
 }

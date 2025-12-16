@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 7.0.3.final using JasperReports Library version 6.0.0  -->
-<!-- 2025-12-03T19:53:48 -->
+<!-- 2025-12-15T17:30:57 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="PersonalReport" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="0bd4e08e-b0f7-48a9-a7e2-d38b4d284791">
 	<parameter name="nombreCompleto" class="java.lang.String"/>
 	<parameter name="userId" class="java.lang.String"/>
@@ -262,7 +262,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Generado por Sistema Biométrico - Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Generado por Sistema STARH - Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<textField pattern="M/d/yy h:mm a">
 				<reportElement x="214" y="19" width="114" height="18" uuid="df6dd7a1-cc08-456f-9d2b-1370a84a164d"/>

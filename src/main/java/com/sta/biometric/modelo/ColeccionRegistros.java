@@ -14,28 +14,38 @@ import com.sta.biometric.formateadores.*;
 import lombok.*;
 
 /**
- * Entidad que representa un registro individual de fichada (entrada, salida, pausa).
+ * Entidad que representa un registro individual de fichada (entrada, salida,
+ * pausa).
  * 
- * <p>Cada {@code ColeccionRegistros} pertenece a un {@link AuditoriaRegistros} (asistencia diaria)
- * y se evalúa automáticamente comparando la hora de fichada contra el turno asignado al empleado.</p>
+ * <p>
+ * Cada {@code ColeccionRegistros} pertenece a un {@link AuditoriaRegistros}
+ * (asistencia diaria)
+ * y se evalúa automáticamente comparando la hora de fichada contra el turno
+ * asignado al empleado.
+ * </p>
  * 
- * <p><b>Tipos de fichada soportados:</b></p>
+ * <p>
+ * <b>Tipos de fichada soportados:</b>
+ * </p>
  * <ul>
- *   <li>{@link TipoMovimiento#ENTRADA} - Registro de entrada al trabajo</li>
- *   <li>{@link TipoMovimiento#SALIDA} - Registro de salida del trabajo</li>
- *   <li>{@link TipoMovimiento#PAUSA_INICIO} - Inicio de pausa/descanso</li>
- *   <li>{@link TipoMovimiento#PAUSA_FIN} - Fin de pausa/descanso</li>
- *   <li>{@link TipoMovimiento#UBICACION} - Registro de ubicación GPS</li>
- *   <li>{@link TipoMovimiento#MANUAL} - Registro manual por administrador</li>
+ * <li>{@link TipoMovimiento#ENTRADA} - Registro de entrada al trabajo</li>
+ * <li>{@link TipoMovimiento#SALIDA} - Registro de salida del trabajo</li>
+ * <li>{@link TipoMovimiento#PAUSA_INICIO} - Inicio de pausa/descanso</li>
+ * <li>{@link TipoMovimiento#PAUSA_FIN} - Fin de pausa/descanso</li>
+ * <li>{@link TipoMovimiento#UBICACION} - Registro de ubicación GPS</li>
+ * <li>{@link TipoMovimiento#MANUAL} - Registro manual por administrador</li>
  * </ul>
  * 
- * <p><b>Evaluaciones posibles:</b></p>
+ * <p>
+ * <b>Evaluaciones posibles:</b>
+ * </p>
  * <ul>
- *   <li>"ENTRADA EN HORARIO" / "SALIDA EN HORARIO" - Dentro de tolerancia</li>
- *   <li>"ENTRADA TARDE" / "SALIDA ANTICIPADA" - Fuera de tolerancia</li>
- *   <li>"ENTRADA ANTICIPADA" / "SALIDA TARDIA" - Antes/después de lo esperado</li>
- *   <li>"SIN TURNO ASIGNADO" - Empleado sin turno para la fecha</li>
- *   <li>"DIA NO LABORAL" - El turno no tiene ese día como laboral</li>
+ * <li>"ENTRADA EN HORARIO" / "SALIDA EN HORARIO" - Dentro de tolerancia</li>
+ * <li>"ENTRADA TARDE" / "SALIDA ANTICIPADA" - Fuera de tolerancia</li>
+ * <li>"ENTRADA ANTICIPADA" / "SALIDA TARDIA" - Antes/después de lo
+ * esperado</li>
+ * <li>"SIN TURNO ASIGNADO" - Empleado sin turno para la fecha</li>
+ * <li>"DIA NO LABORAL" - El turno no tiene ese día como laboral</li>
  * </ul>
  * 
  * @author Sistema STARH
@@ -50,7 +60,7 @@ import lombok.*;
         "observacion;" +
         "coordenada")
 
-@Tab(properties = "diaSemana, fecha, hora, tipoMovimiento, evaluacion", defaultOrder = "${fecha} asc")
+@Tab(properties = "asistenciaDiaria.empleado.userId, asistenciaDiaria.empleado.nombreCompleto, diaSemana, fecha, hora, tipoMovimiento, evaluacion", defaultOrder = "${fecha} asc")
 
 @Entity
 @Getter
@@ -89,7 +99,9 @@ public class ColeccionRegistros extends Identifiable {
     /**
      * Hora exacta en que se registró la fichada.
      * 
-     * <p>Formato: HH:MM:SS</p>
+     * <p>
+     * Formato: HH:MM:SS
+     * </p>
      */
     @ReadOnly
     private LocalTime hora;
@@ -118,39 +130,46 @@ public class ColeccionRegistros extends Identifiable {
     /**
      * Resultado de la evaluación de la fichada.
      * 
-     * <p>Se calcula automáticamente en {@link #preGuardarActualizar()} 
-     * comparando la hora contra el turno esperado.</p>
+     * <p>
+     * Se calcula automáticamente en {@link #preGuardarActualizar()}
+     * comparando la hora contra el turno esperado.
+     * </p>
      * 
      * @see #calcularEvaluacion()
      */
     @ReadOnly
     private String evaluacion;
 
-    
     /**
      * Calcula la evaluación de la fichada comparando contra el turno esperado.
      * 
-     * <p>Este método realiza las siguientes validaciones:</p>
+     * <p>
+     * Este método realiza las siguientes validaciones:
+     * </p>
      * <ol>
-     *   <li>Verifica que exista asistencia diaria asociada</li>
-     *   <li>Verifica que haya fecha y tipo de movimiento</li>
-     *   <li>Verifica que el empleado tenga turno asignado</li>
-     *   <li>Verifica que el día sea laboral según el turno</li>
-     *   <li>Compara la hora de fichada contra el horario esperado (± tolerancia)</li>
+     * <li>Verifica que exista asistencia diaria asociada</li>
+     * <li>Verifica que haya fecha y tipo de movimiento</li>
+     * <li>Verifica que el empleado tenga turno asignado</li>
+     * <li>Verifica que el día sea laboral según el turno</li>
+     * <li>Compara la hora de fichada contra el horario esperado (± tolerancia)</li>
      * </ol>
      * 
-     * <p><b>Evaluaciones de ENTRADA:</b></p>
+     * <p>
+     * <b>Evaluaciones de ENTRADA:</b>
+     * </p>
      * <ul>
-     *   <li>"ENTRADA ANTICIPADA" - Antes de (entrada - tolerancia)</li>
-     *   <li>"ENTRADA EN HORARIO" - Dentro del rango de tolerancia</li>
-     *   <li>"ENTRADA TARDE" - Después de (entrada + tolerancia)</li>
+     * <li>"ENTRADA ANTICIPADA" - Antes de (entrada - tolerancia)</li>
+     * <li>"ENTRADA EN HORARIO" - Dentro del rango de tolerancia</li>
+     * <li>"ENTRADA TARDE" - Después de (entrada + tolerancia)</li>
      * </ul>
      * 
-     * <p><b>Evaluaciones de SALIDA:</b></p>
+     * <p>
+     * <b>Evaluaciones de SALIDA:</b>
+     * </p>
      * <ul>
-     *   <li>"SALIDA ANTICIPADA" - Antes de (salida - tolerancia)</li>
-     *   <li>"SALIDA EN HORARIO" - Dentro del rango de tolerancia</li>
-     *   <li>"SALIDA TARDIA" - Después de (salida + tolerancia)</li>
+     * <li>"SALIDA ANTICIPADA" - Antes de (salida - tolerancia)</li>
+     * <li>"SALIDA EN HORARIO" - Dentro del rango de tolerancia</li>
+     * <li>"SALIDA TARDIA" - Después de (salida + tolerancia)</li>
      * </ul>
      * 
      * @return String con la evaluación del registro
@@ -239,9 +258,12 @@ public class ColeccionRegistros extends Identifiable {
     /**
      * Callback JPA que actualiza la evaluación antes de persistir o actualizar.
      * 
-     * <p>Garantiza que la evaluación siempre esté sincronizada con los datos actuales.</p>
+     * <p>
+     * Garantiza que la evaluación siempre esté sincronizada con los datos actuales.
+     * </p>
      */
-    @PrePersist @PreUpdate
+    @PrePersist
+    @PreUpdate
     private void preGuardarActualizar() {
         setEvaluacion(calcularEvaluacion());
     }

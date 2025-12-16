@@ -152,7 +152,7 @@ import lombok.*;
         "}; " +
 
         "INCIDENCIAS_Y_OBSERVACIONES { " +
-        "evaluacionDesempenoAnual; " +
+        "evaluacionDesempenoAnual, Personal.informeAnual(); " +
         "notasDesempeno; " +
         "}")
 
@@ -161,6 +161,48 @@ import lombok.*;
 @View(name = "VerCalendario", members = "eventos")
 
 @View(name = "simple", members = "nombreCompleto, sucursal, puesto;")
+
+@View(name = "Crear", members = 
+        "InformacionPersonal { " +
+        "InformacionPersonal[" +
+        "apellido;" +
+        "nombres;" +
+        "fechaNacimiento, edad, proximoCumpleanos;" +
+        "nacionalidad, estadoCivil;" +
+        "dni, Personal.dni(ALWAYS);" +
+        "cuil, Personal.IrANSES(ALWAYS);" +
+
+        "], " +
+        "foto[" +
+        "foto;" +
+        "]; " +
+        "direccion;" +
+        "contacto;" +
+        "notasPersonale, documentacionPersonal;" +
+        "}; " +
+
+        "InformacionLaboral { " +
+        "credenciales[" +
+        "userId, activo;" +
+        "creaUsuario;" +
+        "contrasena; deviceId;" +
+        "], " +
+
+        "funcion[" +
+        "sucursal;" +
+        "inicioActividades, antiguedadLaboral;"
+        + " puesto;" +
+        "]; " +
+        "Honorarios[" +
+        "valorHora," +
+        "porcentajeHoraExtra, valorHoraExtra," +
+        "porcentajeHoraEspecial, valorHoraEspecial;" +
+        "]; " +
+        "JORNADAS[" +
+        "aceptaPausa; jornadasAsignadas;" +
+        "]; " +
+        "}; " +
+        "}")
 
 @Tab(editors = "List", properties = "foto, nombreCompleto, userId, sucursal.nombre, puesto, activo", defaultOrder = "${activo} desc, ${nombreCompleto} asc", rowStyles = {
         @RowStyle(style = "empleadoInactivo", property = "activo", value = "false") })
@@ -284,7 +326,7 @@ public class Personal extends Identifiable {
     @Password
     @ReadOnly
     @Column(length = 20)
-    @Action(value = "Personal.borrarContrasena", alwaysEnabled = true)
+    @Action(value = "Personal.borrarContrasena", alwaysEnabled = true, notForViews = "Crear" )
     @DefaultValueCalculator(CalculadorPassword.class)
     private String contrasena;
 
@@ -338,6 +380,7 @@ public class Personal extends Identifiable {
      * @see #getApellidoNombre()
      * @see #preGuardar()
      */
+    @ReadOnly
     @DisplaySize(40)
     @MiLabel(medida = "extra", negrita = true, recuadro = true, icon = "account")
     private String nombreCompleto;
@@ -987,8 +1030,6 @@ public class Personal extends Identifiable {
     @DetailAction("LiquidacionJornadas.CerrarLiquidacion")
     private Collection<LiquidacionJornadas> liquidaciones;
 
-    
-
     // =============================================================================================
     /**
      * Obtiene el turno principal asignado para una fecha específica.
@@ -1262,7 +1303,6 @@ public class Personal extends Identifiable {
         return porMes.values();
     }
 
-    
     // ===============================================================================================
 
     /**

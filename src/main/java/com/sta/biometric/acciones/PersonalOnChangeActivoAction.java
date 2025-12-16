@@ -11,15 +11,23 @@ public class PersonalOnChangeActivoAction extends OnChangePropertyBaseAction {
         if (activo == null)
             return;
 
+        // Actualizar etiqueta siempre
         if (!activo) {
-            getView().setLabelId("activo", "🔒 DESABILITADO");// Candado cerrado
-            addWarning("El empleado fue marcado como INACTIVO.");
+            getView().setLabelId("activo", "🔒 DESABILITADO");
         } else {
-            getView().setLabelId("activo", "🔓 HABILITADO");// Candado cerrado
-            addInfo("El empleado fue marcado como ACTIVO.");
+            getView().setLabelId("activo", "🔓 HABILITADO");
         }
 
-        MapFacade.setValues(getModelName(), getView().getKeyValues(), getView().getValues());
-        addMessage("Datos guardados correctamente.");
+        // Solo mostrar mensajes y guardar si la entidad ya existe (tiene id)
+        if (getView().getKeyValues() != null && !getView().getKeyValues().isEmpty()
+                && getView().getKeyValues().get("id") != null) {
+            if (!activo) {
+                addWarning("El empleado fue marcado como INACTIVO.");
+            } else {
+                addInfo("El empleado fue marcado como ACTIVO.");
+            }
+            MapFacade.setValues(getModelName(), getView().getKeyValues(), getView().getValues());
+            addMessage("Datos guardados correctamente.");
+        }
     }
 }
