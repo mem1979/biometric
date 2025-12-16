@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayuda - Auditoria de Registros | STA.RH</title>
+    <link rel="stylesheet" href="help.css">
+</head>
+
+<body>
+    <div class="help-container">
+
+        <header class="help-header">
+            <h1>📋 Auditoria de Registros</h1>
+            <p>El corazon del sistema - Control inteligente de asistencia y jornadas laborales</p>
+        </header>
+
+        <!-- Descripcion General -->
+        <section class="section">
+            <h2>📖 Descripcion General</h2>
+            <p>
+                El modulo de <strong>Auditoria de Registros</strong> es el nucleo del sistema STA.RH.
+                Aqui se consolidan todas las fichadas biometricas de los empleados, se calculan las horas
+                trabajadas, extras y especiales, y se determina el estado de cada jornada laboral.
+            </p>
+            <p>
+                A diferencia de sistemas basicos que solo guardan horas, STA.RH <strong>interpreta</strong>
+                la jornada: cruza las fichadas con el turno esperado, aplica tolerancias y genera
+                automaticamente el estado final de cada dia.
+            </p>
+
+            <div class="info">
+                <p class="info-title">💡 Tecnologia Snapshot</p>
+                <p>
+                    Cada registro guarda una "foto" del valor hora y las reglas de negocio vigentes
+                    al momento del registro. Si el sueldo del empleado cambia manana, el costo historico
+                    de hoy permanece inalterable.
+                </p>
+            </div>
+        </section>
+
+        <!-- Estados de Jornada -->
+        <section class="section">
+            <h2>🎯 Estados de Jornada</h2>
+            <p>Cada registro de auditoria tiene un <strong>estado de evaluacion</strong> que indica como resulto la
+                jornada:</p>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Estado</th>
+                        <th>Significado</th>
+                        <th>Cuando Aplica</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="status-badge status-green">COMPLETA</span></td>
+                        <td>Jornada cumplida correctamente</td>
+                        <td>Empleado trabajo las horas esperadas del turno</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge status-blue">EN CURSO</span></td>
+                        <td>Trabajando actualmente</td>
+                        <td>Hay entrada registrada pero aun no hay salida (dia actual)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge status-yellow">PENDIENTE</span></td>
+                        <td>Esperando fichada</td>
+                        <td>Es dia laboral y aun no hay registros (dia actual)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge status-yellow">INCOMPLETA</span></td>
+                        <td>Jornada parcial</td>
+                        <td>Hay fichadas pero no se completo el turno esperado</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge status-red">AUSENTE</span></td>
+                        <td>No se presento</td>
+                        <td>Era dia laboral y no hubo fichadas (dia pasado sin licencia)</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge status-gray">LICENCIA</span></td>
+                        <td>Con justificacion</td>
+                        <td>Tiene licencia activa cargada en el sistema</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge status-gray">DIA LIBRE</span></td>
+                        <td>No era dia laboral</td>
+                        <td>El turno no incluye este dia de la semana</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge status-purple">FERIADO</span></td>
+                        <td>Feriado nacional</td>
+                        <td>La fecha esta marcada como feriado</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge status-purple">FERIADO TRABAJADO</span></td>
+                        <td>Trabajo en feriado</td>
+                        <td>Hay fichadas en un dia feriado (genera horas especiales)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Estructura del Registro -->
+        <section class="section">
+            <h2>📝 Estructura del Registro</h2>
+            <p>Cada registro de auditoria se organiza en secciones:</p>
+
+            <h3>1. Cabecera</h3>
+            <ul>
+                <li><span class="field-name">Empleado</span> - Nombre del empleado</li>
+                <li><span class="field-name">Fecha</span> - Dia de la jornada</li>
+                <li><span class="field-name">Dia</span> - Dia de la semana</li>
+                <li><span class="field-name">Sucursal/Sector</span> - Ubicacion del empleado</li>
+            </ul>
+
+            <h3>2. Detalle del Turno</h3>
+            <ul>
+                <li><span class="field-name">Turno Planificado</span> - Nombre del turno asignado</li>
+                <li><span class="field-name">Entrada Esperada</span> - Hora que deberia ingresar</li>
+                <li><span class="field-name">Salida Esperada</span> - Hora que deberia retirarse</li>
+                <li><span class="field-name">Duracion Esperada</span> - Minutos totales del turno</li>
+            </ul>
+
+            <h3>3. Fichadas del Dia</h3>
+            <p>Lista de todas las marcaciones biometricas del dia. Cada fichada incluye:</p>
+            <ul>
+                <li><span class="field-name">Fecha y Hora</span> - Momento exacto de la marcacion</li>
+                <li><span class="field-name">Tipo de Movimiento</span> - INICIO DE JORNADA, FIN DE JORNADA, etc.</li>
+                <li><span class="field-name">Evaluacion</span> - ENTRADA EN HORARIO, LLEGADA TARDE, etc.</li>
+                <li><span class="field-name">Observacion</span> - Origen del registro y notas</li>
+                <li><span class="field-name">Coordenadas GPS</span> - Ubicacion geografica (ver seccion Geolocalizacion)
+                </li>
+            </ul>
+
+            <h3>4. Calculos y Ajustes</h3>
+            <div class="field-group">
+                <p><span class="field-name">Horas Normales:</span> Tiempo trabajado dentro del horario del turno</p>
+                <p><span class="field-name">Horas Extras:</span> Tiempo trabajado fuera del horario (antes o despues)
+                </p>
+                <p><span class="field-name">Horas Especiales:</span> Tiempo trabajado en feriados o dias no laborales
+                </p>
+            </div>
+
+            <h3>5. Observaciones</h3>
+            <p>Notas automaticas generadas por el sistema y observaciones manuales del supervisor.</p>
+        </section>
+
+        <!-- Geolocalizacion -->
+        <section class="section">
+            <h2>📍 Geolocalizacion de Fichadas</h2>
+            <p>
+                Cuando los empleados registran su asistencia desde la <strong>aplicacion movil</strong>,
+                el sistema captura automaticamente las <strong>coordenadas GPS</strong> del dispositivo.
+                Esta informacion permite verificar que las fichadas se realizaron desde ubicaciones autorizadas.
+            </p>
+
+            <h3>Visualizacion en el Mapa</h3>
+            <p>Al abrir el detalle de una fichada, encontraras:</p>
+            <ul>
+                <li><span class="field-name">Coordenadas</span> - Latitud y longitud en formato decimal (ej:
+                    -34.642973,-58.3881854)</li>
+                <li><span class="field-name">Mapa Interactivo</span> - Visualizacion en mapa con marcador azul indicando
+                    la ubicacion exacta</li>
+                <li>Controles de zoom (+/-) para acercar o alejar la vista</li>
+                <li>Posibilidad de navegar por el mapa arrastrando</li>
+            </ul>
+
+            <div class="tip">
+                <p class="tip-title">💡 Utilidad de la Geolocalizacion</p>
+                <p>
+                    Esta funcionalidad es especialmente util para:
+                </p>
+                <ul>
+                    <li>Verificar que el empleado estaba en el lugar de trabajo al fichar</li>
+                    <li>Detectar fichadas desde ubicaciones no autorizadas</li>
+                    <li>Empleados que trabajan en campo o multiples sucursales</li>
+                    <li>Auditorias de presencia fisica</li>
+                </ul>
+            </div>
+
+            <div class="warning">
+                <p class="warning-title">⚠️ Fichadas sin Coordenadas</p>
+                <p>
+                    Las fichadas importadas desde archivos Excel o sistemas externos pueden no tener
+                    coordenadas GPS. En la observacion aparecera "Importado desde fichero Excel" u
+                    otro origen indicando que no proviene de la app movil.
+                </p>
+            </div>
+        </section>
+
+        <!-- Ajuste de Horas -->
+        <section class="section">
+            <h2>⚙️ Ajustar Horas Manualmente</h2>
+            <p>
+                En ocasiones es necesario realizar ajustes manuales a las horas calculadas.
+                Por ejemplo, si hubo un problema con el reloj biometrico o se autorizo
+                tiempo extra no registrado.
+            </p>
+
+            <h3>Como realizar un ajuste:</h3>
+            <ol>
+                <li>Abra el registro de auditoria del empleado y fecha a modificar</li>
+                <li>En la seccion <strong>"Calculos y Ajustes"</strong>, haga clic en el boton <strong>"Ajustar
+                        Horas"</strong></li>
+                <li>Ingrese el tiempo de ajuste en formato <strong>HH:MM</strong> (ej: 01:30 para 1 hora y 30 minutos)
+                </li>
+                <li>Use valores positivos para agregar tiempo o negativos para descontar</li>
+                <li>Seleccione el tipo de hora a ajustar (Normales, Extras o Especiales)</li>
+                <li>Agregue una observacion explicando el motivo del ajuste</li>
+                <li>Confirme el ajuste</li>
+            </ol>
+
+            <div class="warning">
+                <p class="warning-title">⚠️ Trazabilidad de Ajustes</p>
+                <p>
+                    Todos los ajustes manuales quedan registrados con fecha, hora y usuario que los realizo.
+                    Esta informacion es visible en el historial del registro para garantizar la auditabilidad.
+                </p>
+            </div>
+        </section>
+
+        <!-- Filtros de Busqueda -->
+        <section class="section">
+            <h2>🔍 Filtros y Busqueda</h2>
+            <p>La lista de registros puede filtrarse por:</p>
+            <ul>
+                <li><strong>Empleado</strong> - Buscar por nombre o apellido</li>
+                <li><strong>Fecha</strong> - Rango de fechas</li>
+                <li><strong>Sucursal/Sector</strong> - Filtrar por ubicacion</li>
+                <li><strong>Estado</strong> - Ver solo Completas, Ausentes, etc.</li>
+            </ul>
+
+            <div class="tip">
+                <p class="tip-title">💡 Consejo</p>
+                <p>
+                    Para revisar las incidencias del dia, filtre por fecha de hoy y estado "INCOMPLETA" o "AUSENTE".
+                    Esto le mostrara rapidamente los casos que requieren atencion.
+                </p>
+            </div>
+        </section>
+
+        <!-- Informes -->
+        <div class="info">
+            <p class="info-title">📊 Informes Historicos</p>
+            <p>
+                Para generar informes diarios en formato PDF, utilice el boton
+                <strong>📄 INFORMES HISTORICOS</strong> en el <strong>Panel de Asistencia Diaria</strong> (Dashboard).
+                Desde alli puede seleccionar cualquier fecha y generar el reporte correspondiente.
+            </p>
+        </div>
+
+        <!-- Modulos Relacionados -->
+        <section class="section">
+            <h2>🔗 Modulos Relacionados</h2>
+            <ul>
+                <li><strong>Nomina (Personal)</strong> - Gestiona datos de empleados y turnos asignados</li>
+                <li><strong>Licencias</strong> - Carga de licencias que afectan el estado de auditoria</li>
+                <li><strong>Feriados</strong> - Configuracion de feriados nacionales</li>
+                <li><strong>Turnos</strong> - Definicion de horarios y tolerancias</li>
+            </ul>
+        </section>
+
+        <footer class="help-footer">
+            <p><strong>STA.RH</strong> - Sistema de Gestion de Recursos Humanos</p>
+            <p>S.T.A. - Soluciones Tecnologicas de Avanzada</p>
+            <a href="index.html" class="back-link">← Volver al indice de ayuda</a>
+        </footer>
+
+    </div>
+</body>
+
+</html>

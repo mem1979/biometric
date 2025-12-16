@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayuda - Nomina (Personal) | STA.RH</title>
+    <link rel="stylesheet" href="help.css">
+</head>
+
+<body>
+    <div class="help-container">
+
+        <header class="help-header">
+            <h1>👥 Nomina (Personal)</h1>
+            <p>Gestion integral de empleados - Datos personales, laborales, turnos, honorarios y desempeno</p>
+        </header>
+
+        <!-- Descripcion General -->
+        <section class="section">
+            <h2>📖 Descripcion General</h2>
+            <p>
+                El modulo de <strong>Nomina</strong> es el centro de gestion de empleados del sistema STA.RH.
+                Aqui se administra toda la informacion relacionada con cada trabajador:
+            </p>
+            <ul>
+                <li><strong>Datos Personales:</strong> Nombre, DNI, CUIL, fecha de nacimiento, foto, direccion</li>
+                <li><strong>Informacion Laboral:</strong> Sucursal, puesto, fecha de inicio, credenciales</li>
+                <li><strong>Jornadas:</strong> Turnos asignados con horarios fijos o rotativos</li>
+                <li><strong>Honorarios:</strong> Valor hora, porcentajes de extras y especiales</li>
+                <li><strong>Licencias:</strong> Historial de licencias con resumen anual</li>
+                <li><strong>Desempeno:</strong> Notas y evaluaciones del empleado</li>
+                <li><strong>Liquidaciones:</strong> Consolidado de horas trabajadas por periodo</li>
+            </ul>
+        </section>
+
+        <!-- Pestanas del Formulario -->
+        <section class="section">
+            <h2>📋 Estructura del Formulario</h2>
+            <p>El formulario de empleado se organiza en varias pestanas:</p>
+
+            <h3>1. Informacion Personal</h3>
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <td><strong>Apellido/Nombres</strong></td>
+                        <td>Nombre completo del empleado</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fecha Nacimiento</strong></td>
+                        <td>Calcula automaticamente edad y proximo cumpleaños</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Nacionalidad</strong></td>
+                        <td>Pais de origen (por defecto: Argentina)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Estado Civil</strong></td>
+                        <td>Soltero, Casado, Divorciado, etc.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>DNI</strong></td>
+                        <td>Documento Nacional de Identidad (unico en el sistema)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CUIL</strong></td>
+                        <td>Codigo Unico de Identificacion Laboral (XX-XXXXXXXX-X)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Foto</strong></td>
+                        <td>Imagen del empleado (max 200KB)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Direccion</strong></td>
+                        <td>Calle, numero, localidad, provincia con geolocalizacion</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Contacto</strong></td>
+                        <td>Telefono, email y otros datos de contacto</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="tip">
+                <p class="tip-title">💡 Consulta ANSES</p>
+                <p>
+                    Junto al campo CUIL hay un boton que permite abrir directamente la consulta de ANSES
+                    para verificar los datos del empleado.
+                </p>
+            </div>
+
+            <h3>2. Informacion Laboral</h3>
+            <h4>Credenciales</h4>
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <td><strong>Legajo (userId)</strong></td>
+                        <td>Codigo unico del empleado, debe coincidir con el lector biometrico</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Activo</strong></td>
+                        <td>Indica si el empleado esta habilitado en el sistema</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Usuario</strong></td>
+                        <td>Se genera automaticamente (ej: JPérez@EMP001)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Contrasena</strong></td>
+                        <td>Encriptada, puede ser blanqueada por el administrador</td>
+                    </tr>
+                    <tr>
+                        <td><strong>ID Dispositivo</strong></td>
+                        <td>Identificador del celular para la app movil</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="warning">
+                <p class="warning-title">⚠️ Blanquear Credenciales</p>
+                <p>
+                    Los botones junto a <strong>Contrasena</strong> e <strong>ID Dispositivo</strong> permiten
+                    blanquear estos valores. Util cuando el empleado olvida su contrasena o cambia de celular.
+                </p>
+            </div>
+
+            <h4>Funcion</h4>
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <td><strong>Sucursal</strong></td>
+                        <td>Ubicacion donde trabaja el empleado</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Inicio Actividades</strong></td>
+                        <td>Fecha de ingreso a la empresa</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Antiguedad</strong></td>
+                        <td>Calculada automaticamente (X años, Y meses, Z dias)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Puesto</strong></td>
+                        <td>Cargo o funcion que desempena</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Honorarios</h4>
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <td><strong>Valor Hora</strong></td>
+                        <td>Valor monetario de la hora normal de trabajo</td>
+                    </tr>
+                    <tr>
+                        <td><strong>% Hora Extra</strong></td>
+                        <td>Porcentaje adicional para horas extras (ej: 50%)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Valor Hora Extra</strong></td>
+                        <td>Calculado: Valor Hora + (Valor Hora × %Extra / 100)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>% Hora Especial</strong></td>
+                        <td>Porcentaje adicional para feriados (ej: 100%)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Valor Hora Especial</strong></td>
+                        <td>Calculado: Valor Hora + (Valor Hora × %Especial / 100)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info">
+                <p class="info-title">💰 Tecnologia Snapshot</p>
+                <p>
+                    Cada vez que se genera un registro de auditoria, el sistema "fotografía" los valores
+                    monetarios vigentes. Si el sueldo cambia despues, los registros anteriores mantienen
+                    los valores historicos correctos.
+                </p>
+            </div>
+
+            <h4>Jornadas</h4>
+            <p>Aqui se configuran los turnos del empleado:</p>
+            <ul>
+                <li><strong>Acepta Pausas:</strong> Si el empleado puede registrar pausas durante la jornada</li>
+                <li><strong>Jornadas Asignadas:</strong> Lista de turnos con periodos de vigencia</li>
+            </ul>
+        </section>
+
+        <!-- Turnos y Jornadas -->
+        <section class="section">
+            <h2>🕐 Sistema de Turnos</h2>
+            <p>
+                El sistema de jornadas permite asignar turnos de forma flexible:
+            </p>
+
+            <h3>Tipos de Asignacion</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Descripcion</th>
+                        <th>Ejemplo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="status-badge status-blue">Turno Fijo</span></td>
+                        <td>Un solo turno con fecha inicio, sin fecha fin</td>
+                        <td>Empleado trabaja siempre de 8:00 a 17:00</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge status-purple">Turno Rotativo</span></td>
+                        <td>Multiples turnos sin fecha fin, rotan semanalmente</td>
+                        <td>Semana 1: Manana, Semana 2: Tarde, Semana 3: Noche</td>
+                    </tr>
+                    <tr>
+                        <td><span class="status-badge status-yellow">Turno Programado</span></td>
+                        <td>Turno con fecha inicio Y fecha fin</td>
+                        <td>Turno especial del 15/12 al 31/12 por navidad</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="tip">
+                <p class="tip-title">💡 Prioridad de Turnos</p>
+                <p>
+                    Los <strong>turnos programados</strong> (con fecha fin) tienen prioridad sobre los rotativos.
+                    Esto permite asignar turnos temporales que "sobreescriben" la rotacion normal.
+                </p>
+            </div>
+        </section>
+
+        <!-- Licencias -->
+        <section class="section">
+            <h2>📄 Pestana LICENCIAS</h2>
+            <p>
+                Gestion completa de licencias, ausencias justificadas y permisos del empleado.
+            </p>
+
+            <h3>Listado de Licencias</h3>
+            <p>Muestra todas las licencias del ano actual con:</p>
+            <ul>
+                <li><strong>Tipo:</strong> Vacaciones, Enfermedad, Maternidad, etc.</li>
+                <li><strong>Fecha Inicio/Fin:</strong> Periodo de la licencia</li>
+                <li><strong>Dias:</strong> Cantidad de dias de la licencia</li>
+                <li><strong>Justificado:</strong> Si tiene certificado o documentacion</li>
+            </ul>
+
+            <h3>Resumen Anual</h3>
+            <p>
+                Tabla resumida que muestra por cada tipo de licencia:
+            </p>
+            <ul>
+                <li>Total de dias utilizados en el ano</li>
+                <li>Dias restantes disponibles</li>
+            </ul>
+
+            <h3>Grafico Anual</h3>
+            <p>
+                Visualizacion grafica de las licencias tomadas durante el ano,
+                permitiendo identificar patrones y tendencias.
+            </p>
+
+            <h3>Acciones Disponibles</h3>
+            <ul>
+                <li><strong>Asignar Licencia:</strong> Crear nueva licencia para el empleado</li>
+                <li><strong>Ver Calendario:</strong> Visualizar licencias en formato calendario</li>
+                <li><strong>Crear Lista:</strong> Generar PDF con el listado de licencias</li>
+                <li><strong>Imprimir Constancia:</strong> Generar constancia individual de licencia</li>
+            </ul>
+        </section>
+
+        <!-- Liquidacion -->
+        <section class="section">
+            <h2>💵 Pestana LIQUIDACION JORNADAS</h2>
+            <p>
+                Consolidado de horas trabajadas por periodo con calculo de valores monetarios.
+            </p>
+
+            <h3>Que contiene cada liquidacion</h3>
+            <ul>
+                <li><strong>Periodo Desde/Hasta:</strong> Rango de fechas liquidadas</li>
+                <li><strong>Estado:</strong> Abierta, Cerrada</li>
+                <li><strong>Horas Normales:</strong> Total de horas dentro del turno</li>
+                <li><strong>Horas Extras:</strong> Horas fuera del horario (antes/despues)</li>
+                <li><strong>Horas Especiales:</strong> Horas en feriados o dias no laborales</li>
+                <li><strong>Monto Total:</strong> Calculo monetario total del periodo</li>
+            </ul>
+
+            <h3>Acciones</h3>
+            <ul>
+                <li><strong>Nueva Liquidacion:</strong> Crear liquidacion para un nuevo periodo</li>
+                <li><strong>Recalcular:</strong> Actualizar calculos de una liquidacion abierta</li>
+                <li><strong>Cerrar Liquidacion:</strong> Marcar como cerrada (no editable)</li>
+            </ul>
+        </section>
+
+        <!-- Desempeno -->
+        <section class="section">
+            <h2>⭐ Pestana INCIDENCIAS Y OBSERVACIONES</h2>
+            <p>
+                Seguimiento del desempeno del empleado mediante notas y calificaciones.
+            </p>
+
+            <h3>Evaluacion de Desempeno Anual</h3>
+            <p>
+                Muestra automaticamente el promedio de calificaciones del ano actual:
+            </p>
+            <ul>
+                <li><span class="status-badge status-green">EXCELENTE</span> - Desempeno sobresaliente</li>
+                <li><span class="status-badge status-blue">BUENO</span> - Cumple con las expectativas</li>
+                <li><span class="status-badge status-yellow">REGULAR</span> - Necesita mejorar</li>
+                <li><span class="status-badge status-red">DEFICIENTE</span> - Requiere atencion urgente</li>
+            </ul>
+
+            <h3>Notas de Desempeno</h3>
+            <p>
+                Lista cronologica de observaciones sobre el empleado, cada una con:
+            </p>
+            <ul>
+                <li><strong>Autor:</strong> Quien registro la nota</li>
+                <li><strong>Fecha/Hora:</strong> Momento del registro</li>
+                <li><strong>Calificacion:</strong> Positiva, Neutra o Negativa</li>
+                <li><strong>Contenido:</strong> Descripcion de la observacion</li>
+            </ul>
+
+            <h3>Informe Anual</h3>
+            <p>
+                Boton para generar un informe completo del empleado incluyendo:
+                asistencia mensual, horas trabajadas, licencias y evaluacion de desempeno.
+            </p>
+        </section>
+
+        <!-- Direccion y Mapa -->
+        <section class="section">
+            <h2>📍 Direccion y Geolocalizacion</h2>
+            <p>
+                El sistema permite registrar la direccion completa del empleado con
+                coordenadas geograficas para visualizacion en mapa.
+            </p>
+
+            <h3>Datos de Direccion</h3>
+            <ul>
+                <li>Calle y numero</li>
+                <li>Localidad</li>
+                <li>Partido/Departamento</li>
+                <li>Provincia</li>
+                <li>Codigo Postal</li>
+                <li>Coordenadas GPS (latitud, longitud)</li>
+            </ul>
+
+            <h3>Acciones de Geolocalizacion</h3>
+            <ul>
+                <li><strong>Obtener CP:</strong> Buscar codigo postal automaticamente</li>
+                <li><strong>Obtener Coordenadas:</strong> Calcular lat/long desde la direccion</li>
+                <li><strong>Ver Mapa:</strong> Visualizar ubicacion en mapa interactivo</li>
+            </ul>
+        </section>
+
+        <!-- Acciones del Modulo -->
+        <section class="section">
+            <h2>🔧 Acciones del Modulo</h2>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Accion</th>
+                        <th>Descripcion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Nuevo</strong></td>
+                        <td>Crear un nuevo empleado (abre vista simplificada)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Guardar</strong></td>
+                        <td>Guardar cambios en el empleado actual</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Eliminar</strong></td>
+                        <td>Eliminar empleado (si no tiene registros asociados)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Imprimir Ficha</strong></td>
+                        <td>Generar PDF con ficha de datos del empleado</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Informe Anual</strong></td>
+                        <td>Reporte completo de asistencia del ano</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Empleados Inactivos -->
+        <section class="section">
+            <h2>🚫 Empleados Inactivos</h2>
+            <p>
+                Cuando un empleado deja de trabajar, se debe marcar como <strong>Inactivo</strong>
+                en lugar de eliminarlo. Esto:
+            </p>
+            <ul>
+                <li>Preserva todo el historial de asistencia</li>
+                <li>Mantiene las liquidaciones anteriores</li>
+                <li>Impide nuevos registros de fichadas</li>
+                <li>Muestra al empleado con estilo diferenciado en la lista</li>
+            </ul>
+
+            <div class="info">
+                <p class="info-title">ℹ️ Legajo de Inactivos</p>
+                <p>
+                    Al desactivar un empleado, el sistema agrega el prefijo "x-" al legajo,
+                    liberando el codigo original para reutilizacion si fuera necesario.
+                </p>
+            </div>
+        </section>
+
+        <!-- Modulos Relacionados -->
+        <section class="section">
+            <h2>🔗 Modulos Relacionados</h2>
+            <ul>
+                <li><strong>Panel de Asistencia</strong> - Ver estado diario de todos los empleados</li>
+                <li><strong>Auditoria de Registros</strong> - Ver/ajustar fichadas individuales</li>
+                <li><strong>Turnos</strong> - Configurar horarios disponibles</li>
+                <li><strong>Sucursales</strong> - Gestionar ubicaciones de trabajo</li>
+                <li><strong>Tipos de Licencia</strong> - Configurar categorias de licencias</li>
+            </ul>
+        </section>
+
+        <footer class="help-footer">
+            <p><strong>STA.RH</strong> - Sistema de Gestion de Recursos Humanos</p>
+            <p>S.T.A. - Soluciones Tecnologicas de Avanzada</p>
+            <a href="index.html" class="back-link">← Volver al indice de ayuda</a>
+        </footer>
+
+    </div>
+</body>
+
+</html>

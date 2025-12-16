@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ayuda - Panel de Asistencia Diaria | STA.RH</title>
+    <link rel="stylesheet" href="help.css">
+</head>
+
+<body>
+    <div class="help-container">
+
+        <header class="help-header">
+            <h1>📊 Panel de Asistencia Diaria</h1>
+            <p>Guia de uso del modulo DashboardAsistencia</p>
+        </header>
+
+        <!-- Descripcion General -->
+        <section class="section">
+            <h2>📋 Descripcion General</h2>
+            <p>
+                El <strong>Panel de Asistencia Diaria</strong> es el centro de control donde los supervisores y
+                el area de Recursos Humanos pueden visualizar en tiempo real el estado de asistencia de todos
+                los empleados para el dia actual.
+            </p>
+            <p>
+                Este modulo proporciona una vision consolidada de quien esta presente, quien llego tarde,
+                quien tiene licencia y quien aun no ha ingresado, permitiendo tomar decisiones rapidas
+                sobre la gestion del personal.
+            </p>
+        </section>
+
+        <!-- Indicadores Clave -->
+        <section class="section">
+            <h2>📈 Indicadores Clave (KPIs)</h2>
+            <p>En la parte superior del panel encontraras los indicadores principales del dia:</p>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Indicador</th>
+                        <th>Descripcion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>👥 Con Turno Hoy</strong></td>
+                        <td>Cantidad total de empleados que tienen un turno asignado para el dia actual</td>
+                    </tr>
+                    <tr>
+                        <td><strong>📄 Con Licencia</strong></td>
+                        <td>Empleados que tienen una licencia justificada vigente para hoy</td>
+                    </tr>
+                    <tr>
+                        <td><strong>⏳ Pendientes</strong></td>
+                        <td>Empleados que aun no han registrado su entrada pero deberian haberlo hecho</td>
+                    </tr>
+                    <tr>
+                        <td><strong>⏰ Llegadas Tarde</strong></td>
+                        <td>Empleados que ingresaron despues del horario de tolerancia permitido</td>
+                    </tr>
+                    <tr>
+                        <td><strong>🚪 Salidas Anticipadas</strong></td>
+                        <td>Empleados que registraron su salida antes del horario establecido</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Graficos -->
+        <section class="section">
+            <h2>📊 Graficos de Distribucion</h2>
+
+            <h3>Estado de Jornadas</h3>
+            <p>
+                El grafico de barras o pastel muestra la distribucion de los diferentes estados de las jornadas:
+            </p>
+            <ul>
+                <li><span class="status-badge status-green">COMPLETA</span> - Jornada finalizada correctamente</li>
+                <li><span class="status-badge status-blue">EN CURSO</span> - Empleado trabajando actualmente</li>
+                <li><span class="status-badge status-yellow">PENDIENTE</span> - Aun no ha ingresado</li>
+                <li><span class="status-badge status-yellow">INCOMPLETA</span> - Falta entrada o salida</li>
+                <li><span class="status-badge status-red">AUSENTE</span> - No registro asistencia sin justificacion</li>
+                <li><span class="status-badge status-gray">LICENCIA</span> - Con licencia justificada</li>
+            </ul>
+        </section>
+
+        <!-- Barra de herramientas -->
+        <section class="section">
+            <h2>🔧 Barra de Herramientas</h2>
+            <p>En la parte superior derecha del panel encontraras los siguientes controles:</p>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Icono</th>
+                        <th>Funcion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>📄 Informe Diario</strong></td>
+                        <td>Genera un informe PDF del dia. Puedes seleccionar fechas anteriores para generar informes
+                            historicos.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>◆ Borrador (Limpiar Filtro)</strong></td>
+                        <td>Restablece el filtro de sucursal a vacio (mostrar todos los empleados).</td>
+                    </tr>
+                    <tr>
+                        <td><strong>🏢 Filtrar por Sucursal</strong></td>
+                        <td>Selector desplegable para filtrar por sucursal o sector especifico.</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="tip">
+                <p class="tip-title">💡 Informes Historicos</p>
+                <p>
+                    Aunque el Dashboard muestra datos del dia actual, puedes generar informes de dias anteriores
+                    haciendo clic en el icono de informe (📄). El sistema te permitira seleccionar la fecha deseada.
+                </p>
+            </div>
+        </section>
+
+        <!-- Filtro por Sucursal -->
+        <section class="section">
+            <h2>🏢 Filtrar por Sucursal/Sector</h2>
+            <p>
+                Utiliza el selector <strong>"Filtrar por Sucursal/Sector"</strong> para ver unicamente
+                los datos de una sucursal o area especifica.
+            </p>
+            <ul>
+                <li>Deja el selector vacio para ver <strong>todos los empleados</strong></li>
+                <li>Selecciona una sucursal para filtrar los indicadores y listas</li>
+                <li>El filtro afecta a todos los componentes del dashboard</li>
+                <li><strong>Cambiar el filtro actualiza los datos</strong> del panel</li>
+            </ul>
+        </section>
+
+        <!-- Lista Detallada -->
+        <section class="section">
+            <h2>📋 Detalle por Empleado</h2>
+            <p>
+                La tabla inferior muestra el detalle individual de cada empleado con turno para hoy:
+            </p>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Columna</th>
+                        <th>Informacion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Nombre</strong></td>
+                        <td>Nombre completo del empleado</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Turno Asignado</strong></td>
+                        <td>Nombre del turno y horario esperado</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Entrada</strong></td>
+                        <td>Hora real de entrada registrada</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Salida</strong></td>
+                        <td>Hora real de salida registrada (si aplica)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Estado</strong></td>
+                        <td>Icono visual del estado de la jornada</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tiempo</strong></td>
+                        <td>Tiempo transcurrido o trabajado</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Actualizacion de datos -->
+        <div class="info">
+            <p class="info-title">🔄 Actualizar Datos</p>
+            <p>
+                El Dashboard <strong>no se actualiza automaticamente</strong>. Para ver los datos mas recientes:
+            </p>
+            <ul>
+                <li>Presiona <strong>F5</strong> para recargar la pagina</li>
+                <li>O cambia el filtro de sucursal (esto refresca los datos)</li>
+            </ul>
+        </div>
+
+        <!-- Advertencia -->
+        <div class="warning">
+            <p class="warning-title">⚠️ Importante</p>
+            <p>
+                Los datos mostrados corresponden al <strong>dia actual</strong>.
+                Para consultar informacion historica detallada, utiliza el modulo
+                <strong>Auditoria de Registros</strong>. Sin embargo, puedes generar
+                informes PDF de dias anteriores desde la barra de herramientas.
+            </p>
+        </div>
+
+        <!-- Modulos Relacionados -->
+        <section class="section">
+            <h2>🔗 Modulos Relacionados</h2>
+            <ul>
+                <li><strong>Auditoria de Registros</strong> - Para revisar y ajustar fichadas historicas</li>
+                <li><strong>Nomina (Personal)</strong> - Para gestionar datos de empleados y turnos</li>
+                <li><strong>Licencias</strong> - Para cargar y consultar licencias</li>
+            </ul>
+        </section>
+
+        <footer class="help-footer">
+            <p><strong>STA.RH</strong> - Sistema de Gestion de Recursos Humanos</p>
+            <p>S.T.A. - Soluciones Tecnologicas de Avanzada</p>
+            <a href="index.html" class="back-link">← Volver al indice de ayuda</a>
+        </footer>
+
+    </div>
+</body>
+
+</html>

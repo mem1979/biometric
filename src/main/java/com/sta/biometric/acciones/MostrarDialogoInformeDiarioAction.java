@@ -14,7 +14,7 @@ public class MostrarDialogoInformeDiarioAction extends ViewBaseAction {
     public void execute() throws Exception {
         // Mostrar diálogo
         showDialog();
-        getView().setTitle("📅 Informe Diario de Jornadas");
+        getView().setTitle("📅 CREAR INFORME HISTORICO DE JORNADAS");
         getView().setModelName("FechaInformeDiarioDialog");
 
         // Establecer fecha por defecto (hoy)

@@ -160,7 +160,7 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
 
         <accion nombre="ajustarHoras" clase="com.sta.biometric.acciones.AjustarHorasAction" icono="clock-edit-outline" modo="detail"/>
 
-        <accion nombre="informeDiario" clase="com.sta.biometric.acciones.MostrarDialogoInformeDiarioAction" icono="file-document-outline" modo="list">
+        <accion nombre="informeDiario" oculta="true" clase="com.sta.biometric.acciones.MostrarDialogoInformeDiarioAction" modo="list">
         </accion>
 
     </controlador>
