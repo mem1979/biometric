@@ -160,10 +160,9 @@ import lombok.*;
 
 @View(name = "VerCalendario", members = "eventos")
 
-@View(name = "simple", members = "nombreCompleto, sucursal, puesto;")
+@View(name = "simple", members = "nombreCompleto, sucursal, puesto")
 
-@View(name = "Crear", members = 
-        "InformacionPersonal { " +
+@View(name = "Crear", members = "InformacionPersonal { " +
         "InformacionPersonal[" +
         "apellido;" +
         "nombres;" +
@@ -326,7 +325,7 @@ public class Personal extends Identifiable {
     @Password
     @ReadOnly
     @Column(length = 20)
-    @Action(value = "Personal.borrarContrasena", alwaysEnabled = true, notForViews = "Crear" )
+    @Action(value = "Personal.borrarContrasena", alwaysEnabled = true, notForViews = "Crear")
     @DefaultValueCalculator(CalculadorPassword.class)
     private String contrasena;
 

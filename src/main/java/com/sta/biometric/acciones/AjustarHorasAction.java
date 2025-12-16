@@ -1,5 +1,7 @@
 package com.sta.biometric.acciones;
 
+
+
 import org.openxava.actions.*;
 
 import com.sta.biometric.enums.*;

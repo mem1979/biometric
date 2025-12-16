@@ -1,6 +1,7 @@
 package com.sta.biometric.acciones;
 
 
+
 import org.openxava.actions.*;
 import org.openxava.jpa.*;
 import org.openxava.model.*;

@@ -1,6 +1,8 @@
 
 package com.sta.biometric.auxiliares;
 
+
+
 import java.time.*;
 
 import javax.persistence.*;

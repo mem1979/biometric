@@ -1,0 +1,145 @@
+/**
+ * =============================================================================
+ * PASTEL.CSS - Tema Visual Pastel para STARH Biometric
+ * =============================================================================
+ * 
+ * Este archivo define el tema visual "Pastel" para OpenXava.
+ * Extiende el tema base (base.css) y define una paleta de colores suaves.
+ * 
+ * CONFIGURACIÓN:
+ * - En xava.properties: styleCSS=pastel.css
+ * - Las personalizaciones adicionales van en custom.css
+ * 
+ * PALETA DE COLORES:
+ * - Azul Pastel: #A7C7E7 (principal)
+ * - Menta: #B8E0D2 (acentos)
+ * - Gris Claro: #F1F3F5 (fondos)
+ * - Gris Oscuro: #495057 (textos)
+ * 
+ * SECCIONES:
+ * 1. Importación del tema base
+ * 2. Variables CSS (Custom Properties)
+ * 3. Fondo de la aplicación
+ * 4. Menú de módulos
+ * 5. Marcos y contenedores
+ * 
+ * NOTA: Los estilos de mensajes y animaciones están en custom.css
+ * para evitar duplicación.
+ * =============================================================================
+ */
+
+
+/* =============================================================================
+   1. IMPORTACIÓN DEL TEMA BASE
+   ============================================================================= */
+
+@import 'base.css?ox=7.4';
+
+
+/* =============================================================================
+   2. VARIABLES CSS (CUSTOM PROPERTIES)
+   ============================================================================= */
+
+:root {
+    /* ----- Paleta de colores del tema ----- */
+    --mi-azul-pastel: #A7C7E7;
+    --mi-azul-pastel-oscuro: #6A92B3;
+    --mi-menta: #B8E0D2;
+    --mi-menta-oscuro: #86B8A6;
+    --mi-gris-claro: #F1F3F5;
+    --mi-gris-oscuro: #495057;
+    --transparente-pastel: rgba(173, 216, 230, 0.2);
+
+    /* ----- Imagen de fondo ----- */
+    --background-image-url: url('imgFondoPastel.jpg');
+
+    /* ----- Menú de módulos (panel izquierdo) ----- */
+    --modules-list-color: var(--mi-gris-oscuro);
+    --modules-list-background: var(--mi-azul-pastel);
+    --modules-list-selected-color: white;
+    --modules-list-selected-background: var(--mi-azul-pastel-oscuro);
+    --modules-list-selected-border-right: var(--mi-menta-oscuro);
+
+    /* ----- Cabecera del módulo ----- */
+    --module-header-color: white;
+    --module-header-background: var(--mi-azul-pastel-oscuro);
+
+    /* ----- Barra de botones ----- */
+    --button-bar-button-color: var(--mi-gris-claro);
+    --button-bar-background: var(--mi-menta-oscuro);
+    --list-formats-color: var(--mi-gris-oscuro);
+    --list-formats-hover-color: var(--mi-menta-oscuro);
+
+    /* ----- Fondos y colores generales ----- */
+    --background: var(--mi-gris-claro);
+    --color: var(--mi-gris-oscuro);
+
+    /* ----- Marcos y contenedores ----- */
+    --frame-background: var(--transparente-pastel);
+    --frame-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
+
+    /* ----- Acciones y botones ----- */
+    --action-color: var(--mi-azul-pastel-oscuro);
+    --action-hover-color: var(--mi-menta);
+    --action-hover-background: var(--mi-gris-oscuro);
+    --default-action-button-background: var(--mi-azul-pastel-oscuro);
+
+    /* ----- Editores y campos ----- */
+    --required-editor-border: var(--mi-menta-oscuro);
+
+    /* ----- Secciones (usadas en custom.css) ----- */
+    --section-background: var(--transparente-pastel);
+
+    /* ----- Mensajes del sistema (usadas en custom.css) ----- */
+    --message-box-color: var(--mi-gris-oscuro);
+    --message-box-shadow: rgba(0, 0, 0, 0.15);
+
+    /* ----- Pestañas de sección activa (usadas en custom.css) ----- */
+    --active-section-tab-color: var(--mi-azul-pastel-oscuro);
+    --active-section-tab-bottom-color: var(--mi-menta-oscuro);
+    --active-section-tab-border-color: var(--mi-azul-pastel);
+}
+
+
+/* =============================================================================
+   3. FONDO DE LA APLICACIÓN
+   ============================================================================= */
+
+/**
+ * Fondo general con imagen fija que cubre toda la pantalla.
+ */
+body {
+    background-image: var(--background-image-url);
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+}
+
+
+/* =============================================================================
+   4. MENÚ DE MÓDULOS (PANEL IZQUIERDO)
+   ============================================================================= */
+
+/**
+ * Módulo seleccionado: efecto tridimensional con sombra interior.
+ */
+#modules_list .selected {
+    box-shadow:
+        inset 0px 3px 8px rgba(0, 0, 0, 0.3),
+        0px 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: var(--modules-list-selected-background);
+    color: var(--modules-list-selected-color);
+}
+
+
+/* =============================================================================
+   5. MARCOS Y CONTENEDORES
+   ============================================================================= */
+
+/**
+ * Marcos (frames): sombra sutil para efecto de elevación.
+ */
+.ox-frame {
+    box-shadow: var(--frame-shadow);
+}
