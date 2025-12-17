@@ -40,6 +40,15 @@
             <p>El formulario de empleado se organiza en varias pestanas:</p>
 
             <h3>1. Informacion Personal</h3>
+            <p>Esta seccion contiene los datos basicos del empleado:</p>
+
+            <!-- Screenshot: Datos personales -->
+            <figure class="screenshot">
+                <img src="img/personal_info_personal.png" alt="Formulario de Informacion Personal">
+                <figcaption>Formulario de datos personales: apellido, nombres, fecha de nacimiento, nacionalidad, DNI y
+                    CUIL</figcaption>
+            </figure>
+
             <table class="data-table">
                 <tbody>
                     <tr>
@@ -59,24 +68,12 @@
                         <td>Soltero, Casado, Divorciado, etc.</td>
                     </tr>
                     <tr>
-                        <td><strong>DNI</strong></td>
+                        <td><strong>Tipo/Numero (DNI)</strong></td>
                         <td>Documento Nacional de Identidad (unico en el sistema)</td>
                     </tr>
                     <tr>
                         <td><strong>CUIL</strong></td>
                         <td>Codigo Unico de Identificacion Laboral (XX-XXXXXXXX-X)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Foto</strong></td>
-                        <td>Imagen del empleado (max 200KB)</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Direccion</strong></td>
-                        <td>Calle, numero, localidad, provincia con geolocalizacion</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Contacto</strong></td>
-                        <td>Telefono, email y otros datos de contacto</td>
                     </tr>
                 </tbody>
             </table>
@@ -84,34 +81,111 @@
             <div class="tip">
                 <p class="tip-title">💡 Consulta ANSES</p>
                 <p>
-                    Junto al campo CUIL hay un boton que permite abrir directamente la consulta de ANSES
-                    para verificar los datos del empleado.
+                    Junto al campo CUIL hay un enlace <strong>"Ir ANSES"</strong> que permite abrir directamente
+                    la consulta de ANSES para verificar los datos del empleado.
                 </p>
             </div>
 
-            <h3>2. Informacion Laboral</h3>
-            <h4>Credenciales</h4>
+            <h4>Direccion y Contacto</h4>
+
+            <!-- Screenshot: Direccion y Contacto -->
+            <figure class="screenshot">
+                <img src="img/personal_direccion_contacto.png" alt="Formulario de Direccion y Contacto">
+                <figcaption>Seccion de direccion (provincia, partido, localidad, calle) y datos de contacto (celular,
+                    telefono, email)</figcaption>
+            </figure>
+
             <table class="data-table">
                 <tbody>
                     <tr>
-                        <td><strong>Legajo (userId)</strong></td>
-                        <td>Codigo unico del empleado, debe coincidir con el lector biometrico</td>
+                        <td><strong>Provincia/Partido/Localidad</strong></td>
+                        <td>Ubicacion geografica con selectores en cascada</td>
                     </tr>
                     <tr>
-                        <td><strong>Activo</strong></td>
-                        <td>Indica si el empleado esta habilitado en el sistema</td>
+                        <td><strong>Calle/Numero/Piso</strong></td>
+                        <td>Direccion completa del domicilio</td>
                     </tr>
                     <tr>
-                        <td><strong>Usuario</strong></td>
-                        <td>Se genera automaticamente (ej: JPérez@EMP001)</td>
+                        <td><strong>Codigo Postal</strong></td>
+                        <td>Se puede obtener automaticamente con el boton de busqueda</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Celular</strong></td>
+                        <td>Numero de telefono movil con codigo de area</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Telefono</strong></td>
+                        <td>Linea fija (opcional)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Correo Electronico</strong></td>
+                        <td>Email de contacto del empleado</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Web</strong></td>
+                        <td>Sitio web o red social (opcional)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Notas y Documentacion</h4>
+
+            <!-- Screenshot: Notas y Documentacion -->
+            <figure class="screenshot">
+                <img src="img/personal_notas_documentacion.png" alt="Notas Personales y Documentacion">
+                <figcaption>Area de notas personales y carga de documentacion adjunta</figcaption>
+            </figure>
+
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <td><strong>Notas Personale</strong></td>
+                        <td>Campo de texto libre para observaciones adicionales sobre el empleado</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Documentacion</strong></td>
+                        <td>Archivos adjuntos (contratos, certificados, etc.) - Arrastrar o explorar para cargar</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Foto</strong></td>
+                        <td>Imagen del empleado (max 200KB) - aparece en el panel lateral</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>2. Informacion Laboral</h3>
+            <p>Esta pestana contiene los datos de empleo y configuracion del empleado:</p>
+
+            <h4>Credenciales</h4>
+
+            <!-- Screenshot: Credenciales -->
+            <figure class="screenshot">
+                <img src="img/personal_credenciales.png" alt="Formulario de Credenciales">
+                <figcaption>Seccion de credenciales: legajo, estado de habilitacion, usuario generado, contrasena e ID
+                    de dispositivo</figcaption>
+            </figure>
+
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <td><strong>Legajo</strong></td>
+                        <td>Codigo unico del empleado (ej: A5), debe coincidir con el lector biometrico</td>
+                    </tr>
+                    <tr>
+                        <td><strong>HABILITADO</strong></td>
+                        <td>Checkbox que indica si el empleado esta activo en el sistema</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Crea usuario</strong></td>
+                        <td>Se genera automaticamente (ej: JPérez@A5)</td>
                     </tr>
                     <tr>
                         <td><strong>Contrasena</strong></td>
-                        <td>Encriptada, puede ser blanqueada por el administrador</td>
+                        <td>Encriptada, puede ser blanqueada por el administrador con el boton ⊘</td>
                     </tr>
                     <tr>
                         <td><strong>ID Dispositivo</strong></td>
-                        <td>Identificador del celular para la app movil</td>
+                        <td>Identificador del celular para la app movil, se blanquea con el boton ⊘</td>
                     </tr>
                 </tbody>
             </table>
@@ -119,55 +193,69 @@
             <div class="warning">
                 <p class="warning-title">⚠️ Blanquear Credenciales</p>
                 <p>
-                    Los botones junto a <strong>Contrasena</strong> e <strong>ID Dispositivo</strong> permiten
+                    Los botones ⊘ junto a <strong>Contrasena</strong> e <strong>ID Dispositivo</strong> permiten
                     blanquear estos valores. Util cuando el empleado olvida su contrasena o cambia de celular.
                 </p>
             </div>
 
             <h4>Funcion</h4>
+
+            <!-- Screenshot: Funcion -->
+            <figure class="screenshot">
+                <img src="img/personal_funcion.png" alt="Formulario de Funcion">
+                <figcaption>Datos de funcion: sucursal, fecha de inicio, antiguedad calculada y puesto</figcaption>
+            </figure>
+
             <table class="data-table">
                 <tbody>
                     <tr>
                         <td><strong>Sucursal</strong></td>
-                        <td>Ubicacion donde trabaja el empleado</td>
+                        <td>Ubicacion donde trabaja el empleado (ej: CENTRAL)</td>
                     </tr>
                     <tr>
-                        <td><strong>Inicio Actividades</strong></td>
+                        <td><strong>Inicio de Actividades</strong></td>
                         <td>Fecha de ingreso a la empresa</td>
                     </tr>
                     <tr>
                         <td><strong>Antiguedad</strong></td>
-                        <td>Calculada automaticamente (X años, Y meses, Z dias)</td>
+                        <td>Calculada automaticamente (ej: 5 años y 7 dias)</td>
                     </tr>
                     <tr>
                         <td><strong>Puesto</strong></td>
-                        <td>Cargo o funcion que desempena</td>
+                        <td>Cargo o funcion (ej: OP. ENCARGADO DE PLANTA)</td>
                     </tr>
                 </tbody>
             </table>
 
             <h4>Honorarios</h4>
+
+            <!-- Screenshot: Honorarios -->
+            <figure class="screenshot">
+                <img src="img/personal_honorarios.png" alt="Formulario de Honorarios">
+                <figcaption>Configuracion de valores hora: normal, extra (50%) y especial (100%)</figcaption>
+            </figure>
+
             <table class="data-table">
                 <tbody>
                     <tr>
                         <td><strong>Valor Hora</strong></td>
-                        <td>Valor monetario de la hora normal de trabajo</td>
+                        <td>Valor monetario de la hora normal (ej: $1.000,00)</td>
                     </tr>
                     <tr>
                         <td><strong>% Hora Extra</strong></td>
                         <td>Porcentaje adicional para horas extras (ej: 50%)</td>
                     </tr>
                     <tr>
-                        <td><strong>Valor Hora Extra</strong></td>
-                        <td>Calculado: Valor Hora + (Valor Hora × %Extra / 100)</td>
+                        <td><strong>Valor hora extra</strong></td>
+                        <td>Calculado automaticamente (ej: $1.500,00)</td>
                     </tr>
                     <tr>
                         <td><strong>% Hora Especial</strong></td>
                         <td>Porcentaje adicional para feriados (ej: 100%)</td>
                     </tr>
                     <tr>
-                        <td><strong>Valor Hora Especial</strong></td>
-                        <td>Calculado: Valor Hora + (Valor Hora × %Especial / 100)</td>
+                        <td><strong>Valor hora especial</strong></td>
+                        <td>Calculado automaticamente (ej: $2.000,00)</td>
                     </tr>
                 </tbody>
             </table>
@@ -175,18 +263,54 @@
             <div class="info">
                 <p class="info-title">💰 Tecnologia Snapshot</p>
                 <p>
-                    Cada vez que se genera un registro de auditoria, el sistema "fotografía" los valores
+                    Cada vez que se genera un registro de auditoria, el sistema "fotografia" los valores
                     monetarios vigentes. Si el sueldo cambia despues, los registros anteriores mantienen
                     los valores historicos correctos.
                 </p>
             </div>
 
             <h4>Jornadas</h4>
-            <p>Aqui se configuran los turnos del empleado:</p>
-            <ul>
-                <li><strong>Acepta Pausas:</strong> Si el empleado puede registrar pausas durante la jornada</li>
-                <li><strong>Jornadas Asignadas:</strong> Lista de turnos con periodos de vigencia</li>
-            </ul>
+
+            <!-- Screenshot: Jornadas -->
+            <figure class="screenshot">
+                <img src="img/personal_jornadas.png" alt="Seccion de Jornadas">
+                <figcaption>Lista de jornadas asignadas con codigo de turno, detalle de horarios y fechas de vigencia
+                </figcaption>
+            </figure>
+
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <td><strong>CON PAUSAS</strong></td>
+                        <td>Checkbox que indica si el empleado puede registrar pausas durante la jornada</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Codigo de turno</strong></td>
+                        <td>Identificador del turno asignado (ej: TM.01)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Detalle jornada</strong></td>
+                        <td>Dias de la semana, horario y tolerancia (ej: Lu.Ma.Mi.Ju.Vi. de 07:00 a 16:00 Hs /Tol.5min)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fecha inicio</strong></td>
+                        <td>Desde cuando aplica este turno</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fecha fin</strong></td>
+                        <td>Hasta cuando aplica (vacio = turno indefinido/rotativo)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="tip">
+                <p class="tip-title">💡 Nuevo Turno</p>
+                <p>
+                    Use el boton <strong>Nuevo</strong> para agregar jornadas adicionales.
+                    Si asigna multiples turnos sin fecha fin, rotaran semanalmente.
+                </p>
+            </div>
         </section>
 
         <!-- Turnos y Jornadas -->

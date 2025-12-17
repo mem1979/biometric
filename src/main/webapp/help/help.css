@@ -296,3 +296,24 @@ body {
     opacity: 0.9;
     font-size: 1.1rem;
 }
+
+/* Screenshots and figures */
+.screenshot {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.screenshot img {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.screenshot figcaption {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #64748b;
+    font-style: italic;
+}

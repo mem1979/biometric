@@ -133,8 +133,8 @@ import lombok.*;
         + " puesto;" +
         "]; " +
         "Honorarios[" +
-        "valorHora," +
-        "porcentajeHoraExtra, valorHoraExtra," +
+        "valorHora;" +
+        "porcentajeHoraExtra, valorHoraExtra;" +
         "porcentajeHoraEspecial, valorHoraEspecial;" +
         "]; " +
         "JORNADAS[" +
@@ -193,8 +193,8 @@ import lombok.*;
         + " puesto;" +
         "]; " +
         "Honorarios[" +
-        "valorHora," +
-        "porcentajeHoraExtra, valorHoraExtra," +
+        "valorHora;" +
+        "porcentajeHoraExtra, valorHoraExtra;" +
         "porcentajeHoraEspecial, valorHoraEspecial;" +
         "]; " +
         "JORNADAS[" +
@@ -863,6 +863,7 @@ public class Personal extends Identifiable {
      * @return Valor hora con bonificación especial, o ZERO si faltan datos
      */
     @Label
+    @Money
     @Depends("valorHora, porcentajeHoraEspecial")
     public BigDecimal getValorHoraEspecial() {
         if (valorHora != null && porcentajeHoraEspecial != null) {
@@ -880,6 +881,7 @@ public class Personal extends Identifiable {
      * @return Valor hora base + bonificación del turno
      */
     @Transient
+    @Money
     public BigDecimal getValorHoraTurno(TurnosHorarios turno) {
         if (valorHora == null) {
             return BigDecimal.ZERO;
