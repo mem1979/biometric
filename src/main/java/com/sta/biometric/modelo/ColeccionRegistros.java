@@ -111,7 +111,7 @@ public class ColeccionRegistros extends Identifiable {
      */
     @ReadOnly
     @Coordinates
-    @Column(length = 50)
+    @Column(length = 255)
     private String coordenada;
 
     /**
@@ -125,6 +125,7 @@ public class ColeccionRegistros extends Identifiable {
      * Observacion o comentario adicional del registro.
      */
     @TextArea
+    @Column(length = 500)
     private String observacion;
 
     /**
@@ -138,6 +139,7 @@ public class ColeccionRegistros extends Identifiable {
      * @see #calcularEvaluacion()
      */
     @ReadOnly
+    @Column(length = 100)
     private String evaluacion;
 
     /**

@@ -48,9 +48,9 @@ import lombok.*;
         "Registros { registros; estadoJornada };" +
         "};" +
         "Calculos_Y_Ajustes { " +
-        "Horas_Normales { horasTrabajadasTurno, totalHorasTurno }; " +
-        "Horas_Extras { horasExtras, totalHorasExtras }; " +
-        "Horas_Especiales { horasEspeciales, totalHorasEspeciales }; " +
+        "Horas_Normales [ horasTrabajadasTurno, totalHorasTurno ]; "+
+        "Horas_Extras [ horasExtras, totalHorasExtras ]; "+
+        "Horas_Especiales [ horasEspeciales, totalHorasEspeciales ]; "+
         "ajustesRealizados " +
         "};" +
         "Notas { nota };")
@@ -201,6 +201,7 @@ public class AuditoriaRegistros extends Identifiable {
     private int ajusteMinutosEspeciales; // Minutos a sumar/restar a especiales
 
     @Stereotype("MEMO")
+    @Column(length = 2000)
     private String nota; // Observaciones generales
 
     // ==================================================================================

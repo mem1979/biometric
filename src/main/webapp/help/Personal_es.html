@@ -39,6 +39,13 @@
             <h2>📋 Estructura del Formulario</h2>
             <p>El formulario de empleado se organiza en varias pestanas:</p>
 
+            <!-- Screenshot: Barra de secciones -->
+            <figure class="screenshot">
+                <img src="img/personal_barra_secciones.png" alt="Barra de secciones del formulario">
+                <figcaption>Navegacion por pestanas: Datos Personales, Datos Laborales, Licencias, Liquidacion de
+                    Jornadas y Notas de Desempeno</figcaption>
+            </figure>
+
             <h3>1. Informacion Personal</h3>
             <p>Esta seccion contiene los datos basicos del empleado:</p>
 
@@ -315,9 +322,137 @@
 
         <!-- Turnos y Jornadas -->
         <section class="section">
-            <h2>🕐 Sistema de Turnos</h2>
+            <h2>🕐 Sistema de Turnos y Jornadas</h2>
             <p>
-                El sistema de jornadas permite asignar turnos de forma flexible:
+                El sistema de jornadas permite asignar turnos de forma flexible a cada empleado.
+                Los turnos se crean en el modulo <strong>Turnos Horarios</strong> y luego se asignan
+                al personal desde la seccion <strong>Jornadas</strong>.
+            </p>
+
+            <h3>Asignar Jornada al Empleado</h3>
+            <p>
+                Para asignar un turno, use el boton <strong>Nuevo</strong> en la seccion "Jornadas Asignadas".
+                Puede seleccionar un turno existente, editarlo o crear uno nuevo.
+            </p>
+
+            <!-- Screenshot: Dialogo asignar jornada -->
+            <figure class="screenshot">
+                <img src="img/personal_asignar_jornada.png" alt="Dialogo para asignar jornada">
+                <figcaption>Dialogo de asignacion: seleccionar turno existente, editar, crear nuevo o añadir a lista
+                </figcaption>
+            </figure>
+
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <td><strong>Turno</strong></td>
+                        <td>Seleccionar de la lista desplegable (turnos ya creados)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>🔍 (Buscar)</strong></td>
+                        <td>Boton para buscar y seleccionar un turno del catalogo</td>
+                    </tr>
+                    <tr>
+                        <td><strong>✏️ (Editar)</strong></td>
+                        <td>Modificar el turno seleccionado (abre formulario completo)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>🗑️ (Borrar)</strong></td>
+                        <td>Desvincular el turno de esta asignacion</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Añadir</strong></td>
+                        <td>Crear un nuevo turno directamente desde aqui</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fecha inicio</strong></td>
+                        <td>Desde cuando aplica este turno (requerido)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Fecha fin</strong></td>
+                        <td>Hasta cuando aplica (vacio = turno indefinido)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Rotativa</strong></td>
+                        <td>Indica si participa en rotacion semanal</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Crear/Editar Turno (Turnos Horarios)</h3>
+            <p>
+                Al presionar <strong>Añadir</strong> o <strong>Editar</strong>, se abre el formulario
+                completo para configurar un turno:
+            </p>
+
+            <!-- Screenshot: Crear turno -->
+            <figure class="screenshot">
+                <img src="img/turnos_crear_horario.png" alt="Formulario para crear turno">
+                <figcaption>Formulario de creacion de turno: nombre, tolerancia, bonificacion y horarios por dia de la
+                    semana</figcaption>
+            </figure>
+
+            <h4>Seccion Jornada</h4>
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <td><strong>Turno nombre</strong></td>
+                        <td>Tipo de turno: MAÑANA, TARDE, NOCHE, ESPECIAL</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tolerancia</strong></td>
+                        <td>Minutos de tolerancia para llegadas/salidas (ej: 5 min)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Porcentaje bonificacion</strong></td>
+                        <td>Bonificacion adicional para este turno (ej: 15% turno noche)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Codigo</strong></td>
+                        <td>Se genera automaticamente: TM.01, TT.02, TN.01 segun tipo</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Horas</strong></td>
+                        <td>Suma semanal calculada automaticamente (ej: 0 HS. 0 MIN.)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Seccion DIAS</h4>
+            <p>Configure cada dia de la semana marcando el checkbox y definiendo los horarios:</p>
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <td><strong>Checkbox dia</strong></td>
+                        <td>Activa/desactiva el dia como laboral</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hora entrada</strong></td>
+                        <td>Hora de ingreso para ese dia</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hora salida</strong></td>
+                        <td>Hora de egreso para ese dia</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Horas dia</strong></td>
+                        <td>Duracion calculada automaticamente (ej: 9 Hs. 0 Min.)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info">
+                <p class="info-title">ℹ️ Turnos Nocturnos</p>
+                <p>
+                    El sistema soporta turnos que cruzan la medianoche. Por ejemplo, entrada 22:00 y
+                    salida 06:00 calcula correctamente 8 horas de trabajo.
+                </p>
+            </div>
+
+            <h4>Detalle Jornada Horas</h4>
+            <p>
+                Resumen compacto que agrupa dias con el mismo horario. Ejemplo:
+                <code>Lu.Ma.Mi.Ju.Vi. de 07:00 a 16:00 Hs /Tol.5min /Bon.0%</code>
             </p>
 
             <h3>Tipos de Asignacion</h3>
@@ -325,25 +460,26 @@
                 <thead>
                     <tr>
                         <th>Tipo</th>
+                        <th>Fecha Fin</th>
                         <th>Descripcion</th>
-                        <th>Ejemplo</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td><span class="status-badge status-blue">Turno Fijo</span></td>
-                        <td>Un solo turno con fecha inicio, sin fecha fin</td>
-                        <td>Empleado trabaja siempre de 8:00 a 17:00</td>
+                        <td>Vacia (null)</td>
+                        <td>Un solo turno asignado indefinidamente. Trabaja siempre el mismo horario.</td>
                     </tr>
                     <tr>
                         <td><span class="status-badge status-purple">Turno Rotativo</span></td>
-                        <td>Multiples turnos sin fecha fin, rotan semanalmente</td>
-                        <td>Semana 1: Manana, Semana 2: Tarde, Semana 3: Noche</td>
+                        <td>Vacia (null)</td>
+                        <td>Multiples turnos sin fecha fin que rotan semanalmente (ej: semana 1 manana, semana 2 tarde).
+                        </td>
                     </tr>
                     <tr>
                         <td><span class="status-badge status-yellow">Turno Programado</span></td>
-                        <td>Turno con fecha inicio Y fecha fin</td>
-                        <td>Turno especial del 15/12 al 31/12 por navidad</td>
+                        <td>Definida</td>
+                        <td>Turno temporal con periodo especifico (ej: del 15/12 al 31/12 por temporada).</td>
                     </tr>
                 </tbody>
             </table>
@@ -351,8 +487,18 @@
             <div class="tip">
                 <p class="tip-title">💡 Prioridad de Turnos</p>
                 <p>
-                    Los <strong>turnos programados</strong> (con fecha fin) tienen prioridad sobre los rotativos.
-                    Esto permite asignar turnos temporales que "sobreescriben" la rotacion normal.
+                    Los <strong>turnos programados</strong> (con fecha fin definida) tienen prioridad sobre los
+                    rotativos.
+                    Esto permite asignar turnos temporales que "sobreescriben" la rotacion normal sin modificarla.
+                </p>
+            </div>
+
+            <div class="warning">
+                <p class="warning-title">⚠️ Codigo Unico</p>
+                <p>
+                    Cada turno genera un codigo unico automaticamente (TM.01, TT.02, etc.).
+                    El prefijo indica el tipo: <strong>TM</strong>=Mañana, <strong>TT</strong>=Tarde,
+                    <strong>TN</strong>=Noche, <strong>TE</strong>=Especial. Maximo 99 turnos por tipo.
                 </p>
             </div>
         </section>
@@ -365,36 +511,130 @@
             </p>
 
             <h3>Listado de Licencias</h3>
-            <p>Muestra todas las licencias del ano actual con:</p>
+
+            <!-- Screenshot: Lista de licencias -->
+            <figure class="screenshot">
+                <img src="img/personal_licencias_lista.png" alt="Lista de licencias del empleado">
+                <figcaption>Lista de licencias con botones de accion: Asignar licencia, Ver calendario, Crear lista
+                </figcaption>
+            </figure>
+
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <td><strong>Tipo de Licencia</strong></td>
+                        <td>Vacaciones anuales, Enfermedad, Maternidad, etc.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Desde / Hasta</strong></td>
+                        <td>Fechas de inicio y fin de la licencia</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dias</strong></td>
+                        <td>Cantidad de dias computados</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Justificada</strong></td>
+                        <td>Indica si la licencia tiene certificado o documentacion</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Resumen Anual de Licencias</h3>
+
+            <!-- Screenshot: Resumen anual -->
+            <figure class="screenshot">
+                <img src="img/personal_licencias_resumen.png" alt="Resumen anual de licencias">
+                <figcaption>Tabla resumida por tipo de licencia: dias utilizados y dias restantes disponibles
+                </figcaption>
+            </figure>
+
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <td><strong>Tipo</strong></td>
+                        <td>Categoria de la licencia (ej: Vacaciones anuales, Enfermedad)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dias</strong></td>
+                        <td>Total de dias utilizados en el ano</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dias restantes</strong></td>
+                        <td>Dias disponibles segun la ley y antiguedad</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>Grafico de Asistencia Anual</h3>
+
+            <!-- Screenshot: Grafico anual -->
+            <figure class="screenshot">
+                <img src="img/personal_resumen_anual.png" alt="Grafico de resumen anual de asistencia">
+                <figcaption>Grafico de barras mensual: Jornadas completas, incompletas, licencias, ausentes y feriados
+                    trabajados</figcaption>
+            </figure>
+
+            <p>El grafico muestra por cada mes:</p>
             <ul>
-                <li><strong>Tipo:</strong> Vacaciones, Enfermedad, Maternidad, etc.</li>
-                <li><strong>Fecha Inicio/Fin:</strong> Periodo de la licencia</li>
-                <li><strong>Dias:</strong> Cantidad de dias de la licencia</li>
-                <li><strong>Justificado:</strong> Si tiene certificado o documentacion</li>
+                <li><span class="status-badge status-blue">Completas</span> - Jornadas con horario cumplido</li>
+                <li><span class="status-badge" style="background:#f97316;color:white">Incompletas</span> - Jornadas con
+                    horario parcial</li>
+                <li><span class="status-badge status-purple">Licencias</span> - Dias con licencia asignada</li>
+                <li><span class="status-badge status-red">Ausentes</span> - Dias sin registro de asistencia</li>
+                <li><span class="status-badge status-green">Feriados trabajados</span> - Trabajo en dias feriados</li>
             </ul>
 
-            <h3>Resumen Anual</h3>
-            <p>
-                Tabla resumida que muestra por cada tipo de licencia:
-            </p>
-            <ul>
-                <li>Total de dias utilizados en el ano</li>
-                <li>Dias restantes disponibles</li>
-            </ul>
+            <h3>Dialogo Asignar Licencia</h3>
 
-            <h3>Grafico Anual</h3>
-            <p>
-                Visualizacion grafica de las licencias tomadas durante el ano,
-                permitiendo identificar patrones y tendencias.
-            </p>
+            <!-- Screenshot: Asignar licencia -->
+            <figure class="screenshot">
+                <img src="img/personal_asignar_licencia.png" alt="Dialogo para asignar licencia">
+                <figcaption>Formulario de asignacion de licencia con tipo, computo de dias, fechas, certificado y
+                    observaciones</figcaption>
+            </figure>
 
-            <h3>Acciones Disponibles</h3>
-            <ul>
-                <li><strong>Asignar Licencia:</strong> Crear nueva licencia para el empleado</li>
-                <li><strong>Ver Calendario:</strong> Visualizar licencias en formato calendario</li>
-                <li><strong>Crear Lista:</strong> Generar PDF con el listado de licencias</li>
-                <li><strong>Imprimir Constancia:</strong> Generar constancia individual de licencia</li>
-            </ul>
+            <table class="data-table">
+                <tbody>
+                    <tr>
+                        <td><strong>Tipo de Licencia</strong></td>
+                        <td>Seleccionar del catalogo (Vacaciones anuales, Enfermedad, etc.)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Computo de Dias</strong></td>
+                        <td>DIAS HABILES o DIAS CORRIDOS segun corresponda</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Desde / Hasta</strong></td>
+                        <td>Rango de fechas de la licencia</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dias / Disponibles</strong></td>
+                        <td>Cantidad calculada y dias disponibles restantes</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Certificado</strong></td>
+                        <td>Cargar archivo de certificado medico o documentacion</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Justificada</strong></td>
+                        <td>Marcar si la licencia esta debidamente justificada</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Observaciones</strong></td>
+                        <td>Detalle adicional (ej: referencia a LCT Art. 150)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="info">
+                <p class="info-title">ℹ️ Vacaciones segun LCT Art. 150</p>
+                <p>
+                    Los dias de vacaciones varian segun antiguedad: menos de 6 meses (proporcional),
+                    6m-5a (14 dias), 5-10a (21), 10-20a (28), mas de 20a (35).
+                    Convenios colectivos pueden ampliar hasta 40 dias.
+                </p>
+            </div>
         </section>
 
         <!-- Liquidacion -->

@@ -152,7 +152,7 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
 
     <controlador nombre="AuditoriaRegistros">
         <hereda-de controlador="Print"/>
-        <accion nombre="importarFichadas" clase="com.sta.biometric.acciones.ImportarFichadasAction" icono="calendar-import" modo="list">
+        <accion nombre="importarFichadas" clase="com.sta.biometric.acciones.AbrirImportadorAction" icono="calendar-import" modo="list">
         </accion>
 
         <accion nombre="FiltroMesActualFecha" oculta="true" clase="com.sta.biometric.acciones.FiltroMesActualFechaAction" al-iniciar="true" modo="list">
@@ -175,10 +175,10 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         <accion nombre="cancelar" clase="org.openxava.actions.CancelAction" icono="close" atajo-de-teclado="ESCAPE"/>
     </controlador>
 
-    <controlador nombre="ImportarRegistros">
-        <accion nombre="importarRegistros" clase="com.sta.biometric.acciones.ImportarRegistrosAction" icono="calendar-import">
+    <controlador nombre="ImportadorFichadas">
+        <accion nombre="importar" icono="check" clase="com.sta.biometric.acciones.EjecutarImportacionAction" atajo-de-teclado="ENTER">
         </accion>
-        <accion nombre="cancel" clase="org.openxava.actions.CancelDialogAction">
+        <accion nombre="cancelar" icono="close" clase="org.openxava.actions.CancelDialogAction" atajo-de-teclado="ESCAPE">
         </accion>
     </controlador>
 
