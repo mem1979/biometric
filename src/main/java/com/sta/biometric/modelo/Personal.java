@@ -272,7 +272,7 @@ public class Personal extends Identifiable {
     @ReadOnly
     @Password
     @Column(length = 20)
-    @Action(value = "Personal.borrarDeviceId", alwaysEnabled = true)
+    @Action(value = "Personal.borrarDeviceId", alwaysEnabled = true, notForViews = "Crear")
     private String deviceId;
 
     /**

@@ -48,10 +48,9 @@ import lombok.*;
         "Registros { registros; estadoJornada };" +
         "};" +
         "Calculos_Y_Ajustes { " +
-        "Horas_Normales [ horasTrabajadasTurno, totalHorasTurno ]; "+
-        "Horas_Extras [ horasExtras, totalHorasExtras ]; "+
-        "Horas_Especiales [ horasEspeciales, totalHorasEspeciales ]; "+
-        "ajustesRealizados " +
+        "Normales [ valorHoraNormalDisplay, horasTrabajadasTurno, ajusteNormalesDisplay, totalHorasTurno ]; " +
+        "Extras [ valorHoraExtraDisplay, horasExtras, ajusteExtrasDisplay, totalHorasExtras ]; " +
+        "Especiales [ valorHoraEspecialDisplay, horasEspeciales, ajusteEspecialesDisplay, totalHorasEspeciales ]; " +
         "};" +
         "Notas { nota };")
 
@@ -725,73 +724,78 @@ public class AuditoriaRegistros extends Identifiable {
 
     /**
      * Calcula el monto total por horas normales trabajadas.
-     * 
-     * <p>
-     * Fórmula: horasTurno × valorHoraTurno
-     * </p>
-     * 
-     * @return Monto en formato monetario
+     * Siempre calcula dinámicamente usando las horas (con ajustes) × valorHora.
      */
     @Transient
     @ReadOnly
     @DisplaySize(10)
     @LabelFormat(LabelFormatType.SMALL)
     @Money
-    @Depends("empleado.valorHora,horasTrabajadasTurno")
+    @Depends("horasTrabajadasTurno,ajusteMinutosNormales")
     public BigDecimal getTotalHorasTurno() {
-        // Priorizar valor persistido si existe
-        if (montoTeoricoTurno != null)
-            return montoTeoricoTurno;
-
-        // Fallback: cálculo dinámico usando valor hora con bonificación
+        // Usar valor hora del turno (snapshot) o base
         BigDecimal valorHora = valorHoraTurnoSnapshot != null ? valorHoraTurnoSnapshot
-                : (getEmpleado() != null ? getEmpleado().getValorHora() : null);
+                : valorHoraSnapshot != null ? valorHoraSnapshot : BigDecimal.ZERO;
 
         return calcularTotalMonetario(getHorasTrabajadasTurno(), valorHora);
     }
 
     /**
      * Calcula el monto total por horas extras.
-     * 
-     * <p>
-     * Fórmula: horasExtras × valorHoraExtra (con bonificación)
-     * </p>
-     * 
-     * @return Monto en formato monetario
+     * Siempre calcula dinámicamente usando las horas (con ajustes) ×
+     * valorHoraExtra.
      */
     @Transient
     @ReadOnly
     @DisplaySize(10)
     @LabelFormat(LabelFormatType.SMALL)
     @Money
-    @Depends("empleado.valorHoraExtras,horasExtras")
+    @Depends("horasExtras,ajusteMinutosExtras")
     public BigDecimal getTotalHorasExtras() {
-        if (montoTeoricoExtras != null)
-            return montoTeoricoExtras;
-        return calcularTotalMonetario(getHorasExtras(),
-                getEmpleado() != null ? getEmpleado().getValorHoraExtra() : null);
+        // Calcular valor hora extra desde snapshot base
+        BigDecimal baseHora = valorHoraSnapshot != null ? valorHoraSnapshot : BigDecimal.ZERO;
+        if (baseHora.compareTo(BigDecimal.ZERO) == 0)
+            return BigDecimal.ZERO;
+
+        // Porcentaje extra: usar del empleado o default 50%
+        BigDecimal porcentajeExtra = getEmpleado() != null && getEmpleado().getPorcentajeHoraExtra() != null
+                ? getEmpleado().getPorcentajeHoraExtra()
+                : new BigDecimal("50");
+
+        BigDecimal valorHoraExtra = baseHora.multiply(
+                BigDecimal.ONE.add(porcentajeExtra.divide(new BigDecimal("100"), 4, java.math.RoundingMode.HALF_UP)))
+                .setScale(2, java.math.RoundingMode.HALF_UP);
+
+        return calcularTotalMonetario(getHorasExtras(), valorHoraExtra);
     }
 
     /**
      * Calcula el monto total por horas especiales.
-     * 
-     * <p>
-     * Fórmula: horasEspeciales × valorHoraEspecial (con bonificación)
-     * </p>
-     * 
-     * @return Monto en formato monetario
+     * Siempre calcula dinámicamente usando las horas (con ajustes) ×
+     * valorHoraEspecial.
      */
     @Transient
     @ReadOnly
     @DisplaySize(10)
     @LabelFormat(LabelFormatType.SMALL)
     @Money
-    @Depends("empleado.valorHoraEspeciales,horasEspeciales")
+    @Depends("horasEspeciales,ajusteMinutosEspeciales")
     public BigDecimal getTotalHorasEspeciales() {
-        if (montoTeoricoEspeciales != null)
-            return montoTeoricoEspeciales;
-        return calcularTotalMonetario(getHorasEspeciales(),
-                getEmpleado() != null ? getEmpleado().getValorHoraEspecial() : null);
+        // Calcular valor hora especial desde snapshot base
+        BigDecimal baseHora = valorHoraSnapshot != null ? valorHoraSnapshot : BigDecimal.ZERO;
+        if (baseHora.compareTo(BigDecimal.ZERO) == 0)
+            return BigDecimal.ZERO;
+
+        // Porcentaje especial: usar del empleado o default 100%
+        BigDecimal porcentajeEspecial = getEmpleado() != null && getEmpleado().getPorcentajeHoraEspecial() != null
+                ? getEmpleado().getPorcentajeHoraEspecial()
+                : new BigDecimal("100");
+
+        BigDecimal valorHoraEspecial = baseHora.multiply(
+                BigDecimal.ONE.add(porcentajeEspecial.divide(new BigDecimal("100"), 4, java.math.RoundingMode.HALF_UP)))
+                .setScale(2, java.math.RoundingMode.HALF_UP);
+
+        return calcularTotalMonetario(getHorasEspeciales(), valorHoraEspecial);
     }
 
     // ==================================================================================
@@ -1065,66 +1069,104 @@ public class AuditoriaRegistros extends Identifiable {
         }
     }
 
+
     // ==================================================================================
-    // BOTÓN Y VISUALIZACIÓN DE AJUSTES
+    // PROPIEDADES DE VISUALIZACIÓN PARA TABLA (CALCULOS Y AJUSTES)
     // ==================================================================================
 
     /**
-     * Botón para abrir diálogo de ajustes manuales.
-     * Se muestra al final de la sección Calculos_Y_Ajustes.
-     */
-
-    @MiLabel(medida = "mediana", negrita = true, recuadro = true, icon = "wrench")
-    @Transient
-    @Action("AuditoriaRegistros.ajustarHoras")
-    public String botonAjustarHoras; // El texto lo pone la acción
-
-    /**
-     * Muestra los ajustes manuales realizados (solo si existen).
-     * 
-     * <p>
-     * Formato: "Normales: +30m | Extras: -15m | Especiales: +60m"
-     * </p>
-     * 
-     * @return Descripción de ajustes o cadena vacía si no hay
+     * Muestra el valor hora normal para este registro (snapshot histórico).
+     * Usa valorHoraTurnoSnapshot que incluye bonificación del turno.
      */
     @Transient
     @ReadOnly
     @LabelFormat(LabelFormatType.SMALL)
-    @Depends("ajusteMinutosNormales, ajusteMinutosExtras, ajusteMinutosEspeciales")
-    public String getAjustesRealizados() {
-        if (ajusteMinutosNormales == 0 && ajusteMinutosExtras == 0 && ajusteMinutosEspeciales == 0) {
-            return ""; // No mostrar si no hay ajustes
+    @Money
+    public BigDecimal getValorHoraNormalDisplay() {
+        // Usar snapshot si existe, fallback al snapshot base
+        if (valorHoraTurnoSnapshot != null) {
+            return valorHoraTurnoSnapshot;
         }
+        return valorHoraSnapshot != null ? valorHoraSnapshot : BigDecimal.ZERO;
+    }
 
-        StringBuilder sb = new StringBuilder("⚙️ Ajustes: ");
-        boolean primero = true;
+    /**
+     * Muestra el valor hora extra para este registro (calculado desde snapshot).
+     * Calcula: valorHoraSnapshot × (1 + porcentajeExtra/100)
+     */
+    @Transient
+    @ReadOnly
+    @LabelFormat(LabelFormatType.SMALL)
+    @Money
+    public BigDecimal getValorHoraExtraDisplay() {
+        BigDecimal baseHora = valorHoraSnapshot != null ? valorHoraSnapshot : BigDecimal.ZERO;
+        if (baseHora.compareTo(BigDecimal.ZERO) == 0)
+            return BigDecimal.ZERO;
 
-        if (ajusteMinutosNormales != 0) {
-            sb.append("Normales: ");
-            sb.append(ajusteMinutosNormales > 0 ? "+" : "");
-            sb.append(formatearMinutosCompacto(ajusteMinutosNormales));
-            primero = false;
-        }
+        // Porcentaje extra típico: 50% según LCT Argentina
+        BigDecimal porcentajeExtra = getEmpleado() != null && getEmpleado().getPorcentajeHoraExtra() != null
+                ? getEmpleado().getPorcentajeHoraExtra()
+                : new BigDecimal("50");
 
-        if (ajusteMinutosExtras != 0) {
-            if (!primero)
-                sb.append(" | ");
-            sb.append("Extras: ");
-            sb.append(ajusteMinutosExtras > 0 ? "+" : "");
-            sb.append(formatearMinutosCompacto(ajusteMinutosExtras));
-            primero = false;
-        }
+        BigDecimal multiplicador = BigDecimal.ONE
+                .add(porcentajeExtra.divide(new BigDecimal("100"), 4, java.math.RoundingMode.HALF_UP));
+        return baseHora.multiply(multiplicador).setScale(2, java.math.RoundingMode.HALF_UP);
+    }
 
-        if (ajusteMinutosEspeciales != 0) {
-            if (!primero)
-                sb.append(" | ");
-            sb.append("Especiales: ");
-            sb.append(ajusteMinutosEspeciales > 0 ? "+" : "");
-            sb.append(formatearMinutosCompacto(ajusteMinutosEspeciales));
-        }
+    /**
+     * Muestra el valor hora especial para este registro (calculado desde snapshot).
+     * Calcula: valorHoraSnapshot × (1 + porcentajeEspecial/100)
+     */
+    @Transient
+    @ReadOnly
+    @LabelFormat(LabelFormatType.SMALL)
+    @Money
+    public BigDecimal getValorHoraEspecialDisplay() {
+        BigDecimal baseHora = valorHoraSnapshot != null ? valorHoraSnapshot : BigDecimal.ZERO;
+        if (baseHora.compareTo(BigDecimal.ZERO) == 0)
+            return BigDecimal.ZERO;
 
-        return sb.toString();
+        // Porcentaje especial típico: 100% según LCT Argentina
+        BigDecimal porcentajeEspecial = getEmpleado() != null && getEmpleado().getPorcentajeHoraEspecial() != null
+                ? getEmpleado().getPorcentajeHoraEspecial()
+                : new BigDecimal("100");
+
+        BigDecimal multiplicador = BigDecimal.ONE
+                .add(porcentajeEspecial.divide(new BigDecimal("100"), 4, java.math.RoundingMode.HALF_UP));
+        return baseHora.multiply(multiplicador).setScale(2, java.math.RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Muestra el ajuste de minutos normales formateado.
+     */
+    @Transient
+    @ReadOnly
+    @LabelFormat(LabelFormatType.SMALL)
+    @DisplaySize(8)
+    public String getAjusteNormalesDisplay() {
+        return TiempoUtils.formatearMinutosConSigno(ajusteMinutosNormales);
+    }
+
+    /**
+     * Muestra el ajuste de minutos extras formateado.
+     */
+    @Transient
+    @ReadOnly
+    @LabelFormat(LabelFormatType.SMALL)
+    @DisplaySize(8)
+    public String getAjusteExtrasDisplay() {
+        return TiempoUtils.formatearMinutosConSigno(ajusteMinutosExtras);
+    }
+
+    /**
+     * Muestra el ajuste de minutos especiales formateado.
+     */
+    @Transient
+    @ReadOnly
+    @LabelFormat(LabelFormatType.SMALL)
+    @DisplaySize(8)
+    public String getAjusteEspecialesDisplay() {
+        return TiempoUtils.formatearMinutosConSigno(ajusteMinutosEspeciales);
     }
 
 }

@@ -27,6 +27,24 @@ public class TiempoUtils {
     }
 
     /**
+     * Devuelve un texto con signo "+HH:MM" o "-HH:MM" para ajustes de tiempo.
+     * Ejemplo: 90 -> "+01:30", -45 -> "-00:45", 0 -> "-"
+     * Usado para mostrar ajustes realizados en la interfaz.
+     */
+    public static String formatearMinutosConSigno(int minutos) {
+        if (minutos == 0)
+            return "-";
+
+        boolean negativo = minutos < 0;
+        int absMinutos = Math.abs(minutos);
+        int horas = absMinutos / 60;
+        int mins = absMinutos % 60;
+
+        String signo = negativo ? "-" : "+";
+        return signo + String.format("%02d:%02d", horas, mins);
+    }
+
+    /**
      * Versión con segundos: "HH:MM:SS".
      * Si minutos <= 0, retorna "00:00:00".
      */
