@@ -29,11 +29,11 @@ public class ApplicationQuartzInitializer implements ServletContextListener {
 
             Trigger aperturaTrigger = TriggerBuilder.newTrigger()
                 .withIdentity("aperturaTrigger", "asistencia")
-                .withSchedule(CronScheduleBuilder.dailyAtHourAndMinute(00,15))
+                .withSchedule(CronScheduleBuilder.dailyAtHourAndMinute(00,00))
                 .build();
 
             scheduler.scheduleJob(aperturaJob, aperturaTrigger);
-            System.out.println("Job de apertura de jornada programado a las 00:08");
+            System.out.println("Job de apertura de jornada programado a las 00:00");
 
             // Cierre diario - 23:59 PM
             JobDetail cierreJob = JobBuilder.newJob(CierreJornadaJob.class)
@@ -43,7 +43,7 @@ public class ApplicationQuartzInitializer implements ServletContextListener {
             Trigger cierreTrigger = TriggerBuilder.newTrigger()
             	    .withIdentity("cierreTrigger", "asistencia")
             	    .withSchedule(
-            	        CronScheduleBuilder.cronSchedule("59 59 23 * * ?")
+            	        CronScheduleBuilder.cronSchedule("50 59 23 * * ?")
             	    )
             	    .build();
 

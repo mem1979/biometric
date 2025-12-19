@@ -2,6 +2,7 @@ package com.sta.biometric.acciones;
 
 import org.openxava.actions.*;
 
+import com.sta.biometric.enums.Signo;
 import com.sta.biometric.modelo.*;
 
 /**
@@ -23,10 +24,10 @@ public class AjustarHorasAction extends ViewBaseAction {
         getView().setTitle("⚙️ Ajustar Horas Manualmente");
         getView().setModelName("AjusteHorasManual");
 
-        // Convertir ajustes actuales de minutos a formato HH:MM
-        getView().setValue("ajusteNormales", formatearAjuste(reg.getAjusteMinutosNormales()));
-        getView().setValue("ajusteExtras", formatearAjuste(reg.getAjusteMinutosExtras()));
-        getView().setValue("ajusteEspeciales", formatearAjuste(reg.getAjusteMinutosEspeciales()));
+        // Inicializar signos y valores según ajustes actuales
+        setSignoYAjuste("Normales", reg.getAjusteMinutosNormales());
+        setSignoYAjuste("Extras", reg.getAjusteMinutosExtras());
+        setSignoYAjuste("Especiales", reg.getAjusteMinutosEspeciales());
 
         // Motivo vacío
         getView().setValue("motivo", "");
@@ -35,18 +36,24 @@ public class AjustarHorasAction extends ViewBaseAction {
     }
 
     /**
-     * Formatea minutos como HH:MM (soporta negativos como -01:30)
+     * Establece el signo y el valor de ajuste para un tipo.
+     * Por defecto siempre MAS (sumar).
      */
-    private String formatearAjuste(int minutos) {
-        if (minutos == 0)
-            return "00:00";
-
-        boolean negativo = minutos < 0;
+    private void setSignoYAjuste(String tipo, int minutos) {
+        Signo signo = Signo.MAS;
         int absMinutos = Math.abs(minutos);
-        int horas = absMinutos / 60;
-        int mins = absMinutos % 60;
 
-        String formato = String.format("%02d:%02d", horas, mins);
-        return negativo ? "-" + formato : formato;
+        if (minutos < 0) {
+            signo = Signo.MENOS;
+        }
+
+        getView().setValue("signo" + tipo, signo);
+        getView().setValue("ajuste" + tipo, formatearMinutos(absMinutos));
+    }
+
+    private String formatearMinutos(int minutos) {
+        int h = minutos / 60;
+        int m = minutos % 60;
+        return String.format("%02d:%02d", h, m);
     }
 }

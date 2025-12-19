@@ -48,9 +48,10 @@ import lombok.*;
         "Registros { registros; estadoJornada };" +
         "};" +
         "Calculos_Y_Ajustes { " +
-        "Normales [ valorHoraNormalDisplay, horasTrabajadasTurno, ajusteNormalesDisplay, totalHorasTurno ]; " +
-        "Extras [ valorHoraExtraDisplay, horasExtras, ajusteExtrasDisplay, totalHorasExtras ]; " +
-        "Especiales [ valorHoraEspecialDisplay, horasEspeciales, ajusteEspecialesDisplay, totalHorasEspeciales ]; " +
+        "Normales [ valorHoraNormalDisplay, horasBaseNormales, ajusteNormalesDisplay, totalHorasTurno ]; " +
+        "Extras [ valorHoraExtraDisplay, horasBaseExtras, ajusteExtrasDisplay, totalHorasExtras ]; " +
+        "Especiales [ valorHoraEspecialDisplay, horasBaseEspeciales, ajusteEspecialesDisplay, totalHorasEspeciales ]; "
+        +
         "};" +
         "Notas { nota };")
 
@@ -722,6 +723,56 @@ public class AuditoriaRegistros extends Identifiable {
         return TiempoUtils.formatearMinutosComoHHMM(total);
     }
 
+    // ==================================================================================
+    // HORAS BASE (SIN AJUSTE) - SOLO DISPLAY
+    // ==================================================================================
+
+    /**
+     * Horas normales BASE antes del ajuste.
+     * Muestra los minutos trabajados calculados sin el ajuste manual.
+     */
+    @Transient
+    @ReadOnly
+    @DisplaySize(10)
+    @MiLabel(medida = "mediana", negrita = true, recuadro = true, icon = "clock-outline")
+    public String getHorasBaseNormales() {
+        if (esJornadaEspecial())
+            return "00:00";
+
+        int minutosNormalesBase;
+        if (minutosTrabajados >= (minutosEsperados - toleranciaMinutos)) {
+            minutosNormalesBase = minutosEsperados;
+        } else {
+            minutosNormalesBase = Math.min(minutosTrabajados, minutosEsperados);
+        }
+        return TiempoUtils.formatearMinutosComoHHMM(Math.max(0, minutosNormalesBase));
+    }
+
+    /**
+     * Horas extras BASE antes del ajuste.
+     */
+    @Transient
+    @ReadOnly
+    @DisplaySize(10)
+    @MiLabel(medida = "mediana", negrita = true, recuadro = true, icon = "clock-plus-outline")
+    public String getHorasBaseExtras() {
+        if (esJornadaEspecial())
+            return "00:00";
+        return TiempoUtils.formatearMinutosComoHHMM(Math.max(0, minutosExtras));
+    }
+
+    /**
+     * Horas especiales BASE antes del ajuste.
+     */
+    @Transient
+    @ReadOnly
+    @DisplaySize(10)
+    @MiLabel(medida = "mediana", negrita = true, recuadro = true, icon = "clock-star-four-points-outline")
+    public String getHorasBaseEspeciales() {
+        int base = esJornadaEspecial() ? minutosTrabajados : 0;
+        return TiempoUtils.formatearMinutosComoHHMM(Math.max(0, base));
+    }
+
     /**
      * Calcula el monto total por horas normales trabajadas.
      * Siempre calcula dinámicamente usando las horas (con ajustes) × valorHora.
@@ -1069,7 +1120,6 @@ public class AuditoriaRegistros extends Identifiable {
         }
     }
 
-
     // ==================================================================================
     // PROPIEDADES DE VISUALIZACIÓN PARA TABLA (CALCULOS Y AJUSTES)
     // ==================================================================================
@@ -1080,7 +1130,7 @@ public class AuditoriaRegistros extends Identifiable {
      */
     @Transient
     @ReadOnly
-    @LabelFormat(LabelFormatType.SMALL)
+    @MiLabel(medida = "mediana", negrita = true, recuadro = true, icon = "currency-usd")
     @Money
     public BigDecimal getValorHoraNormalDisplay() {
         // Usar snapshot si existe, fallback al snapshot base
@@ -1096,7 +1146,7 @@ public class AuditoriaRegistros extends Identifiable {
      */
     @Transient
     @ReadOnly
-    @LabelFormat(LabelFormatType.SMALL)
+    @MiLabel(medida = "mediana", negrita = true, recuadro = true, icon = "currency-usd")
     @Money
     public BigDecimal getValorHoraExtraDisplay() {
         BigDecimal baseHora = valorHoraSnapshot != null ? valorHoraSnapshot : BigDecimal.ZERO;
@@ -1119,7 +1169,7 @@ public class AuditoriaRegistros extends Identifiable {
      */
     @Transient
     @ReadOnly
-    @LabelFormat(LabelFormatType.SMALL)
+    @MiLabel(medida = "mediana", negrita = true, recuadro = true, icon = "currency-usd")
     @Money
     public BigDecimal getValorHoraEspecialDisplay() {
         BigDecimal baseHora = valorHoraSnapshot != null ? valorHoraSnapshot : BigDecimal.ZERO;
