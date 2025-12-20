@@ -132,25 +132,22 @@
    ============================================================================= */
 
 /**
- * Contenedor de mensajes (success, error, warning, info).
+ * Contenedor de mensajes: ajustes de layout y color de texto blanco.
+ * Esto asegura que el texto sea legible sobre los fondos de color de OX.
  */
 .ox-message-box {
   font-size: medium;
   font-weight: normal;
-  color: var(--message-box-color);
+  color: white;
   padding: 10px;
-  border: 0px;
   margin-bottom: 12px;
-  border-radius: 15px;
-  box-shadow: 1px 2px 8px var(--message-box-shadow);
+  border-radius: 8px;
 }
 
 /**
  * Botón de cerrar mensaje: estilo base.
  */
 .ox-message-box .mdi-close {
-  text-shadow: 3px 2px 3px black;
-  color: #efdede;
   float: right;
   margin-left: 10px;
   cursor: pointer;
@@ -158,11 +155,10 @@
 }
 
 /**
- * Botón de cerrar: hover - agranda y cambia color.
+ * Botón de cerrar: hover - agranda.
  */
 .ox-message-box .mdi-close:hover {
-  color: #ff6f6f;
-  transform: scale(2.0);
+  transform: scale(1.5);
 }
 
 /**
@@ -170,7 +166,23 @@
  */
 .ox-message-box .mdi-close:active {
   transform: scale(0.9);
-  color: #ffffff;
+}
+
+
+/* =============================================================================
+   4.1 FIX: CALENDARIO (DATE PICKER) Z-INDEX
+   ============================================================================= */
+
+/**
+ * Asegura que el calendario de fechas aparezca por encima de los diálogos.
+ * Esto es necesario en el tema pastel cuando se abre un calendario dentro de un dialog.
+ */
+.flatpickr-calendar {
+  z-index: 10001 !important;
+}
+
+.ui-datepicker {
+  z-index: 10001 !important;
 }
 
 
@@ -279,166 +291,166 @@ tr.empleadoInactivo td,
 
 /* Contenedor principal */
 .welcome-body {
-    margin: 0 !important;
-    padding: 0 !important;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
-    min-height: 100vh !important;
-    display: flex !important;
-    background: #f0f0f0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+  min-height: 100vh !important;
+  display: flex !important;
+  background: #f0f0f0 !important;
 }
 
 /* Panel izquierdo - Branding */
 .welcome-left {
-    flex: 1 !important;
-    background: linear-gradient(145deg, #1e3a5f, #0f2744) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    padding: 40px !important;
-    color: white !important;
+  flex: 1 !important;
+  background: linear-gradient(145deg, #1e3a5f, #0f2744) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 40px !important;
+  color: white !important;
 }
 
 /* Contenedor del logo */
 .welcome-logo-box {
-    width: 110px !important;
-    height: 110px !important;
-    border-radius: 24px !important;
-    overflow: hidden !important;
-    margin-bottom: 35px !important;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 0 4px rgba(255,255,255,0.15) !important;
+  width: 110px !important;
+  height: 110px !important;
+  border-radius: 24px !important;
+  overflow: hidden !important;
+  margin-bottom: 35px !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.15) !important;
 }
 
 .welcome-logo-box img {
-    width: 110px !important;
-    height: 110px !important;
-    object-fit: cover !important;
-    display: block !important;
+  width: 110px !important;
+  height: 110px !important;
+  object-fit: cover !important;
+  display: block !important;
 }
 
 /* Titulo principal */
 .welcome-title {
-    font-size: 3.8rem !important;
-    font-weight: 800 !important;
-    margin: 0 0 12px 0 !important;
-    letter-spacing: -3px !important;
-    text-shadow: 0 4px 20px rgba(0,0,0,0.3) !important;
-    color: #ffffff !important;
+  font-size: 3.8rem !important;
+  font-weight: 800 !important;
+  margin: 0 0 12px 0 !important;
+  letter-spacing: -3px !important;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+  color: #ffffff !important;
 }
 
 /* Subtitulo */
 .welcome-subtitle {
-    font-size: 0.85rem !important;
-    text-transform: uppercase !important;
-    letter-spacing: 5px !important;
-    color: rgba(167,199,231,0.9) !important;
-    margin: 0 0 45px 0 !important;
-    font-weight: 500 !important;
+  font-size: 0.85rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 5px !important;
+  color: rgba(167, 199, 231, 0.9) !important;
+  margin: 0 0 45px 0 !important;
+  font-weight: 500 !important;
 }
 
 /* Slogan */
 .welcome-slogan {
-    font-size: 1.1rem !important;
-    line-height: 1.9 !important;
-    text-align: center !important;
-    color: rgba(255,255,255,0.8) !important;
-    max-width: 380px !important;
-    margin: 0 !important;
+  font-size: 1.1rem !important;
+  line-height: 1.9 !important;
+  text-align: center !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  max-width: 380px !important;
+  margin: 0 !important;
 }
 
 .welcome-slogan strong {
-    color: #ffffff !important;
-    font-weight: 600 !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
 }
 
 /* Panel derecho - Login */
 .welcome-right {
-    width: 450px !important;
-    background: #ffffff !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
-    align-items: center !important;
-    padding: 60px !important;
-    box-shadow: -8px 0 40px rgba(0,0,0,0.12) !important;
+  width: 450px !important;
+  background: #ffffff !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 60px !important;
+  box-shadow: -8px 0 40px rgba(0, 0, 0, 0.12) !important;
 }
 
 /* Texto de bienvenida */
 .welcome-heading {
-    font-size: 2rem !important;
-    font-weight: 700 !important;
-    color: #1e3a5f !important;
-    margin: 0 0 12px 0 !important;
+  font-size: 2rem !important;
+  font-weight: 700 !important;
+  color: #1e3a5f !important;
+  margin: 0 0 12px 0 !important;
 }
 
 .welcome-desc {
-    font-size: 1rem !important;
-    color: #64748b !important;
-    margin: 0 0 45px 0 !important;
+  font-size: 1rem !important;
+  color: #64748b !important;
+  margin: 0 0 45px 0 !important;
 }
 
 /* Boton de login */
 .welcome-btn {
-    width: 100% !important;
-    max-width: 300px !important;
-    padding: 20px 45px !important;
-    font-size: 1rem !important;
-    font-weight: 700 !important;
-    font-family: inherit !important;
-    text-transform: uppercase !important;
-    letter-spacing: 2.5px !important;
-    color: #ffffff !important;
-    background: linear-gradient(135deg, #1e3a5f, #2563eb) !important;
-    border: none !important;
-    border-radius: 12px !important;
-    cursor: pointer !important;
-    box-shadow: 0 12px 30px rgba(30,58,95,0.35) !important;
-    transition: all 0.3s ease !important;
+  width: 100% !important;
+  max-width: 300px !important;
+  padding: 20px 45px !important;
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  font-family: inherit !important;
+  text-transform: uppercase !important;
+  letter-spacing: 2.5px !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #1e3a5f, #2563eb) !important;
+  border: none !important;
+  border-radius: 12px !important;
+  cursor: pointer !important;
+  box-shadow: 0 12px 30px rgba(30, 58, 95, 0.35) !important;
+  transition: all 0.3s ease !important;
 }
 
 .welcome-btn:hover {
-    transform: translateY(-4px) !important;
-    box-shadow: 0 18px 45px rgba(30,58,95,0.45) !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 18px 45px rgba(30, 58, 95, 0.45) !important;
 }
 
 /* Footer */
 .welcome-footer {
-    margin-top: 55px !important;
-    font-size: 0.85rem !important;
-    color: #94a3b8 !important;
+  margin-top: 55px !important;
+  font-size: 0.85rem !important;
+  color: #94a3b8 !important;
 }
 
 .welcome-footer strong {
-    color: #1e3a5f !important;
+  color: #1e3a5f !important;
 }
 
 /* Responsive */
 @media (max-width: 900px) {
-    .welcome-body {
-        flex-direction: column !important;
-    }
-    
-    .welcome-left {
-        padding: 35px 25px !important;
-    }
-    
-    .welcome-right {
-        width: 100% !important;
-        flex: 1 !important;
-        padding: 35px 25px !important;
-    }
-    
-    .welcome-title {
-        font-size: 2.5rem !important;
-    }
-    
-    .welcome-logo-box,
-    .welcome-logo-box img {
-        width: 80px !important;
-        height: 80px !important;
-    }
-    
-    .welcome-slogan {
-        display: none !important;
-    }
+  .welcome-body {
+    flex-direction: column !important;
+  }
+
+  .welcome-left {
+    padding: 35px 25px !important;
+  }
+
+  .welcome-right {
+    width: 100% !important;
+    flex: 1 !important;
+    padding: 35px 25px !important;
+  }
+
+  .welcome-title {
+    font-size: 2.5rem !important;
+  }
+
+  .welcome-logo-box,
+  .welcome-logo-box img {
+    width: 80px !important;
+    height: 80px !important;
+  }
+
+  .welcome-slogan {
+    display: none !important;
+  }
 }

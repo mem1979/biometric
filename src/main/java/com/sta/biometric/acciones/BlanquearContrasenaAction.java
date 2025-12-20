@@ -1,25 +1,25 @@
 package com.sta.biometric.acciones;
 
 import org.openxava.actions.*;
-
-import com.sta.biometric.modelo.*;
+import org.openxava.model.MapFacade;
 
 public class BlanquearContrasenaAction extends ViewBaseAction {
 
     @Override
     public void execute() throws Exception {
-        Object entidad = getView().getEntity();
-
-        if (entidad instanceof Personal) {
-            Personal emp = (Personal) entidad;
-            emp.setContrasena("1234"); // o "1234", si preferís un valor por defecto
-
-            getView().setValueNotifying("contrasena", "1234"); // Refresca la vista
-
-            addMessage("La contraseña ha sido blanqueada. Se asignó Valor por defecto '1234'");
-
-        } else {
-            addError("No se pudo acceder al empleado.");
+        // Verificar que la entidad exista
+        if (getView().getKeyValues() == null || getView().getKeyValues().isEmpty()
+                || getView().getKeyValues().get("id") == null) {
+            addError("Primero debe guardar el empleado.");
+            return;
         }
+
+        // Actualizar la vista
+        getView().setValue("contrasena", "1234");
+
+        // Guardar la entidad
+        MapFacade.setValues(getModelName(), getView().getKeyValues(), getView().getValues());
+
+        addMessage("La contraseña ha sido blanqueada a '1234' y guardada.");
     }
 }

@@ -92,12 +92,21 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
             <poner propiedad="resetAfter" valor="false"/>
         </accion>
 
+        <accion nombre="cambiarLegajo" oculta="true" clase="com.sta.biometric.acciones.CambiarLegajoAction" icono="pencil" disponible-en-nuevo="false">
+        </accion>
+
     </controlador>
 
     <!-- Controlador de modo para Personal: sobrescribe la accion list -->
     <controlador nombre="PersonalMode">
         <hereda-de controlador="Mode"/>
         <accion nombre="list" por-defecto ="siempre" clase="org.openxava.actions.GoListAction" icono="chevron-left" modo="detail" atajo-de-teclado="F9" pierde-datos-cambiados="true"/>
+    </controlador>
+
+    <!-- Controlador para el dialogo de cambio de legajo -->
+    <controlador nombre="CambiarLegajoDialogo">
+        <accion nombre="confirmar" clase="com.sta.biometric.acciones.ConfirmarCambioLegajoAction" icono="check" atajo-de-teclado="ENTER"/>
+        <accion nombre="cancelar" clase="org.openxava.actions.CancelAction" icono="close" atajo-de-teclado="ESCAPE"/>
     </controlador>
 
     <controlador nombre="PeriodoLiquidacion">
@@ -158,7 +167,8 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         <accion nombre="FiltroMesActualFecha" oculta="true" clase="com.sta.biometric.acciones.FiltroMesActualFechaAction" al-iniciar="true" modo="list">
         </accion>
 
-        <accion nombre="ajustarHoras" clase="com.sta.biometric.acciones.AjustarHorasAction" icono="clock-edit-outline" modo="detail"/>
+
+        <accion nombre="ajustarHorasPorTipo" oculta="true" clase="com.sta.biometric.acciones.AjustarHorasPorTipoAction" icono="pencil"/>
 
         <accion nombre="informeDiario" oculta="true" clase="com.sta.biometric.acciones.MostrarDialogoInformeDiarioAction" modo="list">
         </accion>
@@ -170,8 +180,9 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         <accion nombre="cancelar" clase="org.openxava.actions.CancelAction" icono="close" atajo-de-teclado="ESCAPE"/>
     </controlador>
 
-    <controlador nombre="AjusteHoras">
-        <accion nombre="aplicar" clase="com.sta.biometric.acciones.AplicarAjusteHorasAction" icono="check" atajo-de-teclado="ENTER"/>
+
+    <controlador nombre="AjusteHorasPorTipo">
+        <accion nombre="aplicar" clase="com.sta.biometric.acciones.AplicarAjusteHorasPorTipoAction" icono="check" atajo-de-teclado="ENTER"/>
         <accion nombre="cancelar" clase="org.openxava.actions.CancelAction" icono="close" atajo-de-teclado="ESCAPE"/>
     </controlador>
 

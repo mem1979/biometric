@@ -45,15 +45,12 @@ import lombok.*;
 @View(members = "empleado;" +
         "DetalleTurno { " +
         "turnoPlanificado, evaluacion; observacionFeriado; " +
-        "Registros { registros; estadoJornada };" +
-        "};" +
-        "Calculos_Y_Ajustes { " +
-        "Normales [ valorHoraNormalDisplay, horasBaseNormales, ajusteNormalesDisplay, totalHorasTurno ]; " +
-        "Extras [ valorHoraExtraDisplay, horasBaseExtras, ajusteExtrasDisplay, totalHorasExtras ]; " +
-        "Especiales [ valorHoraEspecialDisplay, horasBaseEspeciales, ajusteEspecialesDisplay, totalHorasEspeciales ]; "
-        +
-        "};" +
-        "Notas { nota };")
+        "registros;" +
+        "Calculos_Y_Ajustes  [filasCalculo];" +
+        "estadoJornada; };" +
+        "OBSERVACIONES {" +
+        "nota;" +
+        "}")
 
 @Tab(editors = "List", properties = "empleado.nombreCompleto, diaSemana, fecha, horario, evaluacion, estadoJornada, empleado.sucursal.nombre", defaultOrder = "${fecha} desc, ${empleado.sucursal.nombre} asc, ${empleado.nombreCompleto} asc", rowStyles = {
         @RowStyle(style = "estilo-gris-claro", property = "evaluacion", value = "PENDIENTE"),
@@ -773,6 +770,55 @@ public class AuditoriaRegistros extends Identifiable {
         return TiempoUtils.formatearMinutosComoHHMM(Math.max(0, base));
     }
 
+    // ==================================================================================
+    // COLECCIÓN PARA TABLA DE CÁLCULOS (@ElementCollection)
+    // ==================================================================================
+
+    /**
+     * Retorna la colección de filas para la tabla de cálculos.
+     * Cada fila representa un tipo de hora (Normales, Extras, Especiales).
+     */
+    @Transient
+    @ElementCollection
+    @ListProperties("tipo, valorHora, horasRegistradas, ajuste, total+")
+    @RemoveSelectedAction("AuditoriaRegistros.ajustarHorasPorTipo")
+    public List<FilaCalculo> getFilasCalculo() {
+        List<FilaCalculo> filas = new ArrayList<>();
+
+        // Fila: Horas Normales
+        filas.add(new FilaCalculo(
+                "⏰ Normales",
+                getValorHoraNormalDisplay(),
+                getHorasBaseNormales(),
+                getAjusteNormalesDisplay(),
+                getTotalHorasTurno()));
+
+        // Fila: Horas Extras
+        filas.add(new FilaCalculo(
+                "⏰+ Extras",
+                getValorHoraExtraDisplay(),
+                getHorasBaseExtras(),
+                getAjusteExtrasDisplay(),
+                getTotalHorasExtras()));
+
+        // Fila: Horas Especiales
+        filas.add(new FilaCalculo(
+                "⭐ Especiales",
+                getValorHoraEspecialDisplay(),
+                getHorasBaseEspeciales(),
+                getAjusteEspecialesDisplay(),
+                getTotalHorasEspeciales()));
+
+        return filas;
+    }
+
+    /**
+     * Setter vacío requerido por OpenXava para propiedades @ReadOnly.
+     */
+    public void setFilasCalculo(List<FilaCalculo> filas) {
+        // No-op: colección calculada, solo lectura
+    }
+
     /**
      * Calcula el monto total por horas normales trabajadas.
      * Siempre calcula dinámicamente usando las horas (con ajustes) × valorHora.
@@ -1194,6 +1240,8 @@ public class AuditoriaRegistros extends Identifiable {
     @LabelFormat(LabelFormatType.SMALL)
     @DisplaySize(8)
     public String getAjusteNormalesDisplay() {
+        if (ajusteMinutosNormales == 0)
+            return "S/A";
         return TiempoUtils.formatearMinutosConSigno(ajusteMinutosNormales);
     }
 
@@ -1205,6 +1253,8 @@ public class AuditoriaRegistros extends Identifiable {
     @LabelFormat(LabelFormatType.SMALL)
     @DisplaySize(8)
     public String getAjusteExtrasDisplay() {
+        if (ajusteMinutosExtras == 0)
+            return "S/A";
         return TiempoUtils.formatearMinutosConSigno(ajusteMinutosExtras);
     }
 
@@ -1216,6 +1266,8 @@ public class AuditoriaRegistros extends Identifiable {
     @LabelFormat(LabelFormatType.SMALL)
     @DisplaySize(8)
     public String getAjusteEspecialesDisplay() {
+        if (ajusteMinutosEspeciales == 0)
+            return "S/A";
         return TiempoUtils.formatearMinutosConSigno(ajusteMinutosEspeciales);
     }
 

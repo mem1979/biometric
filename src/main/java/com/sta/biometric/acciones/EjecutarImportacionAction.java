@@ -170,7 +170,11 @@ public class EjecutarImportacionAction extends ViewBaseAction {
         if (sucursalMap != null && sucursalMap.get("id") != null) {
             String sucursalId = sucursalMap.get("id").toString();
             Sucursales sucursal = XPersistence.getManager().find(Sucursales.class, sucursalId);
-            modelo.setSucursalUbicacion(sucursal);
+            if (sucursal != null && sucursal.getDireccion() != null) {
+                // Forzar carga de la dirección (evitar LazyInitializationException)
+                sucursal.getDireccion().getUbicacion();
+                modelo.setSucursalUbicacion(sucursal);
+            }
         }
 
         // Obtener mapeo de columnas

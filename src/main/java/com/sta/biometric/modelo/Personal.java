@@ -247,8 +247,10 @@ public class Personal extends Identifiable {
      */
     @Required
     @SearchKey
+    @ReadOnly
     @Column(length = 10, unique = true)
     @DefaultValueCalculator(GeneradorCodigoUserIdCalculator.class)
+    @Action(value = "Personal.cambiarLegajo", alwaysEnabled = true, notForViews = "Crear")
     private String userId;
 
     /**
@@ -923,8 +925,9 @@ public class Personal extends Identifiable {
      */
 
     @NoDefaultActions
+    @ListAction("Print.generatePdf")
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ListProperties("autor, fechaHora, calificacion")
+    @ListProperties("autor, fechaHora, calificacion, contenido")
     @OrderBy("fechaHora DESC")
     private Collection<NotaDesempeno> notasDesempeno = new ArrayList<>();
 
