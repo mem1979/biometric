@@ -67,6 +67,13 @@ import lombok.*;
         "};" +
         "Metadatos { fechaGeneracion, fechaUltimoRecalculo; observaciones; }")
 
+// Vista unificada sin pestañas para el diálogo desde colección en Personal
+@View(name = "DetalleCompleto",
+   members = "periodoDesde, periodoHasta, estadoPeriodo;" +
+		   	 "horasNormalesFormatted, horasExtrasFormatted, horasEspecialesFormatted, montoGranTotal;" +
+		   	 "jornadasDelPeriodo;" +
+			 "Metadatos { fechaGeneracion, fechaUltimoRecalculo; observaciones; }")
+
 @Tab(properties = "empleado.nombreCompleto, periodoDesde, periodoHasta, estadoPeriodo, horasNormalesFormatted, horasExtrasFormatted, montoGranTotal", defaultOrder = "${periodoDesde} desc, ${empleado.nombreCompleto} asc")
 public class LiquidacionJornadas extends Identifiable {
 
@@ -271,6 +278,54 @@ public class LiquidacionJornadas extends Identifiable {
         int horas = minutos / 60;
         int mins = minutos % 60;
         return String.format("%d:%02d", horas, mins);
+    }
+
+    // ==================================================================================
+    // COLECCIÓN DE JORNADAS DEL PERÍODO (para vista DetalleCompleto)
+    // ==================================================================================
+
+    /**
+     * Retorna los registros de AuditoriaRegistros del empleado dentro del período
+     * de esta liquidación.
+     * 
+     * @return Lista de jornadas del período con sus datos y montos
+     */
+    @Transient
+  //  @ReadOnly
+  //  @NoDefaultActions
+    @ListProperties("empleado.nombreCompleto, fecha, turnoPlanificado, evaluacion, " +
+            "horasTrabajadasTurno, montoTeoricoTurno+, " +
+            "horasExtras, montoTeoricoExtras+, " +
+            "horasEspeciales, montoTeoricoEspeciales+")
+    @RowStyle(style = "estilo-verde-intenso", property = "evaluacion", value = "COMPLETA")
+    @RowStyle(style = "estilo-amarillo-claro", property = "evaluacion", value = "INCOMPLETA")
+    @RowStyle(style = "estilo-rojo-intenso", property = "evaluacion", value = "AUSENTE")
+    @RowStyle(style = "estilo-rojo-claro", property = "evaluacion", value = "LICENCIA")
+    @RowStyle(style = "estilo-azul-claro", property = "evaluacion", value = "FERIADO")
+    @RowStyle(style = "estilo-azul-intenso", property = "evaluacion", value = "FERIADO_TRABAJADO")
+    @RowStyle(style = "estilo-verde-claro", property = "evaluacion", value = "DIA_NO_LABORAL")
+   // @ListAction("Print.generatePdf")
+    public java.util.List<AuditoriaRegistros> getJornadasDelPeriodo() {
+        if (empleado == null || periodoDesde == null || periodoHasta == null) {
+            return java.util.Collections.emptyList();
+        }
+
+        try {
+            return org.openxava.jpa.XPersistence.getManager()
+                    .createQuery(
+                            "SELECT a FROM AuditoriaRegistros a " +
+                                    "WHERE a.empleado = :emp " +
+                                    "AND a.fecha >= :desde " +
+                                    "AND a.fecha <= :hasta " +
+                                    "ORDER BY a.fecha ASC",
+                            AuditoriaRegistros.class)
+                    .setParameter("emp", empleado)
+                    .setParameter("desde", periodoDesde)
+                    .setParameter("hasta", periodoHasta)
+                    .getResultList();
+        } catch (Exception e) {
+            return java.util.Collections.emptyList();
+        }
     }
 
     // ==================================================================================

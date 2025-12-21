@@ -1026,6 +1026,7 @@ public class Personal extends Identifiable {
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL)
     @ListProperties("periodoDesde, periodoHasta, estadoPeriodo, horasNormalesFormatted, horasExtrasFormatted, horasEspecialesFormatted, montoGranTotal")
     @OrderBy("periodoDesde desc")
+    @CollectionView("DetalleCompleto")
     @NewAction("LiquidacionJornadas.nuevaLiquidacion")
     @RemoveSelectedAction("")
     @DeleteSelectedAction("")
