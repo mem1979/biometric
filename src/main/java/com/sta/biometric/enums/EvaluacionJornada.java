@@ -11,6 +11,8 @@ public enum EvaluacionJornada {
     COMPLETA("Jornada completa"),
     INCOMPLETA("Jornada incompleta (faltan horas)"),
     AUSENTE("Ausente sin aviso"),
+    SIN_ENTRADA("Falta registro de entrada"),
+    SIN_SALIDA("Falta registro de salida"),
     LICENCIA("Licencia justificada"),
     FERIADO("Día feriado"),
     FERIADO_TRABAJADO("Feriado trabajado"),

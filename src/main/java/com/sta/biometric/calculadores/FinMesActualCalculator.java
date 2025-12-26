@@ -10,7 +10,12 @@ import org.openxava.calculators.*;
  */
 public class FinMesActualCalculator implements ICalculator {
 
-    @Override
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Override
     public Object calculate() throws Exception {
         LocalDate hoy = LocalDate.now();
         return hoy.withDayOfMonth(hoy.lengthOfMonth());

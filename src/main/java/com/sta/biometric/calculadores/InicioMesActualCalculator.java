@@ -10,7 +10,12 @@ import org.openxava.calculators.*;
  */
 public class InicioMesActualCalculator implements ICalculator {
 
-    @Override
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	@Override
     public Object calculate() throws Exception {
         return LocalDate.now().withDayOfMonth(1);
     }

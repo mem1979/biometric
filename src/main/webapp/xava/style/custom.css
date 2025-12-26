@@ -284,6 +284,18 @@ tr.empleadoInactivo td,
   font-weight: bold;
 }
 
+/* ----- NARANJA: Fichadas faltantes (requiere atención) ----- */
+.estilo-naranja-claro {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.estilo-naranja-intenso {
+  background-color: #ffcc80;
+  color: #bf360c;
+  font-weight: bold;
+}
+
 
 /* =============================================================================
    8. PAGINA DE BIENVENIDA - STA.RH

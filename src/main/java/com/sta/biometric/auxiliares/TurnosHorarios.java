@@ -202,7 +202,9 @@ public class TurnosHorarios extends Identifiable { // Identifiable provee 'id' y
     private String formatearDuracion(LocalTime entrada, LocalTime salida) {
         if (entrada == null || salida == null)
             return "0 Hs. 0 Min.";
-        return formatearMinutos(minutosEntre(entrada, salida));
+        boolean esNocturno = salida.isBefore(entrada);
+        String duracion = formatearMinutos(minutosEntre(entrada, salida));
+        return esNocturno ? "🌙 " + duracion : duracion;
     }
 
     // ===========================================================
@@ -263,7 +265,7 @@ public class TurnosHorarios extends Identifiable { // Identifiable provee 'id' y
     public String getDetalleJornadaHoras() {
         // Clave: "HH:mm a HH:mm" ; Valor: concatenación de abreviaturas "Lu.Ma." en
         // orden
-    	Map<String, String> horariosDias = new LinkedHashMap<>();
+        Map<String, String> horariosDias = new LinkedHashMap<>();
 
         agregarDia(horariosDias, "Lu.", lunes, horaEntradaLunes, horaSalidaLunes);
         agregarDia(horariosDias, "Ma.", martes, horaEntradaMartes, horaSalidaMartes);
@@ -276,12 +278,13 @@ public class TurnosHorarios extends Identifiable { // Identifiable provee 'id' y
         StringBuilder resultado = new StringBuilder();
 
         for (Map.Entry<String, String> entry : horariosDias.entrySet()) {
-            if (resultado.length() > 0) resultado.append(" / ");
+            if (resultado.length() > 0)
+                resultado.append(" / ");
 
             resultado.append(entry.getValue())
-                     .append(" de ")
-                     .append(entry.getKey())
-                     .append(" Hs");
+                    .append(" de ")
+                    .append(entry.getKey())
+                    .append(" Hs");
         }
 
         // ---- NUEVO BLOQUE AGREGADO ----
@@ -291,6 +294,11 @@ public class TurnosHorarios extends Identifiable { // Identifiable provee 'id' y
 
         if (porcentajeBonificacion != null) {
             resultado.append(" /Bon.").append(porcentajeBonificacion).append("%");
+        }
+
+        // Indicador de turno nocturno
+        if (isEsTurnoNocturno()) {
+            resultado.append(" 🌙NOCTURNO");
         }
         // --------------------------------
 
@@ -482,6 +490,39 @@ public class TurnosHorarios extends Identifiable { // Identifiable provee 'id' y
                 return 0;
         }
         return (activo && entrada != null && salida != null) ? minutosEntre(entrada, salida) : 0;
+    }
+
+    // ===========================================================
+    // Detección de Turnos Nocturnos (cruzan medianoche)
+    // ===========================================================
+
+    /**
+     * Verifica si un día específico tiene horario nocturno (cruza medianoche).
+     * 
+     * @param dia Día de la semana a verificar
+     * @return true si la salida es antes que la entrada (cruza medianoche)
+     */
+    public boolean esNocturnoParaDia(DayOfWeek dia) {
+        LocalTime entrada = getEntradaParaDia(dia);
+        LocalTime salida = getSalidaParaDia(dia);
+        if (entrada == null || salida == null)
+            return false;
+        return salida.isBefore(entrada); // salida < entrada = cruza medianoche
+    }
+
+    /**
+     * Verifica si ALGÚN día del turno es nocturno.
+     * 
+     * @return true si al menos un día activo cruza medianoche
+     */
+    @Transient
+    public boolean isEsTurnoNocturno() {
+        for (DayOfWeek dia : DayOfWeek.values()) {
+            if (esLaboral(dia) && esNocturnoParaDia(dia)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ===========================================================

@@ -58,6 +58,8 @@ import lombok.*;
         @RowStyle(style = "estilo-verde-intenso", property = "evaluacion", value = "COMPLETA"),
         @RowStyle(style = "estilo-amarillo-claro", property = "evaluacion", value = "INCOMPLETA"),
         @RowStyle(style = "estilo-rojo-intenso", property = "evaluacion", value = "AUSENTE"),
+        @RowStyle(style = "estilo-naranja-intenso", property = "evaluacion", value = "SIN_ENTRADA"),
+        @RowStyle(style = "estilo-naranja-intenso", property = "evaluacion", value = "SIN_SALIDA"),
         @RowStyle(style = "estilo-rojo-claro", property = "evaluacion", value = "LICENCIA"),
         @RowStyle(style = "estilo-azul-claro", property = "evaluacion", value = "FERIADO"),
         @RowStyle(style = "estilo-azul-intenso", property = "evaluacion", value = "FERIADO_TRABAJADO"),
@@ -157,6 +159,8 @@ public class AuditoriaRegistros extends Identifiable {
     private boolean feriado; // Indica si la fecha cae en un feriado persistido
 
     private boolean licencia; // Indica si el empleado tiene licencia activa persistida
+
+    private boolean esJornadaNocturna; // Indica si el turno cruza medianoche (ej: 22:00-06:00)
 
     // ==================================================================================
     // 5. VALORES MONETARIOS (SNAPSHOTS)
@@ -291,6 +295,9 @@ public class AuditoriaRegistros extends Identifiable {
             if (empleado != null) {
                 this.valorHoraTurnoSnapshot = empleado.getValorHoraTurno(turno);
             }
+
+            // Detectar si es jornada nocturna (cruza medianoche)
+            this.esJornadaNocturna = turno.esNocturnoParaDia(dia);
         } else {
             horaEsperadaEntrada = null;
             horaEsperadaSalida = null;
@@ -301,6 +308,7 @@ public class AuditoriaRegistros extends Identifiable {
             // Valores por defecto si no hay turno
             this.porcentajeBonificacionSnapshot = BigDecimal.ZERO;
             this.valorHoraTurnoSnapshot = empleado != null ? empleado.getValorHora() : null;
+            this.esJornadaNocturna = false;
         }
     }
 
@@ -380,16 +388,29 @@ public class AuditoriaRegistros extends Identifiable {
         boolean tieneSalida = registros.stream()
                 .anyMatch(r -> r.getTipoMovimiento() == TipoMovimiento.SALIDA);
 
+        boolean esHoy = fecha.equals(LocalDate.now());
+        boolean esJornadaPasada = fecha.isBefore(LocalDate.now());
+
         if (licencia) {
             evaluacion = EvaluacionJornada.LICENCIA;
         } else if (feriado) {
             evaluacion = EvaluacionJornada.FERIADO_TRABAJADO;
         } else if (!esLaboral) {
             evaluacion = EvaluacionJornada.DIA_NO_LABORAL_TRABAJADO;
-        } else if (tieneEntrada && !tieneSalida && fecha.equals(LocalDate.now())) {
-            // Tiene entrada pero no salida, y es hoy → EN_CURSO
+        }
+        // === DETECCIÓN DE FICHADAS FALTANTES ===
+        else if (!tieneEntrada && tieneSalida && esJornadaPasada) {
+            // Solo tiene salida pero no entrada - día pasado
+            evaluacion = EvaluacionJornada.SIN_ENTRADA;
+        } else if (tieneEntrada && !tieneSalida && esJornadaPasada && !esJornadaNocturna) {
+            // Solo tiene entrada pero no salida - día pasado (no nocturna)
+            evaluacion = EvaluacionJornada.SIN_SALIDA;
+        } else if (tieneEntrada && !tieneSalida && esHoy) {
+            // Hoy con solo entrada - en curso
             evaluacion = EvaluacionJornada.EN_CURSO;
-        } else if (minutosTrabajados >= (minutosEsperados - toleranciaMinutos)) {
+        }
+        // === FIN DETECCIÓN ===
+        else if (minutosTrabajados >= (minutosEsperados - toleranciaMinutos)) {
             evaluacion = EvaluacionJornada.COMPLETA;
         } else {
             evaluacion = EvaluacionJornada.INCOMPLETA;
@@ -449,6 +470,14 @@ public class AuditoriaRegistros extends Identifiable {
 
             case AUSENTE:
                 generarNotaAusente();
+                break;
+
+            case SIN_ENTRADA:
+                generarNotaSinEntrada();
+                break;
+
+            case SIN_SALIDA:
+                generarNotaSinSalida();
                 break;
 
             case SIN_TURNO_ASIGNADO:
@@ -656,6 +685,54 @@ public class AuditoriaRegistros extends Identifiable {
             sb.append(" Sin justificación registrada.");
         }
 
+        setNota(sb.toString());
+    }
+
+    /**
+     * Genera nota para jornadas sin registro de entrada.
+     */
+    private void generarNotaSinEntrada() {
+        StringBuilder sb = new StringBuilder("⚠️ FICHADA FALTANTE: No se registró entrada.");
+
+        // Obtener hora de salida registrada
+        Optional<LocalTime> salida = registros.stream()
+                .filter(r -> r.getTipoMovimiento() == TipoMovimiento.SALIDA)
+                .map(ColeccionRegistros::getHora)
+                .max(LocalTime::compareTo);
+
+        if (salida.isPresent()) {
+            sb.append(" Salida registrada: ").append(TiempoUtils.formatearHora(salida.get())).append(".");
+        }
+
+        if (horaEsperadaEntrada != null) {
+            sb.append(" Entrada esperada era: ").append(TiempoUtils.formatearHora(horaEsperadaEntrada)).append(".");
+        }
+
+        sb.append(" Requiere corrección manual.");
+        setNota(sb.toString());
+    }
+
+    /**
+     * Genera nota para jornadas sin registro de salida.
+     */
+    private void generarNotaSinSalida() {
+        StringBuilder sb = new StringBuilder("⚠️ FICHADA FALTANTE: No se registró salida.");
+
+        // Obtener hora de entrada registrada
+        Optional<LocalTime> entrada = registros.stream()
+                .filter(r -> r.getTipoMovimiento() == TipoMovimiento.ENTRADA)
+                .map(ColeccionRegistros::getHora)
+                .min(LocalTime::compareTo);
+
+        if (entrada.isPresent()) {
+            sb.append(" Entrada registrada: ").append(TiempoUtils.formatearHora(entrada.get())).append(".");
+        }
+
+        if (horaEsperadaSalida != null) {
+            sb.append(" Salida esperada era: ").append(TiempoUtils.formatearHora(horaEsperadaSalida)).append(".");
+        }
+
+        sb.append(" Requiere corrección manual.");
         setNota(sb.toString());
     }
 
@@ -1269,6 +1346,46 @@ public class AuditoriaRegistros extends Identifiable {
         if (ajusteMinutosEspeciales == 0)
             return "S/A";
         return TiempoUtils.formatearMinutosConSigno(ajusteMinutosEspeciales);
+    }
+
+    // ==================================================================================
+    // GETTERS BÁSICOS FALTANTES (requeridos por Jobs)
+    // ==================================================================================
+
+    /**
+     * Indica si la jornada corresponde a un turno nocturno (cruza medianoche).
+     */
+    public boolean isEsJornadaNocturna() {
+        return esJornadaNocturna;
+    }
+
+    /**
+     * Establece si la jornada es nocturna.
+     */
+    public void setEsJornadaNocturna(boolean esJornadaNocturna) {
+        this.esJornadaNocturna = esJornadaNocturna;
+    }
+
+    /**
+     * Retorna el estado de evaluación de la jornada.
+     */
+    public EvaluacionJornada getEvaluacion() {
+        return evaluacion;
+    }
+
+    /**
+     * Establece el estado de evaluación de la jornada.
+     */
+    public void setEvaluacion(EvaluacionJornada evaluacion) {
+        this.evaluacion = evaluacion;
+    }
+
+    /**
+     * Retorna la hora de salida esperada según el turno.
+     * Usado por CierreJornadaNocturnaJob para verificar si el turno ya terminó.
+     */
+    public LocalTime getHoraEsperadaSalida() {
+        return horaEsperadaSalida;
     }
 
 }
