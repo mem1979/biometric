@@ -10,14 +10,14 @@
 
 	<properties>
 		<openxava.version>7.6.3</openxava.version>
-		
+
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    	<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
 		<!-- Las aplicaciones OpenXava funcionan bien con Java 1.8, 11, 17 y 21 -->
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
-		
+
 	</properties>
 
 	<dependencies>
@@ -170,6 +170,20 @@
 			<version>1.18.30</version>
 			<scope>provided</scope>
 		</dependency>
+
+		<!-- Jackson Databind (requerido por google-genai, versión compatible) -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.17.2</version>
+		</dependency>
+
+		<!-- Google Gemini AI -->
+		<dependency>
+			<groupId>com.google.genai</groupId>
+			<artifactId>google-genai</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -199,24 +213,24 @@
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.12.0</version>
-            <configuration>
-                <source>${maven.compiler.source}</source>
-                <target>${maven.compiler.target}</target>
-                <encoding>${project.build.sourceEncoding}</encoding>
-                <annotationProcessorPaths>
-                    <path>
-                        <groupId>org.projectlombok</groupId>
-                        <artifactId>lombok</artifactId>
-                        <version>1.18.40</version>
-                    </path>
-                </annotationProcessorPaths>
-            </configuration>
-        </plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.12.0</version>
+				<configuration>
+					<source>${maven.compiler.source}</source>
+					<target>${maven.compiler.target}</target>
+					<encoding>${project.build.sourceEncoding}</encoding>
+					<annotationProcessorPaths>
+						<path>
+							<groupId>org.projectlombok</groupId>
+							<artifactId>lombok</artifactId>
+							<version>1.18.40</version>
+						</path>
+					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
 
 			<plugin>
 				<artifactId>maven-war-plugin</artifactId>

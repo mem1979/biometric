@@ -13,8 +13,10 @@ import org.openxava.model.*;
 
 import com.sta.biometric.auxiliares.*;
 import com.sta.biometric.dto.*;
+import com.sta.biometric.dto.DatosDesempenoDTO.NotaResumenDTO;
 import com.sta.biometric.enums.*;
 import com.sta.biometric.modelo.*;
+import com.sta.biometric.servicios.*;
 
 import net.sf.jasperreports.engine.*;
 
@@ -60,20 +62,47 @@ public class PersonalInformeAnualAction extends JasperReportBaseAction {
         List<AuditoriaRegistros> registrosAnuales = obtenerRegistrosAnuales(empleado, inicioAnio, finAnio);
         List<Licencia> licenciasAnuales = obtenerLicenciasAnuales(empleado);
 
+        // ========== DETECTAR PERÍODO EFECTIVO DE TRABAJO ==========
+        LocalDate primerRegistro = registrosAnuales.stream()
+                .map(AuditoriaRegistros::getFecha)
+                .filter(Objects::nonNull)
+                .min(LocalDate::compareTo)
+                .orElse(inicioAnio);
+
+        LocalDate ultimoRegistro = registrosAnuales.stream()
+                .map(AuditoriaRegistros::getFecha)
+                .filter(Objects::nonNull)
+                .max(LocalDate::compareTo)
+                .orElse(finAnio);
+
+        int mesesEfectivos = (int) ChronoUnit.MONTHS.between(
+                primerRegistro.withDayOfMonth(1),
+                ultimoRegistro.withDayOfMonth(1)) + 1;
+
+        params.put("periodoInicio", primerRegistro.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        params.put("periodoFin", ultimoRegistro.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+        params.put("mesesEfectivos", mesesEfectivos);
+
+        // Calcular tardanzas una sola vez para usar en todo el informe (OPCIÓN B)
+        int[] tardanzasData = calcularTardanzasUnificado(registrosAnuales);
+        int totalTardanzas = tardanzasData[0];
+        int minutosTotalesTardanza = tardanzasData[1];
+
         // 1. DATOS DEL EMPLEADO
         agregarDatosEmpleado(params, empleado);
 
         // 2. RESUMEN EJECUTIVO
-        agregarResumenEjecutivo(params, empleado, registrosAnuales, licenciasAnuales);
+        agregarResumenEjecutivo(params, empleado, registrosAnuales, licenciasAnuales,
+                totalTardanzas, minutosTotalesTardanza, mesesEfectivos);
 
         // 3. ASISTENCIA CONSOLIDADA
-        agregarAsistenciaConsolidada(params, registrosAnuales);
+        agregarAsistenciaConsolidada(params, registrosAnuales, mesesEfectivos);
 
         // 4. HORAS TRABAJADAS
-        agregarHorasTrabajadas(params, empleado, registrosAnuales);
+        agregarHorasTrabajadas(params, empleado, registrosAnuales, mesesEfectivos);
 
-        // 5. TARDANZAS Y PUNTUALIDAD
-        agregarAnalisisTardanzas(params, registrosAnuales);
+        // 5. TARDANZAS Y PUNTUALIDAD (usa datos pre-calculados)
+        agregarAnalisisTardanzas(params, registrosAnuales, totalTardanzas, minutosTotalesTardanza);
 
         // 6. AUSENCIAS Y LICENCIAS
         agregarAnalisisLicencias(params, licenciasAnuales, registrosAnuales);
@@ -95,6 +124,67 @@ public class PersonalInformeAnualAction extends JasperReportBaseAction {
         params.put("fechaGeneracion", LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
         return params;
+    }
+
+    // ==================== CÁLCULO UNIFICADO DE TARDANZAS (OPCIÓN B)
+    // ====================
+
+    /**
+     * Calcula tardanzas con OPCIÓN B:
+     * Solo cuenta como tardanza si el empleado entró tarde Y NO completó las horas
+     * del turno.
+     * Si entró tarde pero trabajó todas sus horas, NO se considera tardanza
+     * evaluable.
+     * 
+     * @return int[2] donde [0]=totalTardanzas, [1]=minutosTotales
+     */
+    private int[] calcularTardanzasUnificado(List<AuditoriaRegistros> registros) {
+        int totalTardanzas = 0;
+        int minutosTotales = 0;
+
+        for (AuditoriaRegistros reg : registros) {
+            // Solo evaluar si hay hora esperada de entrada
+            if (reg.getHoraEsperadaEntrada() == null)
+                continue;
+
+            // EXCLUIR jornadas incompletas (SIN SALIDA, EN CURSO, etc.)
+            // Estas no son tardanzas reales, sino registros sin completar
+            EvaluacionJornada eval = reg.getEvaluacion();
+            if (eval == EvaluacionJornada.PENDIENTE ||
+                    eval == EvaluacionJornada.EN_CURSO ||
+                    eval == EvaluacionJornada.SIN_ENTRADA ||
+                    eval == EvaluacionJornada.SIN_SALIDA) {
+                continue;
+            }
+
+            // Buscar si hubo entrada tarde
+            for (ColeccionRegistros fichada : reg.getRegistros()) {
+                if (fichada.getTipoMovimiento() == TipoMovimiento.ENTRADA &&
+                        "ENTRADA TARDE".equals(fichada.getEvaluacion())) {
+
+                    // OPCIÓN B: Solo contar si la jornada NO se completó
+                    // (es decir, si trabajó menos horas de las esperadas)
+                    int minutosEsperados = reg.getMinutosEsperados();
+                    int minutosTrabajados = reg.getMinutosTrabajados();
+
+                    // Tolerancia: si trabajó al menos 95% de las horas esperadas, no es tardanza
+                    // evaluable
+                    boolean jornadaIncompleta = minutosTrabajados < (minutosEsperados * 0.95);
+
+                    if (jornadaIncompleta) {
+                        totalTardanzas++;
+                        long minutosTardanza = ChronoUnit.MINUTES.between(
+                                reg.getHoraEsperadaEntrada(), fichada.getHora());
+                        // Limitar a máximo 120 minutos (2 horas) para evitar valores irreales
+                        if (minutosTardanza > 0) {
+                            minutosTotales += Math.min(minutosTardanza, 120);
+                        }
+                    }
+                    break; // Solo evaluar primera entrada del día
+                }
+            }
+        }
+        return new int[] { totalTardanzas, minutosTotales };
     }
 
     // ==================== MÉTODOS DE OBTENCIÓN DE DATOS ====================
@@ -176,7 +266,8 @@ public class PersonalInformeAnualAction extends JasperReportBaseAction {
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private void agregarResumenEjecutivo(Map params, Personal empleado,
             List<AuditoriaRegistros> registros,
-            List<Licencia> licencias) {
+            List<Licencia> licencias,
+            int totalTardanzas, int minutosTotalesTardanza, int mesesEfectivos) {
 
         // Calcular métricas principales
         long diasLaborables = registros.stream()
@@ -195,11 +286,6 @@ public class PersonalInformeAnualAction extends JasperReportBaseAction {
                 .filter(r -> r.getEvaluacion() == EvaluacionJornada.AUSENTE)
                 .count();
 
-        // Nota: minutosTardanza no está disponible en AuditoriaRegistros
-        // Se calcula basándose en la evaluación de la jornada
-        long cantidadTardanzas = 0;
-        int minutosTotalesTardanza = 0;
-
         // Calcular horas trabajadas usando campos directos
         int minutosNormales = registros.stream()
                 .mapToInt(r -> r.getMinutosTrabajados())
@@ -215,18 +301,19 @@ public class PersonalInformeAnualAction extends JasperReportBaseAction {
         // Calcular porcentaje de presentismo
         double presentismo = diasLaborables > 0 ? (diasPresentes * 100.0 / diasLaborables) : 0;
 
-        // Agregar parámetros
+        // Agregar parámetros (usar tardanzas pre-calculadas con Opción B)
         params.put("presentismoAnual", String.format("%.1f%%", presentismo));
         params.put("totalAusencias", diasAusentes);
-        params.put("totalTardanzas", cantidadTardanzas);
-        params.put("minutosTotalTardanza", minutosTotalesTardanza);
+        params.put("totalTardanzas", (long) totalTardanzas); // Cast a Long para JRXML
+        params.put("minutosTotalTardanza", (long) minutosTotalesTardanza); // Cast a Long
         params.put("horasNormalesAnual", formatearMinutosAHoras(minutosNormales));
         params.put("horasExtrasAnual", formatearMinutosAHoras(minutosExtras));
         params.put("horasEspecialesAnual", formatearMinutosAHoras(minutosEspeciales));
 
-        // Texto ejecutivo
-        String textoEjecutivo = generarTextoEjecutivo(presentismo, cantidadTardanzas, diasAusentes);
-        params.put("textoEjecutivo", textoEjecutivo);
+        // Texto ejecutivo (ya no se usa, reemplazado por IA)
+        // Pero mantenemos compatibilidad
+        String textoEjecutivo = generarTextoEjecutivo(presentismo, totalTardanzas, diasAusentes);
+        params.put("textoEjecutivoBasico", textoEjecutivo);
     }
 
     private String generarTextoEjecutivo(double presentismo, long tardanzas, long ausencias) {
@@ -264,7 +351,7 @@ public class PersonalInformeAnualAction extends JasperReportBaseAction {
     // ==================== 3. ASISTENCIA CONSOLIDADA ====================
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void agregarAsistenciaConsolidada(Map params, List<AuditoriaRegistros> registros) {
+    private void agregarAsistenciaConsolidada(Map params, List<AuditoriaRegistros> registros, int mesesEfectivos) {
         // Arrays para datos mensuales (12 meses)
         int[] presentesMes = new int[12];
         int[] ausentesMes = new int[12];
@@ -287,8 +374,31 @@ public class PersonalInformeAnualAction extends JasperReportBaseAction {
                 ausentesMes[mes]++;
             }
 
-            // Tardanzas no disponibles directamente
-            // Se podría calcular comparando hora de entrada con hora esperada
+            // Calcular tardanzas con OPCIÓN B
+            // Primero: excluir jornadas incompletas
+            EvaluacionJornada evalJornada = reg.getEvaluacion();
+            if (evalJornada == EvaluacionJornada.PENDIENTE ||
+                    evalJornada == EvaluacionJornada.EN_CURSO ||
+                    evalJornada == EvaluacionJornada.SIN_ENTRADA ||
+                    evalJornada == EvaluacionJornada.SIN_SALIDA) {
+                continue;
+            }
+
+            if (reg.getHoraEsperadaEntrada() != null) {
+                for (ColeccionRegistros fichada : reg.getRegistros()) {
+                    if (fichada.getTipoMovimiento() == TipoMovimiento.ENTRADA &&
+                            "ENTRADA TARDE".equals(fichada.getEvaluacion())) {
+                        // OPCIÓN B: Solo contar si la jornada NO se completó
+                        int minutosEsperados = reg.getMinutosEsperados();
+                        int minutosTrabajados = reg.getMinutosTrabajados();
+                        boolean jornadaIncompleta = minutosTrabajados < (minutosEsperados * 0.95);
+                        if (jornadaIncompleta) {
+                            tardanzasMes[mes]++;
+                        }
+                        break;
+                    }
+                }
+            }
         }
 
         // Calcular porcentaje de cumplimiento por mes
@@ -342,7 +452,8 @@ public class PersonalInformeAnualAction extends JasperReportBaseAction {
     // ==================== 4. HORAS TRABAJADAS ====================
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void agregarHorasTrabajadas(Map params, Personal empleado, List<AuditoriaRegistros> registros) {
+    private void agregarHorasTrabajadas(Map params, Personal empleado, List<AuditoriaRegistros> registros,
+            int mesesEfectivos) {
         // Arrays mensuales
         double[] horasNormalesMes = new double[12];
         double[] horasExtrasMes = new double[12];
@@ -387,33 +498,33 @@ public class PersonalInformeAnualAction extends JasperReportBaseAction {
     // ==================== 5. TARDANZAS Y PUNTUALIDAD ====================
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void agregarAnalisisTardanzas(Map params, List<AuditoriaRegistros> registros) {
-        int totalTardanzas = 0;
-        int minutosTotales = 0;
+    private void agregarAnalisisTardanzas(Map params, List<AuditoriaRegistros> registros,
+            int totalTardanzasPreCalc, int minutosTotalesPreCalc) {
+        // Usar los valores pre-calculados con Opción B
+        int totalTardanzas = totalTardanzasPreCalc;
+        int minutosTotales = minutosTotalesPreCalc;
         Map<DayOfWeek, Long> tardanzasPorDia = new HashMap<>();
 
+        // Solo calcular distribución por día de semana (para análisis)
         for (AuditoriaRegistros reg : registros) {
             if (reg.getHoraEsperadaEntrada() == null)
                 continue;
 
-            // Buscar si hubo entrada tarde
+            // Buscar si hubo entrada tarde con jornada incompleta (Opción B)
             for (ColeccionRegistros fichada : reg.getRegistros()) {
                 if (fichada.getTipoMovimiento() == TipoMovimiento.ENTRADA &&
                         "ENTRADA TARDE".equals(fichada.getEvaluacion())) {
 
-                    totalTardanzas++;
+                    // Solo contar para estadísticas de día si jornada fue incompleta
+                    int minutosEsperados = reg.getMinutosEsperados();
+                    int minutosTrabajados = reg.getMinutosTrabajados();
+                    boolean jornadaIncompleta = minutosTrabajados < (minutosEsperados * 0.95);
 
-                    // Calcular minutos de tardanza
-                    long minutos = ChronoUnit.MINUTES.between(reg.getHoraEsperadaEntrada(), fichada.getHora());
-                    if (minutos > 0) {
-                        minutosTotales += minutos;
+                    if (jornadaIncompleta) {
+                        DayOfWeek dia = reg.getFecha().getDayOfWeek();
+                        tardanzasPorDia.merge(dia, 1L, Long::sum);
                     }
-
-                    // Contar por día de semana
-                    DayOfWeek dia = reg.getFecha().getDayOfWeek();
-                    tardanzasPorDia.merge(dia, 1L, Long::sum);
-
-                    break; // Solo contar la primera entrada tarde del día
+                    break;
                 }
             }
         }
@@ -594,63 +705,151 @@ public class PersonalInformeAnualAction extends JasperReportBaseAction {
         params.put("costoMensualPromedio", promedioMensual);
     }
 
-    // ==================== 9. CONCLUSIONES Y RECOMENDACIONES ====================
+    // ==================== 9. CONCLUSIONES Y RECOMENDACIONES (IA GEMINI)
+    // ====================
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private void agregarConclusiones(Map params, Personal empleado,
             List<AuditoriaRegistros> registros,
             List<Licencia> licencias) {
 
-        // Calcular métricas para análisis
+        // Construir DTO con todos los datos para el análisis
+        DatosDesempenoDTO datos = construirDatosDesempeno(empleado, registros, licencias);
+
+        // Llamar al servicio de análisis (IA o fallback)
+        AnalisisDesempenoService servicio = new AnalisisDesempenoService();
+        AnalisisIntegralDTO analisis = servicio.realizarAnalisisIntegral(empleado, ANIO_ACTUAL, datos);
+
+        // Inyectar resultados en los parámetros del reporte
+        params.put("textoEjecutivo", analisis.getResumenEjecutivo());
+        params.put("fortalezas", analisis.getFortalezas());
+        params.put("debilidades", analisis.getDebilidades());
+        params.put("recomendaciones", analisis.getRecomendaciones());
+        params.put("generadoPorIA", analisis.isGeneradoPorIA());
+
+        // Log para debugging
+        if (analisis.getMensajeEstado() != null && !analisis.getMensajeEstado().isEmpty()) {
+            System.out.println("[InformeAnual] Estado análisis: " + analisis.getMensajeEstado());
+        }
+    }
+
+    /**
+     * Construye el DTO con todos los datos necesarios para el análisis de IA.
+     */
+    private DatosDesempenoDTO construirDatosDesempeno(Personal empleado,
+            List<AuditoriaRegistros> registros,
+            List<Licencia> licencias) {
+
+        // Calcular métricas de asistencia
         long diasLaborables = registros.stream()
                 .filter(r -> r.getEvaluacion() != EvaluacionJornada.FERIADO &&
-                        r.getEvaluacion() != EvaluacionJornada.DIA_NO_LABORAL)
+                        r.getEvaluacion() != EvaluacionJornada.DIA_NO_LABORAL &&
+                        r.getEvaluacion() != EvaluacionJornada.SIN_TURNO_ASIGNADO)
                 .count();
 
         long diasPresentes = registros.stream()
                 .filter(r -> r.getEvaluacion() == EvaluacionJornada.COMPLETA ||
-                        r.getEvaluacion() == EvaluacionJornada.INCOMPLETA)
+                        r.getEvaluacion() == EvaluacionJornada.INCOMPLETA ||
+                        r.getEvaluacion() == EvaluacionJornada.FERIADO_TRABAJADO)
                 .count();
 
-        // Tardanzas no disponibles directamente
-        long tardanzas = 0;
+        long ausencias = registros.stream()
+                .filter(r -> r.getEvaluacion() == EvaluacionJornada.AUSENTE)
+                .count();
 
         double presentismo = diasLaborables > 0 ? (diasPresentes * 100.0 / diasLaborables) : 0;
 
-        // Generar fortalezas
-        StringBuilder fortalezas = new StringBuilder();
-        if (presentismo >= 95)
-            fortalezas.append("• Excelente presentismo\n");
-        if (tardanzas < 5)
-            fortalezas.append("• Puntualidad ejemplar\n");
-        if (licencias.size() < 5)
-            fortalezas.append("• Bajo nivel de licencias\n");
+        // Calcular tardanzas usando OPCIÓN B (igual que calcularTardanzasUnificado)
+        // Solo cuenta como tardanza si el empleado entró tarde Y NO completó las horas
+        int totalTardanzas = 0;
+        int minutosTardanza = 0;
+        for (AuditoriaRegistros reg : registros) {
+            if (reg.getHoraEsperadaEntrada() == null)
+                continue;
 
-        params.put("fortalezas", fortalezas.length() > 0 ? fortalezas.toString() : "• Desempeño estándar");
+            // Excluir jornadas incompletas (SIN SALIDA, EN CURSO, etc.)
+            EvaluacionJornada evalJornada = reg.getEvaluacion();
+            if (evalJornada == EvaluacionJornada.PENDIENTE ||
+                    evalJornada == EvaluacionJornada.EN_CURSO ||
+                    evalJornada == EvaluacionJornada.SIN_ENTRADA ||
+                    evalJornada == EvaluacionJornada.SIN_SALIDA) {
+                continue;
+            }
 
-        // Generar debilidades
-        StringBuilder debilidades = new StringBuilder();
-        if (presentismo < 80)
-            debilidades.append("• Presentismo deficiente\n");
-        if (tardanzas > 30)
-            debilidades.append("• Problemas graves de puntualidad\n");
-        if (licencias.size() > 15)
-            debilidades.append("• Alto nivel de licencias\n");
+            for (ColeccionRegistros fichada : reg.getRegistros()) {
+                if (fichada.getTipoMovimiento() == TipoMovimiento.ENTRADA &&
+                        "ENTRADA TARDE".equals(fichada.getEvaluacion())) {
 
-        params.put("debilidades",
-                debilidades.length() > 0 ? debilidades.toString() : "• No se detectaron debilidades significativas");
+                    // OPCIÓN B: Solo contar si la jornada NO se completó
+                    int minutosEsperados = reg.getMinutosEsperados();
+                    int minutosTrabajados = reg.getMinutosTrabajados();
+                    boolean jornadaIncompleta = minutosTrabajados < (minutosEsperados * 0.95);
 
-        // Generar recomendaciones
-        StringBuilder recomendaciones = new StringBuilder();
-        if (tardanzas > 15)
-            recomendaciones.append("• Considerar ajuste de turno\n");
-        if (licencias.size() > 10)
-            recomendaciones.append("• Sugerir revisión médica preventiva\n");
-        if (presentismo >= 98 && tardanzas < 3)
-            recomendaciones.append("• Candidato para reconocimiento\n");
+                    if (jornadaIncompleta) {
+                        totalTardanzas++;
+                        long mins = ChronoUnit.MINUTES.between(reg.getHoraEsperadaEntrada(), fichada.getHora());
+                        if (mins > 0) {
+                            // Limitar a máximo 120 minutos para evitar valores irreales
+                            minutosTardanza += Math.min(mins, 120);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        double promedioTardanza = totalTardanzas > 0 ? (minutosTardanza * 1.0 / totalTardanzas) : 0;
 
-        params.put("recomendaciones",
-                recomendaciones.length() > 0 ? recomendaciones.toString() : "• Mantener seguimiento estándar");
+        // Calcular horas
+        int minutosNormales = registros.stream().mapToInt(r -> r.getMinutosTrabajados()).sum();
+        int minutosExtras = registros.stream().mapToInt(r -> r.getMinutosExtras()).sum();
+        int minutosEspeciales = 0; // No disponible directamente
+
+        // Calcular licencias por tipo
+        Map<TipoLicenciaAR, Integer> diasPorTipo = new HashMap<>();
+        for (Licencia lic : licencias) {
+            int dias = lic.getDias() != null ? lic.getDias() : 0;
+            diasPorTipo.merge(lic.getTipo(), dias, Integer::sum);
+        }
+        int totalDiasLicencia = diasPorTipo.values().stream().mapToInt(Integer::intValue).sum();
+
+        // Calcular correcciones
+        int totalCorrecciones = (int) registros.stream()
+                .filter(r -> r.getAjusteMinutosNormales() != 0 ||
+                        r.getAjusteMinutosExtras() != 0 ||
+                        r.getAjusteMinutosEspeciales() != 0)
+                .count();
+
+        // Obtener notas de desempeño
+        List<NotaResumenDTO> notasDTO = AnalisisDesempenoService.convertirNotas(empleado.getNotasDesempeno());
+        double promedioNotas = NotaDesempeno.calcularPromedio(empleado.getNotasDesempeno());
+        String evaluacionNotas = NotaDesempeno.calcularEvaluacion(promedioNotas);
+
+        // Construir el DTO
+        return DatosDesempenoDTO.builder()
+                .nombreEmpleado(empleado.getNombreCompleto())
+                .puesto(empleado.getPuesto())
+                .sucursal(empleado.getSucursal() != null ? empleado.getSucursal().getNombre() : "")
+                .anio(ANIO_ACTUAL)
+                .porcentajePresentismo(presentismo)
+                .diasPresentes(diasPresentes)
+                .diasLaborables(diasLaborables)
+                .totalTardanzas(totalTardanzas)
+                .minutosTotalesTardanza(minutosTardanza)
+                .promedioMinutosTardanza(promedioTardanza)
+                .totalAusencias(ausencias)
+                .ausenciasInjustificadas(ausencias)
+                .minutosNormales(minutosNormales)
+                .minutosExtras(minutosExtras)
+                .minutosEspeciales(minutosEspeciales)
+                .totalLicencias(licencias.size())
+                .diasLicenciaMedica(diasPorTipo.getOrDefault(TipoLicenciaAR.ENFERMEDAD, 0))
+                .diasVacaciones(diasPorTipo.getOrDefault(TipoLicenciaAR.VACACIONES, 0))
+                .totalDiasLicencia(totalDiasLicencia)
+                .totalCorrecciones(totalCorrecciones)
+                .notasDesempeno(notasDTO)
+                .promedioCalificacionNotas(promedioNotas)
+                .evaluacionNotas(evaluacionNotas)
+                .build();
     }
 
     // ==================== 10. DATOS PARA GRÁFICOS ====================
