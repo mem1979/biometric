@@ -17,7 +17,6 @@
 
 package com.sta.biometric.rest;
 
-
 import java.time.*;
 import java.util.*;
 
@@ -72,6 +71,60 @@ public class AsistenciaEndpoint {
         }
         /* 3. Consultar en ColeccionRegistros si existe ENTRADA hoy */
         LocalDate hoy = LocalDate.now();
+        LocalDate ayer = hoy.minusDays(1);
+        Map<String, Object> out = new HashMap<>();
+        out.put("fecha", TiempoUtils.formatearFecha(hoy));
+
+        /* === SOPORTE JORNADAS NOCTURNAS === */
+        /* Verificar si hay jornada nocturna abierta del día anterior */
+        try {
+            AuditoriaRegistros jornadaNocturnaAbierta = XPersistence.getManager()
+                    .createQuery(
+                            "SELECT a FROM AuditoriaRegistros a " +
+                                    "WHERE a.empleado = :emp " +
+                                    "AND a.fecha = :ayer " +
+                                    "AND a.esJornadaNocturna = true " +
+                                    "AND a.evaluacion = :estado",
+                            AuditoriaRegistros.class)
+                    .setParameter("emp", empleado)
+                    .setParameter("ayer", ayer)
+                    .setParameter("estado", EvaluacionJornada.EN_CURSO)
+                    .setMaxResults(1)
+                    .getResultStream()
+                    .findFirst()
+                    .orElse(null);
+
+            if (jornadaNocturnaAbierta != null) {
+                // Hay jornada nocturna abierta del día anterior
+                out.put("jornadaNocturnaAbierta", true);
+                out.put("fechaJornadaNocturna", TiempoUtils.formatearFecha(ayer));
+                out.put("yaFichoEntrada", true); // Ya tiene entrada de ayer
+                out.put("yaFichoSalida", false); // Falta la salida
+
+                // Obtener hora de entrada de ayer
+                ColeccionRegistros entradaAyer = jornadaNocturnaAbierta.getRegistros().stream()
+                        .filter(r -> r.getTipoMovimiento() == TipoMovimiento.ENTRADA)
+                        .findFirst()
+                        .orElse(null);
+                if (entradaAyer != null) {
+                    out.put("horaEntrada", TiempoUtils.formatearHora(entradaAyer.getHora()));
+                }
+                out.put("horaSalida", null);
+                out.put("mensajeNocturno", "Jornada nocturna iniciada ayer. Registre su SALIDA.");
+
+                // Agregar info de licencia y feriado de hoy
+                out.put("tieneLicencia", Licencia.tieneLicenciaEnFecha(empleado, hoy));
+                out.put("esFeriado", Feriados.existeParaFecha(hoy));
+
+                return Response.ok(out).build();
+            }
+        } catch (Exception e) {
+            // Si hay error, continuar con lógica normal
+            System.err.println("[AsistenciaEndpoint] Error buscando jornada nocturna: " + e.getMessage());
+        }
+        out.put("jornadaNocturnaAbierta", false);
+        /* === FIN SOPORTE NOCTURNAS === */
+
         String qCount = "SELECT COUNT(r) " +
                 "FROM ColeccionRegistros r " +
                 "WHERE r.asistenciaDiaria.empleado = :emp " +
@@ -83,8 +136,6 @@ public class AsistenciaEndpoint {
                 .setParameter("hoy", hoy)
                 .setParameter("tipo", TipoMovimiento.ENTRADA)
                 .getSingleResult() > 0;
-        Map<String, Object> out = new HashMap<>();
-        out.put("fecha", TiempoUtils.formatearFecha(hoy));
         out.put("yaFichoEntrada", yaFicho);
         /* 4. Si fichó, recuperar la hora de la primera ENTRADA */
         if (yaFicho) {
@@ -223,36 +274,77 @@ public class AsistenciaEndpoint {
 
         // Fecha y hora oficiales del servidor (no del dispositivo móvil)
         LocalDate hoy = LocalDate.now();
+        LocalDate ayer = hoy.minusDays(1);
         LocalTime ahora = LocalTime.now();
 
-        /* 4. Obtener o crear la Auditoría del día */
-        AuditoriaRegistros dia = XPersistence.getManager()
-                .createQuery(
-                        "FROM AuditoriaRegistros a WHERE a.empleado = :emp AND a.fecha = :fecha",
-                        AuditoriaRegistros.class)
-                .setParameter("emp", empleado)
-                .setParameter("fecha", hoy)
-                .getResultStream()
-                .findFirst()
-                .orElseGet(() -> {
-                    AuditoriaRegistros nuevo = new AuditoriaRegistros();
-                    nuevo.setEmpleado(empleado);
-                    nuevo.setFecha(hoy);
-                    XPersistence.getManager().persist(nuevo);
-                    return nuevo;
-                });
+        /* === SOPORTE JORNADAS NOCTURNAS (POST) === */
+        /* Si es SALIDA y hay jornada nocturna abierta de ayer, agregar a esa jornada */
+        TipoMovimiento tipoSolicitado = body.getTipoMovimiento() != null
+                ? body.getTipoMovimiento()
+                : InterpreteFichadasService.deducirTipoMovimiento(body.getDescripcionTipo());
+
+        AuditoriaRegistros dia = null;
+        boolean esAjusteNocturno = false;
+
+        if (tipoSolicitado == TipoMovimiento.SALIDA) {
+            // Buscar jornada nocturna abierta de ayer
+            AuditoriaRegistros jornadaNocturnaAbierta = XPersistence.getManager()
+                    .createQuery(
+                            "SELECT a FROM AuditoriaRegistros a " +
+                                    "WHERE a.empleado = :emp " +
+                                    "AND a.fecha = :ayer " +
+                                    "AND a.esJornadaNocturna = true " +
+                                    "AND a.evaluacion = :estado",
+                            AuditoriaRegistros.class)
+                    .setParameter("emp", empleado)
+                    .setParameter("ayer", ayer)
+                    .setParameter("estado", EvaluacionJornada.EN_CURSO)
+                    .getResultStream()
+                    .findFirst()
+                    .orElse(null);
+
+            if (jornadaNocturnaAbierta != null) {
+                dia = jornadaNocturnaAbierta;
+                esAjusteNocturno = true;
+                System.out.println("[AsistenciaEndpoint] SALIDA para jornada nocturna de ayer: " +
+                        empleado.getNombreCompleto());
+            }
+        }
+
+        /* 4. Obtener o crear la Auditoría del día (si no es ajuste nocturno) */
+        if (dia == null) {
+            dia = XPersistence.getManager()
+                    .createQuery(
+                            "FROM AuditoriaRegistros a WHERE a.empleado = :emp AND a.fecha = :fecha",
+                            AuditoriaRegistros.class)
+                    .setParameter("emp", empleado)
+                    .setParameter("fecha", hoy)
+                    .getResultStream()
+                    .findFirst()
+                    .orElseGet(() -> {
+                        AuditoriaRegistros nuevo = new AuditoriaRegistros();
+                        nuevo.setEmpleado(empleado);
+                        nuevo.setFecha(hoy);
+                        XPersistence.getManager().persist(nuevo);
+                        return nuevo;
+                    });
+        }
+        /* === FIN SOPORTE NOCTURNAS (POST) === */
 
         /* 5. Crear y configurar ColeccionRegistros */
         ColeccionRegistros reg = new ColeccionRegistros();
+        // Para jornadas nocturnas, la fecha del registro SALIDA es HOY aunque la
+        // jornada sea de ayer
         reg.setFecha(hoy);
         reg.setHora(ahora);
         reg.setCoordenada(body.getUbicacion());
-        reg.setObservacion(body.getNota() != null && !body.getNota().isBlank() ? body.getNota() : "Registro desde App");
+        String observacion = body.getNota() != null && !body.getNota().isBlank()
+                ? body.getNota()
+                : (esAjusteNocturno ? "SALIDA jornada nocturna" : "Registro desde App");
+        reg.setObservacion(observacion);
 
-        /* 5.1 Deducir tipo de movimiento si no viene explícito */
-        TipoMovimiento tipo = body.getTipoMovimiento() != null
-                ? body.getTipoMovimiento()
-                : InterpreteFichadasService.deducirTipoMovimiento(body.getDescripcionTipo());
+        /* 5.1 Usar tipo ya calculado (arriba) */
+        TipoMovimiento tipo = tipoSolicitado;
         reg.setTipoMovimiento(tipo);
 
         /* 5.2 Asociar a la auditoría */

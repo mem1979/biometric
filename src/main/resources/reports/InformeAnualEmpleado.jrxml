@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 7.0.3.final using JasperReports Library version 6.0.0  -->
-<!-- 2025-12-15T17:26:56 -->
+<!-- 2025-12-31T15:25:04 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="InformeAnualEmpleado" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d">
 	<subDataset name="dsHoras" uuid="a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d">
 		<field name="mes" class="java.lang.String"/>
@@ -72,7 +72,7 @@
 	<group name="Seccion1_Resumen">
 		<groupExpression><![CDATA[1]]></groupExpression>
 		<groupHeader>
-			<band height="260">
+			<band height="410">
 				<staticText>
 					<reportElement x="0" y="10" width="555" height="30" forecolor="#1A237E" uuid="f2f2f2f2-f2f2-4f2f-8f2f-f2f2f2f2f2f2"/>
 					<box>
@@ -84,111 +84,111 @@
 					<text><![CDATA[1. RESUMEN EJECUTIVO DEL AÑO]]></text>
 				</staticText>
 				<rectangle radius="5">
-					<reportElement x="0" y="50" width="270" height="200" backcolor="#F5F5F5" uuid="a3a3a3a3-a3a3-4a3a-8a3a-a3a3a3a3a3a3"/>
+					<reportElement x="0" y="50" width="555" height="160" backcolor="#F5F5F5" uuid="a3a3a3a3-a3a3-4a3a-8a3a-a3a3a3a3a3a3"/>
 					<graphicElement>
 						<pen lineWidth="1.0" lineColor="#BDBDBD"/>
 					</graphicElement>
 				</rectangle>
 				<staticText>
-					<reportElement x="10" y="60" width="180" height="20" forecolor="#424242" uuid="b3b3b3b3-b3b3-4b3b-8b3b-b3b3b3b3b3b3"/>
+					<reportElement mode="Opaque" x="10" y="58" width="470" height="20" forecolor="#424242" uuid="b3b3b3b3-b3b3-4b3b-8b3b-b3b3b3b3b3b3"/>
 					<textElement>
 						<font size="11" isBold="true"/>
 					</textElement>
 					<text><![CDATA[Presentismo Anual:]]></text>
 				</staticText>
 				<textField>
-					<reportElement x="190" y="60" width="70" height="20" forecolor="#1A237E" uuid="c3c3c3c3-c3c3-4c3c-8c3c-c3c3c3c3c3c3"/>
+					<reportElement mode="Opaque" x="467" y="58" width="70" height="20" forecolor="#1A237E" uuid="c3c3c3c3-c3c3-4c3c-8c3c-c3c3c3c3c3c3"/>
 					<textElement textAlignment="Right">
 						<font size="14" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{presentismoAnual}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="10" y="85" width="180" height="20" forecolor="#424242" uuid="d3d3d3d3-d3d3-4d3d-8d3d-d3d3d3d3d3d3"/>
+					<reportElement mode="Opaque" x="10" y="83" width="450" height="20" forecolor="#424242" uuid="d3d3d3d3-d3d3-4d3d-8d3d-d3d3d3d3d3d3"/>
 					<textElement>
 						<font size="10"/>
 					</textElement>
 					<text><![CDATA[Total Ausencias:]]></text>
 				</staticText>
 				<textField>
-					<reportElement x="190" y="85" width="70" height="20" forecolor="#D32F2F" uuid="e3e3e3e3-e3e3-4e3e-8e3e-e3e3e3e3e3e3"/>
+					<reportElement mode="Opaque" x="467" y="83" width="70" height="20" forecolor="#D32F2F" uuid="e3e3e3e3-e3e3-4e3e-8e3e-e3e3e3e3e3e3"/>
 					<textElement textAlignment="Right">
 						<font size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{totalAusencias}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="10" y="110" width="180" height="20" forecolor="#424242" uuid="f3f3f3f3-f3f3-4f3f-8f3f-f3f3f3f3f3f3"/>
+					<reportElement mode="Opaque" x="10" y="108" width="450" height="20" forecolor="#424242" uuid="f3f3f3f3-f3f3-4f3f-8f3f-f3f3f3f3f3f3"/>
 					<textElement>
 						<font size="10"/>
 					</textElement>
 					<text><![CDATA[Total Tardanzas:]]></text>
 				</staticText>
 				<textField>
-					<reportElement x="190" y="110" width="70" height="20" forecolor="#F57C00" uuid="a4a4a4a4-a4a4-4a4a-8a4a-a4a4a4a4a4a4"/>
+					<reportElement mode="Opaque" x="467" y="108" width="70" height="20" forecolor="#F57C00" uuid="a4a4a4a4-a4a4-4a4a-8a4a-a4a4a4a4a4a4"/>
 					<textElement textAlignment="Right">
 						<font size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{totalTardanzas}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="10" y="135" width="180" height="20" forecolor="#424242" uuid="b4b4b4b4-b4b4-4b4b-8b4b-b4b4b4b4b4b4"/>
+					<reportElement mode="Opaque" x="10" y="133" width="450" height="20" forecolor="#424242" uuid="b4b4b4b4-b4b4-4b4b-8b4b-b4b4b4b4b4b4"/>
 					<textElement>
 						<font size="10"/>
 					</textElement>
 					<text><![CDATA[Horas Normales:]]></text>
 				</staticText>
 				<textField>
-					<reportElement x="190" y="135" width="70" height="20" forecolor="#388E3C" uuid="c4c4c4c4-c4c4-4c4c-8c4c-c4c4c4c4c4c4"/>
+					<reportElement mode="Opaque" x="467" y="133" width="70" height="20" forecolor="#388E3C" uuid="c4c4c4c4-c4c4-4c4c-8c4c-c4c4c4c4c4c4"/>
 					<textElement textAlignment="Right">
 						<font size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{horasNormalesAnual}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="10" y="160" width="180" height="20" forecolor="#424242" uuid="d4d4d4d4-d4d4-4d4d-8d4d-d4d4d4d4d4d4"/>
+					<reportElement mode="Opaque" x="10" y="158" width="450" height="20" forecolor="#424242" uuid="d4d4d4d4-d4d4-4d4d-8d4d-d4d4d4d4d4d4"/>
 					<textElement>
 						<font size="10"/>
 					</textElement>
 					<text><![CDATA[Horas Extras:]]></text>
 				</staticText>
 				<textField>
-					<reportElement x="190" y="160" width="70" height="20" forecolor="#1976D2" uuid="e4e4e4e4-e4e4-4e4e-8e4e-e4e4e4e4e4e4"/>
+					<reportElement mode="Opaque" x="467" y="158" width="70" height="20" forecolor="#1976D2" uuid="e4e4e4e4-e4e4-4e4e-8e4e-e4e4e4e4e4e4"/>
 					<textElement textAlignment="Right">
 						<font size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{horasExtrasAnual}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="10" y="185" width="180" height="20" forecolor="#424242" uuid="f4f4f4f4-f4f4-4f4f-8f4f-f4f4f4f4f4f4"/>
+					<reportElement mode="Opaque" x="10" y="183" width="450" height="20" forecolor="#424242" uuid="f4f4f4f4-f4f4-4f4f-8f4f-f4f4f4f4f4f4"/>
 					<textElement>
 						<font size="10"/>
 					</textElement>
 					<text><![CDATA[Horas Especiales:]]></text>
 				</staticText>
 				<textField>
-					<reportElement x="190" y="185" width="70" height="20" forecolor="#7B1FA2" uuid="a5a5a5a5-a5a5-4a5a-8a5a-a5a5a5a5a5a5"/>
+					<reportElement mode="Opaque" x="467" y="183" width="70" height="20" forecolor="#7B1FA2" uuid="a5a5a5a5-a5a5-4a5a-8a5a-a5a5a5a5a5a5"/>
 					<textElement textAlignment="Right">
 						<font size="11" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{horasEspecialesAnual}]]></textFieldExpression>
 				</textField>
 				<rectangle radius="5">
-					<reportElement x="285" y="50" width="270" height="200" backcolor="#E3F2FD" uuid="b5b5b5b5-b5b5-4b5b-8b5b-b5b5b5b5b5b5"/>
+					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="0" y="216" width="555" height="184" backcolor="#E3F2FD" uuid="b5b5b5b5-b5b5-4b5b-8b5b-b5b5b5b5b5b5"/>
 					<graphicElement>
 						<pen lineWidth="1.0" lineColor="#1976D2"/>
 					</graphicElement>
 				</rectangle>
 				<staticText>
-					<reportElement x="295" y="60" width="250" height="20" forecolor="#1A237E" uuid="c5c5c5c5-c5c5-4c5c-8c5c-c5c5c5c5c5c5"/>
+					<reportElement x="9" y="220" width="250" height="20" forecolor="#1A237E" uuid="c5c5c5c5-c5c5-4c5c-8c5c-c5c5c5c5c5c5"/>
 					<textElement>
-						<font size="12" isBold="true"/>
+						<font size="12" isBold="true" isUnderline="true"/>
 					</textElement>
-					<text><![CDATA[Análisis Ejecutivo]]></text>
+					<text><![CDATA[ANALISIS EJECUTIVO :]]></text>
 				</staticText>
-				<textField isStretchWithOverflow="true">
-					<reportElement x="295" y="85" width="250" height="155" forecolor="#424242" uuid="d5d5d5d5-d5d5-4d5d-8d5d-d5d5d5d5d5d5"/>
-					<textElement>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="10" y="240" width="530" height="155" forecolor="#424242" uuid="d5d5d5d5-d5d5-4d5d-8d5d-d5d5d5d5d5d5"/>
+					<textElement textAlignment="Justified">
 						<font size="10"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{textoEjecutivo}]]></textFieldExpression>
@@ -1283,7 +1283,7 @@
 					<text><![CDATA[8. CONCLUSIONES Y RECOMENDACIONES]]></text>
 				</staticText>
 				<rectangle radius="5">
-					<reportElement x="0" y="40" width="270" height="200" backcolor="#E8F5E9" uuid="e3e3e3e3-e3e3-4e3e-8e3e-e3e3e3e3e3e3"/>
+					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="0" y="40" width="270" height="200" backcolor="#E8F5E9" uuid="e3e3e3e3-e3e3-4e3e-8e3e-e3e3e3e3e3e3"/>
 					<graphicElement>
 						<pen lineWidth="1.0" lineColor="#388E3C"/>
 					</graphicElement>
@@ -1296,14 +1296,14 @@
 					<text><![CDATA[✓ FORTALEZAS]]></text>
 				</staticText>
 				<textField isStretchWithOverflow="true">
-					<reportElement x="10" y="80" width="250" height="150" forecolor="#424242" uuid="a4a4a4a4-a4a4-4a4a-8a4a-a4a4a4a4a4a4"/>
-					<textElement>
+					<reportElement positionType="Float" x="10" y="80" width="250" height="150" forecolor="#424242" uuid="a4a4a4a4-a4a4-4a4a-8a4a-a4a4a4a4a4a4"/>
+					<textElement textAlignment="Justified">
 						<font size="9"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{fortalezas}]]></textFieldExpression>
 				</textField>
 				<rectangle radius="5">
-					<reportElement x="285" y="40" width="270" height="200" backcolor="#FFEBEE" uuid="b4b4b4b4-b4b4-4b4b-8b4b-b4b4b4b4b4b4"/>
+					<reportElement positionType="Float" stretchType="RelativeToTallestObject" x="285" y="40" width="270" height="200" backcolor="#FFEBEE" uuid="b4b4b4b4-b4b4-4b4b-8b4b-b4b4b4b4b4b4"/>
 					<graphicElement>
 						<pen lineWidth="1.0" lineColor="#D32F2F"/>
 					</graphicElement>
@@ -1316,8 +1316,8 @@
 					<text><![CDATA[⚠ DEBILIDADES]]></text>
 				</staticText>
 				<textField isStretchWithOverflow="true">
-					<reportElement x="295" y="80" width="250" height="150" forecolor="#424242" uuid="d4d4d4d4-d4d4-4d4d-8d4d-d4d4d4d4d4d4"/>
-					<textElement>
+					<reportElement positionType="Float" x="295" y="80" width="250" height="150" forecolor="#424242" uuid="d4d4d4d4-d4d4-4d4d-8d4d-d4d4d4d4d4d4"/>
+					<textElement textAlignment="Justified">
 						<font size="9"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{debilidades}]]></textFieldExpression>

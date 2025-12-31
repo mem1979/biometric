@@ -318,9 +318,19 @@ public class AuditoriaRegistros extends Identifiable {
      * <p>
      * Descuenta pausas si están registradas.
      * </p>
+     * <p>
+     * IMPORTANTE: Ordena por FECHA + HORA para soportar turnos nocturnos
+     * correctamente.
+     * Sin esto, una salida a las 00:22 quedaría antes de una entrada a las 17:50.
+     * </p>
      */
     private void calcularDuraciones() {
-        registros.sort(Comparator.comparing(ColeccionRegistros::getHora));
+        // Ordenar por fecha Y hora para manejar correctamente turnos nocturnos
+        // (la salida del día siguiente debe quedar DESPUÉS de la entrada del día
+        // anterior)
+        registros.sort(Comparator
+                .comparing(ColeccionRegistros::getFecha, Comparator.nullsFirst(Comparator.naturalOrder()))
+                .thenComparing(ColeccionRegistros::getHora, Comparator.nullsFirst(Comparator.naturalOrder())));
 
         LocalTime inicio = registros.get(0).getHora();
         LocalTime fin = registros.get(registros.size() - 1).getHora();

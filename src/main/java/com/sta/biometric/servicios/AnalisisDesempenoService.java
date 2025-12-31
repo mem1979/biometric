@@ -21,7 +21,7 @@ public class AnalisisDesempenoService {
     private static final String MODELO_GEMINI = "gemini-2.5-flash";
 
     // API Key configurada directamente (proporcionada por el usuario)
-    private static final String DEFAULT_API_KEY = "AIzaSyBVhX0BPxR6FylAayyYphKKroJ0Crk1b9E";
+    private static final String DEFAULT_API_KEY = "AIzaSyCMo-Eb-1dmNN3tpnLmXJDYzc6Mt0x2BRQ";
 
     private final String apiKey;
 
