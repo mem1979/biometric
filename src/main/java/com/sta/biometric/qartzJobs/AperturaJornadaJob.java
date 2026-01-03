@@ -41,20 +41,21 @@ public class AperturaJornadaJob implements Job {
                 try {
                     AuditoriaRegistros asistencia = buscarAsistenciaDiaria(empleado, hoy, em);
 
-                    boolean esNueva = (asistencia == null);
-                    if (esNueva) {
+                    if (asistencia == null) {
                         asistencia = new AuditoriaRegistros();
                         asistencia.setEmpleado(empleado);
                         asistencia.setFecha(hoy);
+                        asistencia.setLicencia(Licencia.tieneLicenciaEnFecha(empleado, hoy));
+                        asistencia.setFeriado(feriado != null);
+                        inicializarAsistencia(asistencia, empleado, hoy, feriado);
                         em.persist(asistencia);
                         System.out.println("  [+] Nueva asistencia creada para: " + empleado.getNombreCompleto());
+                    } else {
+                        asistencia.setLicencia(Licencia.tieneLicenciaEnFecha(empleado, hoy));
+                        asistencia.setFeriado(feriado != null);
+                        inicializarAsistencia(asistencia, empleado, hoy, feriado);
+                        em.merge(asistencia);
                     }
-
-                    asistencia.setLicencia(Licencia.tieneLicenciaEnFecha(empleado, hoy));
-                    asistencia.setFeriado(feriado != null);
-
-                    inicializarAsistencia(asistencia, empleado, hoy, feriado);
-                    em.merge(asistencia);
 
                     contador++;
 

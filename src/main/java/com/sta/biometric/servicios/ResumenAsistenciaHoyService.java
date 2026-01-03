@@ -1,6 +1,5 @@
 package com.sta.biometric.servicios;
 
-
 import java.time.*;
 import java.util.*;
 
@@ -37,7 +36,7 @@ public class ResumenAsistenciaHoyService {
 
             TurnosHorarios turno = e.getTurnoParaFecha(fechaEvaluacion);
             boolean tieneTurnoAsignado = turno != null;
-            boolean esLaboral = tieneTurnoAsignado && turno.esLaboral(dia);
+            boolean esLaboral = turno != null && turno.esLaboral(dia);
             boolean esFeriado = Feriados.existeParaFecha(fechaEvaluacion);
             boolean conLicencia = Licencia.tieneLicenciaEnFecha(e, fechaEvaluacion);
 

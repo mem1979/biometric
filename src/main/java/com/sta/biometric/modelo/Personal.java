@@ -8,6 +8,8 @@ import java.util.*;
 import java.util.stream.*;
 
 import javax.persistence.*;
+
+import org.hibernate.Hibernate;
 import javax.validation.constraints.*;
 
 import org.openxava.annotations.*;
@@ -765,7 +767,7 @@ public class Personal extends Identifiable {
             if (l.getFechaInicio() != null && l.getFechaInicio().getYear() == anioActual) {
                 TipoLicenciaAR tipo = l.getTipo();
 
-                totalDias.merge(tipo, l.getDias(), Integer::sum);
+                totalDias.merge(tipo, l.getDias(), (a, b) -> a + b);
 
                 // Mantener la última licencia (por fecha)
                 ultimaLicenciaPorTipo.compute(tipo, (k, licenciaAnterior) -> {
@@ -938,7 +940,8 @@ public class Personal extends Identifiable {
      */
     @Transient
     private List<NotaDesempeno> getNotasDelAnioActual() {
-        if (notasDesempeno == null || notasDesempeno.isEmpty()) {
+        // Check if collection is initialized to avoid LazyInitializationException
+        if (notasDesempeno == null || !Hibernate.isInitialized(notasDesempeno) || notasDesempeno.isEmpty()) {
             return Collections.emptyList();
         }
         int anioActual = LocalDate.now().getYear();

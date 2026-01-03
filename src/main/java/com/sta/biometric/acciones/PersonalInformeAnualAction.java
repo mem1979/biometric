@@ -522,7 +522,7 @@ public class PersonalInformeAnualAction extends JasperReportBaseAction {
 
                     if (jornadaIncompleta) {
                         DayOfWeek dia = reg.getFecha().getDayOfWeek();
-                        tardanzasPorDia.merge(dia, 1L, Long::sum);
+                        tardanzasPorDia.merge(dia, 1L, (a, b) -> a + b);
                     }
                     break;
                 }
@@ -593,7 +593,7 @@ public class PersonalInformeAnualAction extends JasperReportBaseAction {
         for (Licencia lic : licencias) {
             TipoLicenciaAR tipo = lic.getTipo();
             int dias = lic.getDias() != null ? lic.getDias() : 0;
-            diasPorTipo.merge(tipo, dias, Integer::sum);
+            diasPorTipo.merge(tipo, dias, (a, b) -> a + b);
         }
 
         params.put("totalLicencias", licencias.size());
@@ -808,7 +808,7 @@ public class PersonalInformeAnualAction extends JasperReportBaseAction {
         Map<TipoLicenciaAR, Integer> diasPorTipo = new HashMap<>();
         for (Licencia lic : licencias) {
             int dias = lic.getDias() != null ? lic.getDias() : 0;
-            diasPorTipo.merge(lic.getTipo(), dias, Integer::sum);
+            diasPorTipo.merge(lic.getTipo(), dias, (a, b) -> a + b);
         }
         int totalDiasLicencia = diasPorTipo.values().stream().mapToInt(Integer::intValue).sum();
 
@@ -928,7 +928,7 @@ public class PersonalInformeAnualAction extends JasperReportBaseAction {
         for (Licencia lic : licencias) {
             String tipo = lic.getTipo().toString();
             int dias = lic.getDias() != null ? lic.getDias() : 0;
-            mapaLicencias.merge(tipo, dias, Integer::sum);
+            mapaLicencias.merge(tipo, dias, (a, b) -> a + b);
         }
 
         for (Map.Entry<String, Integer> entry : mapaLicencias.entrySet()) {
