@@ -200,6 +200,8 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         </accion>
         <accion nombre="ObtenerCoordenadas" oculta="true" clase="com.sta.biometric.acciones.ObtenerCoordenadasGenericaAction">
         </accion>
+        <accion nombre="guardarUbicacion" icono="content-save" clase="com.sta.biometric.acciones.GuardarUbicacionAction">
+        </accion>
     </controlador>
 
 
