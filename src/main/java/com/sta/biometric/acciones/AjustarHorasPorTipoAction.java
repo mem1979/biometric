@@ -38,12 +38,16 @@ public class AjustarHorasPorTipoAction extends ViewBaseAction {
 
     @Override
     public void execute() throws Exception {
-        // Obtener el registro padre (AuditoriaRegistros) desde la vista raíz
-        AuditoriaRegistros reg = (AuditoriaRegistros) getView().getRoot().getEntity();
-        if (reg == null) {
-            addError("No se pudo obtener el registro de auditoría.");
+        // Obtener el registro padre desde la vista raíz
+        Object entity = getView().getRoot().getEntity();
+
+        // Verificar que estamos en el contexto correcto (AuditoriaRegistros)
+        if (!(entity instanceof AuditoriaRegistros)) {
+            addError("Esta acción solo puede ejecutarse desde el módulo de Auditoría de Registros.");
             return;
         }
+
+        AuditoriaRegistros reg = (AuditoriaRegistros) entity;
 
         // Obtener las filas de cálculo usando el índice de fila
         List<FilaCalculo> filas = reg.getFilasCalculo();

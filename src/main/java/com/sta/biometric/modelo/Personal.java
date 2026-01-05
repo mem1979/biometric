@@ -9,7 +9,6 @@ import java.util.stream.*;
 
 import javax.persistence.*;
 
-import org.hibernate.Hibernate;
 import javax.validation.constraints.*;
 
 import org.openxava.annotations.*;
@@ -154,7 +153,7 @@ import lombok.*;
         "}; " +
 
         "INCIDENCIAS_Y_OBSERVACIONES { " +
-        "evaluacionDesempenoAnual, Personal.informeAnual(); " +
+        "Personal.informeAnual(); " +
         "notasDesempeno; " +
         "}")
 
@@ -358,6 +357,7 @@ public class Personal extends Identifiable {
     @Capitalizar
     @Required
     @DisplaySize(40)
+    @Column(length = 30)
     private String nombres;
 
     /**
@@ -932,51 +932,6 @@ public class Personal extends Identifiable {
     @ListProperties("autor, fechaHora, calificacion, contenido")
     @OrderBy("fechaHora DESC")
     private Collection<NotaDesempeno> notasDesempeno = new ArrayList<>();
-
-    /**
-     * Filtra las notas del año actual.
-     * 
-     * @return Lista de notas de desempeño del año en curso
-     */
-    @Transient
-    private List<NotaDesempeno> getNotasDelAnioActual() {
-        // Check if collection is initialized to avoid LazyInitializationException
-        if (notasDesempeno == null || !Hibernate.isInitialized(notasDesempeno) || notasDesempeno.isEmpty()) {
-            return Collections.emptyList();
-        }
-        int anioActual = LocalDate.now().getYear();
-        return notasDesempeno.stream()
-                .filter(n -> n.getFechaHora() != null && n.getFechaHora().getYear() == anioActual)
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Calcula el promedio de calificaciones de desempeño del año actual.
-     * 
-     * @return Promedio de calificaciones (0.0 a 3.0), o 0.0 si no hay notas
-     */
-    @Transient
-    @Depends("notasDesempeno")
-    public double getPromedioDesempenoAnual() {
-        return NotaDesempeno.calcularPromedio(getNotasDelAnioActual());
-    }
-
-    /**
-     * Obtiene la evaluación textual del desempeño del año actual.
-     * 
-     * @return Evaluación textual basada en promedio anual, o mensaje si no hay
-     *         evaluaciones
-     */
-    @Transient
-    @Depends("notasDesempeno")
-    @MiLabel(medida = "chica", negrita = true, recuadro = true, icon = "account-star-outline")
-    public String getEvaluacionDesempenoAnual() {
-        List<NotaDesempeno> notasAnio = getNotasDelAnioActual();
-        if (notasAnio.isEmpty()) {
-            return "No se realizaron evaluaciones en este año";
-        }
-        return NotaDesempeno.calcularEvaluacion(notasAnio);
-    }
 
     /**
      * Colección de jornadas asignadas al empleado.

@@ -291,20 +291,26 @@ public class LiquidacionJornadas extends Identifiable {
      * @return Lista de jornadas del período con sus datos y montos
      */
     @Transient
-  //  @ReadOnly
-  //  @NoDefaultActions
+    @ReadOnly
+    @NoDefaultActions
+    @RowStyle(style = "estilo-gris-claro", property = "evaluacion", value = "PENDIENTE")
+        @RowStyle(style = "estilo-gris-intenso", property = "evaluacion", value = "EN_CURSO")
+        @RowStyle(style = "estilo-verde-intenso", property = "evaluacion", value = "COMPLETA")
+        @RowStyle(style = "estilo-amarillo-claro", property = "evaluacion", value = "INCOMPLETA")
+        @RowStyle(style = "estilo-rojo-intenso", property = "evaluacion", value = "AUSENTE")
+        @RowStyle(style = "estilo-naranja-intenso", property = "evaluacion", value = "SIN_ENTRADA")
+        @RowStyle(style = "estilo-naranja-intenso", property = "evaluacion", value = "SIN_SALIDA")
+        @RowStyle(style = "estilo-rojo-claro", property = "evaluacion", value = "LICENCIA")
+        @RowStyle(style = "estilo-azul-claro", property = "evaluacion", value = "FERIADO")
+        @RowStyle(style = "estilo-azul-intenso", property = "evaluacion", value = "FERIADO_TRABAJADO")
+        @RowStyle(style = "estilo-verde-claro", property = "evaluacion", value = "DIA_NO_LABORAL")
+        @RowStyle(style = "estilo-azul-intenso", property = "evaluacion", value = "DIA_NO_LABORAL_TRABAJADO")
+        @RowStyle(style = "estilo-verde-claro", property = "evaluacion", value = "SIN_TURNO_ASIGNADO")
+        @RowStyle(style = "estilo-rojo-intenso", property = "evaluacion", value = "SIN_DATOS")
     @ListProperties("empleado.nombreCompleto, fecha, turnoPlanificado, evaluacion, " +
             "horasTrabajadasTurno, montoTeoricoTurno+, " +
             "horasExtras, montoTeoricoExtras+, " +
             "horasEspeciales, montoTeoricoEspeciales+")
-    @RowStyle(style = "estilo-verde-intenso", property = "evaluacion", value = "COMPLETA")
-    @RowStyle(style = "estilo-amarillo-claro", property = "evaluacion", value = "INCOMPLETA")
-    @RowStyle(style = "estilo-rojo-intenso", property = "evaluacion", value = "AUSENTE")
-    @RowStyle(style = "estilo-rojo-claro", property = "evaluacion", value = "LICENCIA")
-    @RowStyle(style = "estilo-azul-claro", property = "evaluacion", value = "FERIADO")
-    @RowStyle(style = "estilo-azul-intenso", property = "evaluacion", value = "FERIADO_TRABAJADO")
-    @RowStyle(style = "estilo-verde-claro", property = "evaluacion", value = "DIA_NO_LABORAL")
-   // @ListAction("Print.generatePdf")
     public java.util.List<AuditoriaRegistros> getJornadasDelPeriodo() {
         if (empleado == null || periodoDesde == null || periodoHasta == null) {
             return java.util.Collections.emptyList();

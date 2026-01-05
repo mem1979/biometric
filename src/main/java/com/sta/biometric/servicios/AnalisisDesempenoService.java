@@ -20,19 +20,22 @@ public class AnalisisDesempenoService {
     private static final String SEPARADOR_SECCION = "===SECCION===";
     private static final String MODELO_GEMINI = "gemini-2.5-flash";
 
-    // API Key configurada directamente (proporcionada por el usuario)
-    private static final String DEFAULT_API_KEY = "AIzaSyCMo-Eb-1dmNN3tpnLmXJDYzc6Mt0x2BRQ";
-
     private final String apiKey;
 
     public AnalisisDesempenoService() {
-        // Intentar obtener API Key de variable de entorno primero
+        // Prioridad: 1) Variable de entorno, 2) Archivo de configuración
         String key = System.getenv("GEMINI_API_KEY");
         if (key == null || key.trim().isEmpty()) {
-            // Usar la clave proporcionada por defecto
-            key = DEFAULT_API_KEY;
+            // Leer del archivo de configuración (misma ubicación que OPENCAGE_API_KEY)
+            try {
+                key = ConfiguracionesPreferencias.getInstance()
+                        .getProperties()
+                        .getProperty("GEMINI_API_KEY");
+            } catch (Exception e) {
+                System.err.println("[AnalisisDesempenoService] No se pudo leer GEMINI_API_KEY: " + e.getMessage());
+            }
         }
-        this.apiKey = key;
+        this.apiKey = (key != null && !key.trim().isEmpty()) ? key.trim() : null;
     }
 
     /**
