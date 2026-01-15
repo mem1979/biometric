@@ -1,2 +1,18 @@
 /target/
 /.apt_generated/
+
+# Archivos de configuración local con claves API (NO subir al repositorio)
+biometricConfiguracion.local.properties
+
+# Archivos de log de errores
+hs_err_pid*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Temporales
+temp/
+*.tmp
+*.bak

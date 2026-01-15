@@ -466,3 +466,173 @@ tr.empleadoInactivo td,
     display: none !important;
   }
 }
+
+
+/* =============================================================================
+   ESTILOS PARA PAGINA DE LOGIN STA.RH
+   ============================================================================= */
+
+/* Branding Header */
+#starh_branding {
+  text-align: center;
+  padding: 28px 20px 20px 20px;
+  background: linear-gradient(145deg, #1e3a5f, #0f2744);
+  border-radius: 16px 16px 0 0;
+  max-width: 320px;
+  margin: 50px auto 0 auto;
+  box-sizing: border-box;
+}
+
+/* Logo - usando ruta relativa desde xava/style hacia naviox/images */
+#starh_logo {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 12px auto;
+  border-radius: 16px;
+  background-image: url('../../naviox/images/starh-logo.jpg');
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3), 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+/* Titulo */
+#starh_title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0 0 4px 0;
+  letter-spacing: -1px;
+  color: #ffffff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+/* Subtitulo */
+#starh_subtitle {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 2.5px;
+  color: rgba(167, 199, 231, 0.9);
+  font-weight: 500;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  margin: 0;
+}
+
+/* Sign In Box */
+#sign_in_box {
+  max-width: 320px;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  border-radius: 0;
+  box-sizing: border-box;
+}
+
+#sign_in_box #core {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+#sign_in_box .ox-detail {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+#sign_in_box table {
+  width: 100% !important;
+}
+
+#sign_in_box .ox-property-label,
+#sign_in_box label {
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  color: #374151 !important;
+  margin-bottom: 6px !important;
+  display: block !important;
+}
+
+#sign_in_box input[type="text"],
+#sign_in_box input[type="password"],
+#sign_in_box select {
+  width: 100% !important;
+  padding: 13px 15px !important;
+  font-size: 0.95rem !important;
+  border: 2px solid #e2e8f0 !important;
+  border-radius: 10px !important;
+  background: #f8fafc !important;
+  color: #1e293b !important;
+  margin-bottom: 14px !important;
+  box-sizing: border-box !important;
+}
+
+#sign_in_box input[type="text"]:focus,
+#sign_in_box input[type="password"]:focus {
+  border-color: #1e3a5f !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1) !important;
+  outline: none !important;
+}
+
+/* Boton de Entrar - solo el input[type=button] */
+#sign_in_box input[type="button"].xava_action {
+  width: 100% !important;
+  padding: 14px 20px !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1.5px !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #1e3a5f, #2563eb) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  cursor: pointer !important;
+  box-shadow: 0 8px 20px rgba(30, 58, 95, 0.3) !important;
+  margin-top: 6px !important;
+}
+
+#sign_in_box input[type="button"].xava_action:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 28px rgba(30, 58, 95, 0.4) !important;
+}
+
+/* Ocultar el boton DEFAULT_ACTION vacio de OpenXava */
+#sign_in_box button.xava_action[name="xava.DEFAULT_ACTION"] {
+  display: none !important;
+}
+
+#sign_in_box .ox-frame,
+#sign_in_box fieldset {
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+#sign_in_box legend {
+  display: none !important;
+}
+
+/* Footer */
+#starh_footer {
+  text-align: center;
+  padding: 14px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  border-radius: 0 0 16px 16px;
+  max-width: 320px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+#starh_footer p {
+  margin: 0 0 3px 0;
+  font-size: 0.78rem;
+  color: #6b7280;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+#starh_footer strong {
+  color: #1e3a5f;
+}
+
