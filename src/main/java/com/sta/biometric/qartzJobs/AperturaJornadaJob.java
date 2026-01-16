@@ -31,7 +31,7 @@ public class AperturaJornadaJob implements Job {
             em.getTransaction().begin();
 
             List<Personal> empleados = em.createQuery(
-                    "SELECT e FROM Personal e WHERE e.activo = true", Personal.class)
+                    "SELECT e FROM Personal e WHERE e.activo = true AND e.eliminado = false", Personal.class)
                     .getResultList();
 
             Feriados feriado = buscarFeriado(hoy, em);

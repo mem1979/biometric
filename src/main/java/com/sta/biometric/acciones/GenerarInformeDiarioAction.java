@@ -85,9 +85,9 @@ public class GenerarInformeDiarioAction extends JasperReportBaseAction {
         EntityManager em = XPersistence.getManager();
         List<Map<String, Object>> listaDetalle = new ArrayList<>();
 
-        // Obtener todos los empleados activos
+        // Obtener todos los empleados activos (excluyendo eliminados)
         List<Personal> empleados = em.createQuery(
-                "SELECT e FROM Personal e WHERE e.activo = true ORDER BY e.sucursal.nombre ASC, e.apellido ASC, e.nombres ASC",
+                "SELECT e FROM Personal e WHERE e.activo = true AND e.eliminado = false ORDER BY e.sucursal.nombre ASC, e.apellido ASC, e.nombres ASC",
                 Personal.class)
                 .getResultList();
 

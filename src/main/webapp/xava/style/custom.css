@@ -216,6 +216,23 @@ tr.empleadoInactivo td,
   opacity: 0.5;
 }
 
+/**
+ * Empleado eliminado (en papelera): fondo rojo claro y texto tachado.
+ * Se usa con @RowStyle en Personal.java para el Tab "Eliminado"
+ */
+tr.empleadoEliminado td,
+.ox-list-pair.empleadoEliminado {
+  background-color: #fbe2e5 !important;
+  color: #721c24;
+  text-decoration: line-through;
+}
+
+tr.empleadoEliminado td:first-child,
+.ox-list-pair.empleadoEliminado {
+  text-decoration: none;
+  /* La foto no se tacha */
+}
+
 
 /* =============================================================================
    7. ESTADOS DE AUDITORÍA - COLORES PASTEL
@@ -635,4 +652,3 @@ tr.empleadoInactivo td,
 #starh_footer strong {
   color: #1e3a5f;
 }
-

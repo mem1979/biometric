@@ -45,5 +45,21 @@
 	</modulo>		
 	-->
 
+	<!-- ============================================================ -->
+	<!-- MÓDULO DE PAPELERA DE PERSONAL                               -->
+	<!-- ============================================================ -->
+	<!-- 
+	Este módulo muestra los legajos que fueron eliminados lógicamente 
+	y permite restaurarlos o eliminarlos permanentemente del sistema.
+	-->
+	<modulo nombre="PapeleraPersonal">
+		<!-- Variable de entorno para mostrar acción restaurar en cada fila -->
+		<var-entorno nombre="XAVA_LIST_ACTION" valor="PapeleraPersonal.restaurar"/>
+		<modelo nombre="Personal"/>
+		<!-- Usa @Tab con name="Eliminado" definido en Personal.java -->
+		<tab nombre="Eliminado"/>
+		<controlador nombre="PapeleraPersonal"/>
+	</modulo>
+
 </aplicacion>
 

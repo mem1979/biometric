@@ -204,8 +204,13 @@ import lombok.*;
         "}; " +
         "}")
 
-@Tab(editors = "List", properties = "foto, nombreCompleto, userId, sucursal.nombre, puesto, activo", defaultOrder = "${activo} desc, ${nombreCompleto} asc", rowStyles = {
+// Tab por defecto: muestra solo registros NO eliminados (activos en el sistema)
+@Tab(editors = "List", properties = "foto, nombreCompleto, userId, sucursal.nombre, puesto, activo", defaultOrder = "${activo} desc, ${nombreCompleto} asc", baseCondition = "${eliminado} = false", rowStyles = {
         @RowStyle(style = "empleadoInactivo", property = "activo", value = "false") })
+
+// Tab para la Papelera: muestra solo registros ELIMINADOS (soft-delete)
+@Tab(name = "Eliminado", editors = "List", properties = "foto, nombreCompleto, userId, sucursal.nombre, puesto, fechaEliminacion", defaultOrder = "${fechaEliminacion} desc", baseCondition = "${eliminado} = true", rowStyles = {
+        @RowStyle(style = "empleadoEliminado", property = "eliminado", value = "true") })
 
 public class Personal extends Identifiable {
 
@@ -227,6 +232,35 @@ public class Personal extends Identifiable {
     @OnChange(PersonalOnChangeActivoAction.class)
     @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean activo;
+
+    /**
+     * Indica si el empleado está en la papelera (eliminación lógica).
+     * 
+     * <p>
+     * Un empleado eliminado:
+     * </p>
+     * <ul>
+     * <li>No aparece en el listado principal de nómina</li>
+     * <li>No puede registrar asistencia</li>
+     * <li>Puede ser restaurado desde la papelera</li>
+     * <li>Mantiene todo su historial intacto</li>
+     * </ul>
+     * 
+     * @see EliminarPersonalParaPapeleraAction
+     */
+    @DefaultValueCalculator(value = org.openxava.calculators.FalseCalculator.class)
+    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean eliminado;
+
+    /**
+     * Fecha y hora en que el empleado fue movido a la papelera.
+     * 
+     * <p>
+     * Se establece automáticamente al eliminar y se limpia al restaurar.
+     * </p>
+     */
+    @ReadOnly
+    private java.time.LocalDateTime fechaEliminacion;
 
     @Hidden
     @Transient

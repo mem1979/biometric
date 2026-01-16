@@ -96,12 +96,15 @@ public class DashboardAsistencia {
         EntityManager em = XPersistence.getManager();
         if (sucursalSeleccionada != null && sucursalSeleccionada.getId() != null) {
             return em
-                    .createQuery("SELECT e FROM Personal e WHERE e.activo = true AND e.sucursal.id = :id",
+                    .createQuery(
+                            "SELECT e FROM Personal e WHERE e.activo = true AND e.eliminado = false AND e.sucursal.id = :id",
                             Personal.class)
                     .setParameter("id", sucursalSeleccionada.getId())
                     .getResultList();
         } else {
-            return em.createQuery("SELECT e FROM Personal e WHERE e.activo = true", Personal.class)
+            return em
+                    .createQuery("SELECT e FROM Personal e WHERE e.activo = true AND e.eliminado = false",
+                            Personal.class)
                     .getResultList();
         }
     }

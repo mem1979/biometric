@@ -400,10 +400,13 @@ public class AsistenciaEndpoint {
         return JWTUtil.validarTokenYObtenerUsuario(token);
     }
 
-    /** Busca el empleado por login. */
+    /**
+     * Busca el empleado por login. Solo devuelve empleados activos y no eliminados.
+     */
     private Personal obtenerEmpleado(String login) {
         return XPersistence.getManager()
-                .createQuery("FROM Personal p WHERE p.usuario = :u", Personal.class)
+                .createQuery("FROM Personal p WHERE p.usuario = :u AND p.activo = true AND p.eliminado = false",
+                        Personal.class)
                 .setParameter("u", login)
                 .getResultStream()
                 .findFirst()
