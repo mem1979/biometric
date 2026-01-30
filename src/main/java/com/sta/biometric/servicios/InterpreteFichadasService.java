@@ -7,10 +7,11 @@ import java.util.stream.*;
 
 import javax.persistence.*;
 
-import org.openxava.jpa.*;
-
+import com.sta.biometric.auxiliares.*;
 import com.sta.biometric.enums.*;
 import com.sta.biometric.modelo.*;
+
+import org.openxava.jpa.*; // Necesario para XPersistence
 
 /**
  * Servicio unificado para interpretar y validar fichadas.
@@ -244,6 +245,117 @@ public class InterpreteFichadasService {
         return crudos;
     }
 
+    /**
+     * Normaliza una secuencia de fichadas aplicando lógica contextual.
+     * 
+     * <p>
+     * La regla es: ENTRADA → (PAUSA_INICIO → PAUSA_FIN)* → SALIDA
+     * </p>
+     * 
+     * <ul>
+     * <li>Preserva tipos específicos (PAUSA_INICIO, PAUSA_FIN) sin modificar</li>
+     * <li>Solo procesa tipos genéricos (ENTRADA, SALIDA)</li>
+     * <li>Para secuencias SALIDA -> ENTRADA:
+     * <ul>
+     * <li>Si diferencia < 4 horas: Es PAUSA (Almuerzo/Descanso)</li>
+     * <li>Si diferencia >= 4 horas: Es CAMBIO DE TURNO (Fin jornada -> Inicio
+     * siguiente)</li>
+     * </ul>
+     * </li>
+     * </ul>
+     * 
+     * @param registros Lista de registros a normalizar (se modifica in-place)
+     * @return La misma lista con tipos normalizados
+     */
+    public static List<ColeccionRegistros> normalizarSecuencia(List<ColeccionRegistros> registros) {
+        if (registros == null || registros.size() < 2) {
+            return registros;
+        }
+
+        // Ordenar por fecha y hora
+        registros.sort(Comparator
+                .comparing(ColeccionRegistros::getFecha, Comparator.nullsFirst(Comparator.naturalOrder()))
+                .thenComparing(ColeccionRegistros::getHora, Comparator.nullsFirst(Comparator.naturalOrder())));
+
+        int total = registros.size();
+
+        for (int i = 0; i < total; i++) {
+            ColeccionRegistros reg = registros.get(i);
+            TipoMovimiento tipo = reg.getTipoMovimiento();
+
+            // Si ya tiene tipo específico de pausa, NO tocar
+            if (tipo == TipoMovimiento.PAUSA_INICIO || tipo == TipoMovimiento.PAUSA_FIN) {
+                continue;
+            }
+
+            // Procesar ENTRADA genéricas
+            if (tipo == TipoMovimiento.ENTRADA && i > 0) {
+                ColeccionRegistros anterior = registros.get(i - 1);
+                TipoMovimiento tipoAnterior = anterior.getTipoMovimiento();
+
+                // Caso: ... -> PAUSA_INICIO -> ENTRADA => ... -> PAUSA_INICIO -> PAUSA_FIN
+                if (tipoAnterior == TipoMovimiento.PAUSA_INICIO) {
+                    reg.setTipoMovimiento(TipoMovimiento.PAUSA_FIN);
+                }
+                // Caso: ... -> SALIDA -> ENTRADA
+                else if (tipoAnterior == TipoMovimiento.SALIDA) {
+                    // Verificar si fue convertida a PAUSA_INICIO en la iteración anterior
+                    // O si debemos evaluar el tiempo aquí (aunque mejor evaluar en el paso de
+                    // SALIDA)
+                    // Si el anterior quedó como SALIDA, significa que la diferencia es grande
+                    // (cambio de turno).
+                    // Entonces esta ENTRADA es correcta (inicio del siguiente turno).
+                    // No hacemos nada.
+                }
+            }
+
+            // Procesar SALIDA genéricas
+            if (tipo == TipoMovimiento.SALIDA && i < total - 1) {
+                ColeccionRegistros siguiente = registros.get(i + 1);
+                TipoMovimiento tipoSiguiente = siguiente.getTipoMovimiento();
+
+                if (tipoSiguiente == TipoMovimiento.ENTRADA || tipoSiguiente == TipoMovimiento.PAUSA_FIN) {
+                    // Calcular tiempo entre esta SALIDA y la siguiente ENTRADA/PAUSA_FIN
+                    // Si es corto (< 4h) -> Es PAUSA_INICIO
+                    // Si es largo (>= 4h) -> Es fin de turno real (SALIDA)
+
+                    if (esPausaYNoCambioTurno(reg, siguiente)) {
+                        reg.setTipoMovimiento(TipoMovimiento.PAUSA_INICIO);
+                    }
+                }
+            }
+        }
+
+        return registros;
+    }
+
+    /**
+     * Determina si el lapso entre dos registros corresponde a una pausa o a un
+     * cambio de turno.
+     * Criterio: Diferencia menor a 4 horas = Pausa.
+     */
+    private static boolean esPausaYNoCambioTurno(ColeccionRegistros salida, ColeccionRegistros siguiente) {
+        try {
+            LocalDateTime fechaHoraSalida = LocalDateTime.of(salida.getFecha(), salida.getHora());
+            LocalDateTime fechaHoraSiguiente = LocalDateTime.of(siguiente.getFecha(), siguiente.getHora());
+
+            Duration duracion = Duration.between(fechaHoraSalida, fechaHoraSiguiente);
+            long horas = Math.abs(duracion.toHours());
+
+            // Umbral de 4 horas para distinguir pausa de cambio de turno
+            // Ejemplo: 13:00 a 14:00 (1h) -> Pausa
+            // Ejemplo: 06:00 a 22:00 (16h) -> Cambio de turno
+            return horas < 4;
+
+        } catch (Exception e) {
+            // Ante error en cálculo de fechas (ej. nulos), asumimos comportamiento default
+            // (Pausa)
+            // para mantener compatibilidad, o false (Salida) para ser conservadores.
+            // Asumimos false para no romper cierres de jornada.
+            return false;
+        }
+    }
+
     // ==================================================================================
     // VALIDACIÓN DE FILAS PARA IMPORTACIÓN
     // ==================================================================================
@@ -265,6 +377,49 @@ public class InterpreteFichadasService {
             valido = false;
             errores.add(error);
         }
+    }
+
+    /**
+     * Determina la fecha operativa de la jornada a la que pertenece una fichada.
+     * 
+     * <p>
+     * Resuelve el problema de turnos nocturnos donde la salida ocurre al día
+     * siguiente.
+     * </p>
+     * 
+     * @param empleado     Empleado que ficha
+     * @param fechaFichada Fecha calendario de la fichada
+     * @param horaFichada  Hora exacta de la fichada
+     * @return La fecha de la jornada a la que debe asignarse (puede ser
+     *         fechaFichada o fechaFichada - 1)
+     */
+    public static LocalDate determinarFechaJornada(Personal empleado, LocalDate fechaFichada, LocalTime horaFichada) {
+        if (empleado == null || fechaFichada == null || horaFichada == null) {
+            return fechaFichada;
+        }
+
+        // Revisar si pertenece al turno de AYER ("Jornada Nocturna")
+        LocalDate fechaAyer = fechaFichada.minusDays(1);
+        TurnosHorarios turnoAyer = empleado.getTurnoParaFecha(fechaAyer);
+
+        if (turnoAyer != null && turnoAyer.esLaboral(fechaAyer.getDayOfWeek())
+                && turnoAyer.esNocturnoParaDia(fechaAyer.getDayOfWeek())) {
+            // El turno de ayer es nocturno (cruza medianoche).
+            // Verificar si la hora de fichada es coherente con la salida de ese turno.
+            // Generalmente, si es antes de las 12:00 PM (mediodía), asumimos que es cierre
+            // del nocturno.
+            // O podemos ser más precisos comparando con la hora de salida teórica + margen.
+
+            LocalTime salidaTeorica = turnoAyer.getSalidaParaDia(fechaAyer.getDayOfWeek());
+
+            // Margen generoso: hasta 4 horas después de la salida teórica
+            // O si es temprano en la mañana (antes de las 12:00)
+            if (horaFichada.isBefore(LocalTime.of(14, 0))) { // Asumimos corte a las 14:00 para nocturnos
+                return fechaAyer;
+            }
+        }
+
+        return fechaFichada;
     }
 
     /**

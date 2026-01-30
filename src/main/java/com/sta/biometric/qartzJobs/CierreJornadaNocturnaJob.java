@@ -35,15 +35,17 @@ public class CierreJornadaNocturnaJob implements Job {
         try {
             em.getTransaction().begin();
 
-            // Buscar jornadas nocturnas de ayer que aún estén EN_CURSO
+            // Buscar jornadas nocturnas de ayer que estén EN_CURSO o PENDIENTE
             List<AuditoriaRegistros> nocturnas = em.createQuery(
                     "SELECT a FROM AuditoriaRegistros a " +
                             "WHERE a.fecha = :fecha " +
                             "AND a.esJornadaNocturna = true " +
-                            "AND a.evaluacion = :estado",
+                            "AND a.evaluacion IN :estados",
                     AuditoriaRegistros.class)
                     .setParameter("fecha", ayer)
-                    .setParameter("estado", EvaluacionJornada.EN_CURSO)
+                    .setParameter("estados", java.util.Arrays.asList(
+                            EvaluacionJornada.EN_CURSO,
+                            EvaluacionJornada.PENDIENTE))
                     .getResultList();
 
             if (nocturnas.isEmpty()) {

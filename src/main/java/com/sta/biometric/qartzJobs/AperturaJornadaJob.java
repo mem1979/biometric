@@ -39,6 +39,17 @@ public class AperturaJornadaJob implements Job {
 
             for (Personal empleado : empleados) {
                 try {
+                    // === VERIFICAR JORNADA NOCTURNA EN CURSO ===
+                    LocalDate ayer = hoy.minusDays(1);
+                    AuditoriaRegistros jornadaNocturnaAbierta = buscarJornadaNocturnaEnCurso(empleado, ayer, em);
+
+                    if (jornadaNocturnaAbierta != null) {
+                        System.out.println("  [⏳] Omitida apertura para " + empleado.getNombreCompleto() +
+                                " - jornada nocturna en curso desde ayer");
+                        continue; // No crear jornada para hoy
+                    }
+                    // === FIN VERIFICACIÓN ===
+
                     AuditoriaRegistros asistencia = buscarAsistenciaDiaria(empleado, hoy, em);
 
                     if (asistencia == null) {
@@ -95,6 +106,33 @@ public class AperturaJornadaJob implements Job {
         try {
             return em.createQuery("SELECT f FROM Feriados f WHERE f.fecha = :fecha", Feriados.class)
                     .setParameter("fecha", fecha)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Busca si el empleado tiene una jornada nocturna EN_CURSO para la fecha
+     * indicada.
+     * 
+     * @param empleado Empleado a verificar
+     * @param fecha    Fecha a buscar (típicamente ayer)
+     * @param em       EntityManager
+     * @return La jornada nocturna si existe y está EN_CURSO, null en caso contrario
+     */
+    private AuditoriaRegistros buscarJornadaNocturnaEnCurso(Personal empleado, LocalDate fecha, EntityManager em) {
+        try {
+            return em.createQuery(
+                    "SELECT a FROM AuditoriaRegistros a " +
+                            "WHERE a.empleado = :emp " +
+                            "AND a.fecha = :fecha " +
+                            "AND a.esJornadaNocturna = true " +
+                            "AND a.evaluacion = :estado",
+                    AuditoriaRegistros.class)
+                    .setParameter("emp", empleado)
+                    .setParameter("fecha", fecha)
+                    .setParameter("estado", EvaluacionJornada.EN_CURSO)
                     .getSingleResult();
         } catch (NoResultException e) {
             return null;

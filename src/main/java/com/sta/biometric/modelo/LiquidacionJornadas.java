@@ -68,11 +68,16 @@ import lombok.*;
         "Metadatos { fechaGeneracion, fechaUltimoRecalculo; observaciones; }")
 
 // Vista unificada sin pestañas para el diálogo desde colección en Personal
-@View(name = "DetalleCompleto",
-   members = "periodoDesde, periodoHasta, estadoPeriodo;" +
-		   	 "horasNormalesFormatted, horasExtrasFormatted, horasEspecialesFormatted, montoGranTotal;" +
-		   	 "jornadasDelPeriodo;" +
-			 "Metadatos { fechaGeneracion, fechaUltimoRecalculo; observaciones; }")
+@View(name = "DetalleCompleto", members = "periodoDesde, periodoHasta, estadoPeriodo;" +
+        "horasNormalesFormatted, horasExtrasFormatted, horasEspecialesFormatted, montoGranTotal;" +
+        "jornadasDelPeriodo;" +
+        "Metadatos { fechaGeneracion, fechaUltimoRecalculo; observaciones; }")
+
+// Vista con botón de redondeo automático
+@View(name = "DetalleConRedondeo", members = "periodoDesde, periodoHasta, estadoPeriodo;" +
+        "horasNormalesFormatted, horasExtrasFormatted, horasEspecialesFormatted, montoGranTotal;" +
+        "jornadasDelPeriodo;" +
+        "Metadatos { fechaGeneracion, fechaUltimoRecalculo; observaciones; }")
 
 @Tab(properties = "empleado.nombreCompleto, periodoDesde, periodoHasta, estadoPeriodo, horasNormalesFormatted, horasExtrasFormatted, montoGranTotal", defaultOrder = "${periodoDesde} desc, ${empleado.nombreCompleto} asc")
 public class LiquidacionJornadas extends Identifiable {
@@ -142,6 +147,9 @@ public class LiquidacionJornadas extends Identifiable {
      */
     @Column(columnDefinition = "INTEGER DEFAULT 0")
     private int totalMinutosEspeciales;
+
+    // NOTA: Los ajustes de redondeo ahora se manejan a nivel de AuditoriaRegistros
+    // para mantener trazabilidad individual y permitir reversiĆ³n selectiva.
 
     // ==================================================================================
     // VALORES SNAPSHOT (capturados al momento de generar)
@@ -232,6 +240,7 @@ public class LiquidacionJornadas extends Identifiable {
      * Observaciones o notas sobre la liquidación.
      */
     @TextArea
+    @Column(length = 2000)
     private String observaciones;
 
     // ==================================================================================
@@ -294,19 +303,19 @@ public class LiquidacionJornadas extends Identifiable {
     @ReadOnly
     @NoDefaultActions
     @RowStyle(style = "estilo-gris-claro", property = "evaluacion", value = "PENDIENTE")
-        @RowStyle(style = "estilo-gris-intenso", property = "evaluacion", value = "EN_CURSO")
-        @RowStyle(style = "estilo-verde-intenso", property = "evaluacion", value = "COMPLETA")
-        @RowStyle(style = "estilo-amarillo-claro", property = "evaluacion", value = "INCOMPLETA")
-        @RowStyle(style = "estilo-rojo-intenso", property = "evaluacion", value = "AUSENTE")
-        @RowStyle(style = "estilo-naranja-intenso", property = "evaluacion", value = "SIN_ENTRADA")
-        @RowStyle(style = "estilo-naranja-intenso", property = "evaluacion", value = "SIN_SALIDA")
-        @RowStyle(style = "estilo-rojo-claro", property = "evaluacion", value = "LICENCIA")
-        @RowStyle(style = "estilo-azul-claro", property = "evaluacion", value = "FERIADO")
-        @RowStyle(style = "estilo-azul-intenso", property = "evaluacion", value = "FERIADO_TRABAJADO")
-        @RowStyle(style = "estilo-verde-claro", property = "evaluacion", value = "DIA_NO_LABORAL")
-        @RowStyle(style = "estilo-azul-intenso", property = "evaluacion", value = "DIA_NO_LABORAL_TRABAJADO")
-        @RowStyle(style = "estilo-verde-claro", property = "evaluacion", value = "SIN_TURNO_ASIGNADO")
-        @RowStyle(style = "estilo-rojo-intenso", property = "evaluacion", value = "SIN_DATOS")
+    @RowStyle(style = "estilo-gris-intenso", property = "evaluacion", value = "EN_CURSO")
+    @RowStyle(style = "estilo-verde-intenso", property = "evaluacion", value = "COMPLETA")
+    @RowStyle(style = "estilo-amarillo-claro", property = "evaluacion", value = "INCOMPLETA")
+    @RowStyle(style = "estilo-rojo-intenso", property = "evaluacion", value = "AUSENTE")
+    @RowStyle(style = "estilo-naranja-intenso", property = "evaluacion", value = "SIN_ENTRADA")
+    @RowStyle(style = "estilo-naranja-intenso", property = "evaluacion", value = "SIN_SALIDA")
+    @RowStyle(style = "estilo-rojo-claro", property = "evaluacion", value = "LICENCIA")
+    @RowStyle(style = "estilo-azul-claro", property = "evaluacion", value = "FERIADO")
+    @RowStyle(style = "estilo-azul-intenso", property = "evaluacion", value = "FERIADO_TRABAJADO")
+    @RowStyle(style = "estilo-verde-claro", property = "evaluacion", value = "DIA_NO_LABORAL")
+    @RowStyle(style = "estilo-azul-intenso", property = "evaluacion", value = "DIA_NO_LABORAL_TRABAJADO")
+    @RowStyle(style = "estilo-verde-claro", property = "evaluacion", value = "SIN_TURNO_ASIGNADO")
+    @RowStyle(style = "estilo-rojo-intenso", property = "evaluacion", value = "SIN_DATOS")
     @ListProperties("empleado.nombreCompleto, fecha, turnoPlanificado, evaluacion, " +
             "horasTrabajadasTurno, montoTeoricoTurno+, " +
             "horasExtras, montoTeoricoExtras+, " +

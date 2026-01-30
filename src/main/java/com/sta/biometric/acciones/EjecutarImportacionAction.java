@@ -88,12 +88,19 @@ public class EjecutarImportacionAction extends ViewBaseAction {
                 // (reemplazan las del archivo)
                 // Si no hay sucursal, mantener las coordenadas del archivo
                 String coordenadasSucursal = modelo.getCoordenadasSucursal();
+                System.out.println("[Importador] Coordenadas sucursal: " + coordenadasSucursal);
                 if (coordenadasSucursal != null && !coordenadasSucursal.isBlank()) {
                     registro.setCoordenada(coordenadasSucursal);
+                    System.out.println("[Importador] Asignadas coordenadas al registro: " + coordenadasSucursal);
                 }
 
-                // Agrupar por empleado y fecha
-                Pair<Personal, LocalDate> clave = Pair.of(validacion.empleado, validacion.fecha);
+                // Agrupar por empleado y FECHA JORNADA (no fecha calendario)
+                // Esto permite que fichadas de salida nocturnas (dia X+1) se asignen a la
+                // jornada correcta (dia X)
+                LocalDate fechaJornada = InterpreteFichadasService.determinarFechaJornada(
+                        validacion.empleado, validacion.fecha, validacion.hora);
+
+                Pair<Personal, LocalDate> clave = Pair.of(validacion.empleado, fechaJornada);
                 registrosPorEmpleadoFecha
                         .computeIfAbsent(clave, k -> new ArrayList<>())
                         .add(registro);
@@ -167,13 +174,22 @@ public class EjecutarImportacionAction extends ViewBaseAction {
         // la referencia)
         @SuppressWarnings("unchecked")
         Map<String, Object> sucursalMap = (Map<String, Object>) getView().getValue("sucursalUbicacion");
+        System.out.println("[Importador] sucursalMap: " + sucursalMap);
         if (sucursalMap != null && sucursalMap.get("id") != null) {
             String sucursalId = sucursalMap.get("id").toString();
+            System.out.println("[Importador] sucursalId: " + sucursalId);
             Sucursales sucursal = XPersistence.getManager().find(Sucursales.class, sucursalId);
-            if (sucursal != null && sucursal.getDireccion() != null) {
-                // Forzar carga de la dirección (evitar LazyInitializationException)
-                sucursal.getDireccion().getUbicacion();
-                modelo.setSucursalUbicacion(sucursal);
+            if (sucursal != null) {
+                System.out.println("[Importador] Sucursal encontrada: " + sucursal.getNombre());
+                if (sucursal.getDireccion() != null) {
+                    String ubicacion = sucursal.getDireccion().getUbicacion();
+                    System.out.println("[Importador] Ubicación de sucursal: " + ubicacion);
+                    modelo.setSucursalUbicacion(sucursal);
+                } else {
+                    System.out.println("[Importador] Sucursal sin dirección");
+                }
+            } else {
+                System.out.println("[Importador] Sucursal no encontrada con ID: " + sucursalId);
             }
         }
 

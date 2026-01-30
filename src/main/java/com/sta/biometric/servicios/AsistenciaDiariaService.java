@@ -39,6 +39,9 @@ public class AsistenciaDiariaService {
 
         // Agregar solo registros que no existan (evitar duplicados)
         if (registrosDelDia != null && !registrosDelDia.isEmpty()) {
+            // Normalizar secuencia de fichadas (corrige ENTRADA/SALIDA genéricas)
+            registrosDelDia = InterpreteFichadasService.normalizarSecuencia(registrosDelDia);
+
             int agregados = 0;
             for (ColeccionRegistros nuevoRegistro : registrosDelDia) {
                 if (!existeRegistroSimilar(asistencia, nuevoRegistro)) {

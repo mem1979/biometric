@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.openxava.actions.TabBaseAction;
 import org.openxava.model.MapFacade;
+import com.sta.biometric.modelo.*; // Importar modelos
 
 import lombok.Getter;
 import lombok.Setter;
@@ -57,23 +58,40 @@ public class EliminarPersonalParaPapeleraAction extends TabBaseAction {
         for (int i = 0; i < clavesSeleccionadas.length; i++) {
             Map<String, Object> clave = clavesSeleccionadas[i];
             try {
-                // Preparar los valores a actualizar
-                Map<String, Object> valores = new HashMap<>();
-                valores.put("eliminado", !isRestaurar());
+                // Recuperar la entidad JPA
+                Personal personal = (Personal) MapFacade.findEntity(getModelName(), clave);
 
-                // Al eliminar: desactivar el empleado
-                // Al restaurar: NO reactivar automáticamente (debe hacerse manualmente)
-                if (!isRestaurar()) {
-                    valores.put("activo", false);
-                    valores.put("fechaEliminacion", LocalDateTime.now());
-                } else {
-                    // Solo limpiar la fecha de eliminación, activo permanece en false
-                    valores.put("fechaEliminacion", null);
+                if (personal != null) {
+                    if (!isRestaurar()) {
+                        // Acciones al ELIMINAR
+
+                        // 1. Obtener contrato vigente ANTES de cambiar estado
+                        ContratoLaboral contrato = personal.getContratoVigente();
+
+                        // 2. Cambiar estados
+                        personal.setEliminado(true);
+                        personal.setActivo(false);
+                        personal.setFechaEliminacion(LocalDateTime.now());
+
+                        // 3. Cerrar contrato
+                        if (contrato != null) {
+                            if (contrato.getFechaVigenciaHasta() == null ||
+                                    contrato.getFechaVigenciaHasta().isAfter(java.time.LocalDate.now())) {
+                                contrato.setFechaVigenciaHasta(java.time.LocalDate.now());
+                                contrato.setMotivoFinalizacion("Baja automática por eliminación de empleado");
+                            }
+                        }
+                    } else {
+                        // Acciones al RESTAURAR
+                        personal.setEliminado(false);
+                        personal.setFechaEliminacion(null);
+                        // NOTA: Activo permanece en false por seguridad
+                    }
+
+                    // Persistir cambios
+                    org.openxava.jpa.XPersistence.getManager().merge(personal);
+                    procesados++;
                 }
-
-                // Actualizar el registro usando MapFacade
-                MapFacade.setValues(getModelName(), clave, valores);
-                procesados++;
 
             } catch (javax.validation.ValidationException ve) {
                 addError("no_delete_row", i, clave);

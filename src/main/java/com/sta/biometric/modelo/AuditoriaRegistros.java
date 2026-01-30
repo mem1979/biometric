@@ -47,7 +47,7 @@ import lombok.*;
         "turnoPlanificado, evaluacion; observacionFeriado; " +
         "registros;" +
         "Calculos_Y_Ajustes  [filasCalculo];" +
-        "estadoJornada; };" +
+        "AuditoriaRegistros.redondeoIndividual(ALWAYS), estadoJornada; };" +
         "OBSERVACIONES {" +
         "nota;" +
         "}")
@@ -191,15 +191,37 @@ public class AuditoriaRegistros extends Identifiable {
 
     @Column(columnDefinition = "INTEGER DEFAULT 0")
     @Hidden
-    private int ajusteMinutosNormales; // Minutos a sumar/restar a normales
+    private int ajusteMinutosNormales; // Minutos a sumar/restar a normales (MANUAL)
 
     @Column(columnDefinition = "INTEGER DEFAULT 0")
     @Hidden
-    private int ajusteMinutosExtras; // Minutos a sumar/restar a extras
+    private int ajusteMinutosExtras; // Minutos a sumar/restar a extras (MANUAL)
 
     @Column(columnDefinition = "INTEGER DEFAULT 0")
     @Hidden
-    private int ajusteMinutosEspeciales; // Minutos a sumar/restar a especiales
+    private int ajusteMinutosEspeciales; // Minutos a sumar/restar a especiales (MANUAL)
+
+    // ==================================================================================
+    // 6.1. AJUSTES DE REDONDEO AUTOMÁTICO
+    // ==================================================================================
+    // Separados de los ajustes manuales para poder revertir sin afectar ajustes
+    // manuales.
+
+    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @Hidden
+    private boolean redondeoAutoAplicado = false; // Indica si se aplicó redondeo automático
+
+    @Column(columnDefinition = "INTEGER DEFAULT 0")
+    @Hidden
+    private int ajusteRedondeoNormales = 0; // Ajuste de redondeo auto para normales
+
+    @Column(columnDefinition = "INTEGER DEFAULT 0")
+    @Hidden
+    private int ajusteRedondeoExtras = 0; // Ajuste de redondeo auto para extras
+
+    @Column(columnDefinition = "INTEGER DEFAULT 0")
+    @Hidden
+    private int ajusteRedondeoEspeciales = 0; // Ajuste de redondeo auto para especiales
 
     @Stereotype("MEMO")
     @Column(length = 2000)
@@ -365,13 +387,68 @@ public class AuditoriaRegistros extends Identifiable {
         } else if (!esLaboral) {
             evaluacion = EvaluacionJornada.DIA_NO_LABORAL;
         } else {
-            // Si el día es hoy y aún no terminó la jornada, es PENDIENTE
-            if (fecha.equals(LocalDate.now())) {
-                evaluacion = EvaluacionJornada.PENDIENTE;
-            } else {
+            // Usar lógica que considera turnos nocturnos y hora actual
+            if (jornadaDeberiaHaberTerminado()) {
                 evaluacion = EvaluacionJornada.AUSENTE;
+            } else {
+                evaluacion = EvaluacionJornada.PENDIENTE;
             }
         }
+    }
+
+    /**
+     * Determina si la jornada ya debería haber terminado.
+     * 
+     * <p>
+     * LÓGICA:
+     * </p>
+     * <ul>
+     * <li>Turno normal: día pasado O (es hoy Y hora > salida + 30min)</li>
+     * <li>Turno nocturno: estamos en día siguiente+ Y hora > salida + 30min</li>
+     * </ul>
+     * 
+     * @return true si la jornada debería haber terminado
+     */
+    private boolean jornadaDeberiaHaberTerminado() {
+        LocalDate hoy = LocalDate.now();
+        LocalTime ahora = LocalTime.now();
+
+        // Día futuro → no terminó
+        if (fecha.isAfter(hoy)) {
+            return false;
+        }
+
+        // ========== TURNO NOCTURNO ==========
+        if (esJornadaNocturna) {
+            LocalDate diaSiguiente = fecha.plusDays(1);
+
+            if (hoy.isBefore(diaSiguiente)) {
+                // Aún estamos en el día que comenzó el turno
+                return false;
+            }
+
+            if (hoy.isAfter(diaSiguiente)) {
+                // Ya pasaron 2+ días
+                return true;
+            }
+
+            // Estamos en el día siguiente - verificar hora
+            LocalTime limite = (horaEsperadaSalida != null)
+                    ? horaEsperadaSalida.plusMinutes(30)
+                    : LocalTime.of(10, 0);
+            return ahora.isAfter(limite);
+        }
+
+        // ========== TURNO NORMAL ==========
+        if (fecha.isBefore(hoy)) {
+            return true; // Día pasado
+        }
+
+        // Es hoy - verificar hora de salida
+        LocalTime limite = (horaEsperadaSalida != null)
+                ? horaEsperadaSalida.plusMinutes(30)
+                : LocalTime.of(23, 0);
+        return ahora.isAfter(limite);
     }
 
     /**
@@ -770,7 +847,8 @@ public class AuditoriaRegistros extends Identifiable {
             minutosNormalesBase = Math.min(minutosTrabajados, minutosEsperados);
         }
 
-        int totalMinutos = Math.max(0, minutosNormalesBase + ajusteMinutosNormales);
+        // Incluir ambos ajustes: manual + redondeo automático
+        int totalMinutos = Math.max(0, minutosNormalesBase + ajusteMinutosNormales + ajusteRedondeoNormales);
         return TiempoUtils.formatearMinutosComoHHMM(totalMinutos);
     }
 
@@ -786,8 +864,8 @@ public class AuditoriaRegistros extends Identifiable {
     public String getHorasExtras() {
         if (esJornadaEspecial())
             return "00:00";
-        // Minutos extras calculados + Ajuste manual
-        int totalExtras = Math.max(0, minutosExtras + ajusteMinutosExtras);
+        // Minutos extras calculados + Ajuste manual + Ajuste redondeo
+        int totalExtras = Math.max(0, minutosExtras + ajusteMinutosExtras + ajusteRedondeoExtras);
         return TiempoUtils.formatearMinutosComoHHMM(totalExtras);
     }
 
@@ -803,7 +881,8 @@ public class AuditoriaRegistros extends Identifiable {
     public String getHorasEspeciales() {
         // En feriados/días no laborales, todo el tiempo es especial
         int base = esJornadaEspecial() ? minutosTrabajados : 0;
-        int total = Math.max(0, base + ajusteMinutosEspeciales);
+        // Incluir ambos ajustes: manual + redondeo automático
+        int total = Math.max(0, base + ajusteMinutosEspeciales + ajusteRedondeoEspeciales);
         return TiempoUtils.formatearMinutosComoHHMM(total);
     }
 

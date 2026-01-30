@@ -28,7 +28,8 @@
                             "biometric/NotaDesempeno",
                             "biometric/LiquidacionJornadas",
                             "biometric/Licencia",
-                            "biometric/PapeleraPersonal"
+                            "biometric/PapeleraPersonal",
+                            "biometric/ContratoLaboral"
 
                             );
 

@@ -331,6 +331,21 @@ public class AsistenciaEndpoint {
         }
         /* === FIN SOPORTE NOCTURNAS (POST) === */
 
+        /* === VALIDACIÓN DE FICHADAS DUPLICADAS === */
+        if (tipoSolicitado == TipoMovimiento.ENTRADA || tipoSolicitado == TipoMovimiento.SALIDA) {
+            boolean yaExisteFichada = dia.getRegistros().stream()
+                    .anyMatch(r -> r.getTipoMovimiento() == tipoSolicitado);
+
+            if (yaExisteFichada) {
+                String tipoStr = tipoSolicitado == TipoMovimiento.ENTRADA ? "ENTRADA" : "SALIDA";
+                Map<String, Object> error = new HashMap<>();
+                error.put("error", "FICHADA_DUPLICADA");
+                error.put("mensaje", "Ya existe un registro de " + tipoStr + " para esta jornada.");
+                return Response.status(Response.Status.CONFLICT).entity(error).build();
+            }
+        }
+        /* === FIN VALIDACIÓN DUPLICADAS === */
+
         /* 5. Crear y configurar ColeccionRegistros */
         ColeccionRegistros reg = new ColeccionRegistros();
         // Para jornadas nocturnas, la fecha del registro SALIDA es HOY aunque la

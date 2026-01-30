@@ -11,6 +11,22 @@ public class PersonalOnChangeActivoAction extends OnChangePropertyBaseAction {
         if (activo == null)
             return;
 
+        // === VERIFICAR CONTRATO VIGENTE ANTES DE ACTIVAR ===
+        if (activo && getView().getKeyValues() != null && getView().getKeyValues().get("id") != null) {
+            // Verificar si tiene contrato vigente
+            Object entity = MapFacade.findEntity(getModelName(), getView().getKeyValues());
+            if (entity instanceof com.sta.biometric.modelo.Personal) {
+                com.sta.biometric.modelo.Personal personal = (com.sta.biometric.modelo.Personal) entity;
+                if (personal.getContratoVigente() == null) {
+                    // No permitir activar sin contrato
+                    getView().setValue("activo", false);
+                    addWarning("empleado_desactivado_sin_contrato");
+                    getView().setLabelId("activo", "🔒 DESABILITADO");
+                    return;
+                }
+            }
+        }
+
         // Actualizar etiqueta siempre
         if (!activo) {
             getView().setLabelId("activo", "🔒 DESABILITADO");

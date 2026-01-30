@@ -9,8 +9,6 @@ import java.util.stream.*;
 
 import javax.persistence.*;
 
-import javax.validation.constraints.*;
-
 import org.openxava.annotations.*;
 import org.openxava.calculators.*;
 import org.openxava.jpa.*;
@@ -130,14 +128,12 @@ import lombok.*;
 
         "funcion[" +
         "sucursal;" +
-        "inicioActividades, antiguedadLaboral;"
-        + " puesto;" +
+        "inicioActividades, antiguedadLaboral;" +
+        "puesto; tipoContrato;" +
         "]; " +
-        "Honorarios[" +
-        "valorHora;" +
-        "porcentajeHoraExtra, valorHoraExtra;" +
-        "porcentajeHoraEspecial, valorHoraEspecial;" +
-        "]; " +
+        // "CONTRATOS[" +
+        "contratos;" +
+        // "], " +
         "JORNADAS[" +
         "aceptaPausa; jornadasAsignadas;" +
         "]; " +
@@ -161,7 +157,7 @@ import lombok.*;
 
 @View(name = "VerCalendario", members = "eventos")
 
-@View(name = "simple", members = "nombreCompleto, sucursal, puesto")
+@View(name = "simple", members = "nombreCompleto, sucursal")
 
 @View(name = "Crear", members = "InformacionPersonal { " +
         "InformacionPersonal[" +
@@ -190,26 +186,23 @@ import lombok.*;
 
         "funcion[" +
         "sucursal;" +
-        "inicioActividades, antiguedadLaboral;"
-        + " puesto;" +
+        "inicioActividades, antiguedadLaboral;" +
+        "puesto; tipoContrato;" +
         "]; " +
-        "Honorarios[" +
-        "valorHora;" +
-        "porcentajeHoraExtra, valorHoraExtra;" +
-        "porcentajeHoraEspecial, valorHoraEspecial;" +
-        "]; " +
+        // "CONTRATOS[" +
+        "contratos;" +
+        // "], " +
         "JORNADAS[" +
         "aceptaPausa; jornadasAsignadas;" +
         "]; " +
-        "}; " +
-        "}")
+        "};")
 
 // Tab por defecto: muestra solo registros NO eliminados (activos en el sistema)
 @Tab(editors = "List", properties = "foto, nombreCompleto, userId, sucursal.nombre, puesto, activo", defaultOrder = "${activo} desc, ${nombreCompleto} asc", baseCondition = "${eliminado} = false", rowStyles = {
         @RowStyle(style = "empleadoInactivo", property = "activo", value = "false") })
 
 // Tab para la Papelera: muestra solo registros ELIMINADOS (soft-delete)
-@Tab(name = "Eliminado", editors = "List", properties = "foto, nombreCompleto, userId, sucursal.nombre, puesto, fechaEliminacion", defaultOrder = "${fechaEliminacion} desc", baseCondition = "${eliminado} = true", rowStyles = {
+@Tab(name = "Eliminado", editors = "List", properties = "foto, nombreCompleto, puesto, userId, sucursal.nombre, fechaEliminacion", defaultOrder = "${fechaEliminacion} desc", baseCondition = "${eliminado} = true", rowStyles = {
         @RowStyle(style = "empleadoEliminado", property = "eliminado", value = "true") })
 
 public class Personal extends Identifiable {
@@ -566,18 +559,30 @@ public class Personal extends Identifiable {
     private DatosContacto contacto;
 
     /**
-     * Puesto o cargo del empleado.
+     * Obtiene el puesto del empleado desde el contrato vigente.
      * 
-     * <p>
-     * Ejemplos: Gerente, Vendedor, Administrativo, etc.
-     * </p>
+     * @return Puesto del contrato vigente, o null si no hay contrato
      */
-    @DisplaySize(30)
-    @Capitalizar
-    @ReadOnly(forViews = "Simple")
-    @LabelFormat(forViews = "simple", value = LabelFormatType.SMALL)
-    @Column(length = 50)
-    private String puesto;
+    @Transient
+    @DisplaySize(20)
+    @Depends("contratos.id")
+    public String getPuesto() {
+        ContratoLaboral contrato = getContratoVigente();
+        return contrato != null ? contrato.getPuesto() : null;
+    }
+
+    /**
+     * Obtiene el tipo de contrato desde el contrato vigente.
+     * 
+     * @return Tipo de contrato vigente, o null si no hay contrato
+     */
+    @Transient
+    @DisplaySize(20)
+    @Depends("contratos.id")
+    public TipoContrato getTipoContrato() {
+        ContratoLaboral contrato = getContratoVigente();
+        return contrato != null ? contrato.getTipoContrato() : null;
+    }
 
     /**
      * Fecha de inicio de actividades laborales.
@@ -826,90 +831,63 @@ public class Personal extends Identifiable {
         return resultado;
     }
 
-    /**
-     * Valor de la hora normal de trabajo.
-     * 
-     * <p>
-     * Se usa como base para calcular:
-     * </p>
-     * <ul>
-     * <li>Horas extras (con {@link #porcentajeHoraExtra})</li>
-     * <li>Horas especiales (con {@link #porcentajeHoraEspecial})</li>
-     * </ul>
-     */
-    @Money
-    private BigDecimal valorHora;
+    // =========================================================================
+    // GETTERS DELEGADOS A CONTRATO VIGENTE - VALORES MONETARIOS
+    // =========================================================================
 
     /**
-     * Porcentaje de bonificación para horas extras.
+     * Obtiene el valor hora desde el contrato vigente.
      * 
-     * <p>
-     * Ejemplo: 50.0 = 50% adicional sobre {@link #valorHora}
-     * </p>
-     * <p>
-     * El valor total se calcula en {@link #getValorHoraExtra()}
-     * </p>
+     * @return Valor hora efectivo del contrato, o ZERO si no hay contrato
      */
-    @Digits(integer = 3, fraction = 1)
-    @Min(0)
-    @Max(100)
-    private BigDecimal porcentajeHoraExtra;
-
-    /**
-     * Calcula el valor de la hora extra.
-     * 
-     * <p>
-     * Fórmula: valorHora + (valorHora × porcentajeHoraExtra / 100)
-     * </p>
-     * 
-     * @return Valor hora con bonificación extra, o ZERO si faltan datos
-     */
-    @Label
-    @Depends("valorHora, porcentajeHoraExtra")
-    public BigDecimal getValorHoraExtra() {
-        if (valorHora != null && porcentajeHoraExtra != null) {
-            BigDecimal adicional = valorHora.multiply(porcentajeHoraExtra)
-                    .divide(BigDecimal.valueOf(100));
-            return valorHora.add(adicional);
-        }
-        return BigDecimal.ZERO;
+    @Transient
+    public BigDecimal getValorHora() {
+        ContratoLaboral contrato = getContratoVigente();
+        return contrato != null ? contrato.getValorHoraEfectivo() : BigDecimal.ZERO;
     }
 
     /**
-     * Porcentaje de bonificación para horas especiales (feriados, días no
-     * laborales).
+     * Obtiene el porcentaje de hora extra desde el contrato vigente.
      * 
-     * <p>
-     * Ejemplo: 100.0 = 100% adicional sobre {@link #valorHora}
-     * </p>
-     * <p>
-     * El valor total se calcula en {@link #getValorHoraEspecial()}
-     * </p>
+     * @return Porcentaje hora extra del contrato, o null si no hay contrato
      */
-    @Digits(integer = 3, fraction = 1)
-    @Min(0)
-    @Max(100)
-    private BigDecimal porcentajeHoraEspecial;
+    @Transient
+    public BigDecimal getPorcentajeHoraExtra() {
+        ContratoLaboral contrato = getContratoVigente();
+        return contrato != null ? contrato.getPorcentajeHoraExtra() : null;
+    }
 
     /**
-     * Calcula el valor de la hora especial (feriados, días no laborales).
+     * Obtiene el valor de la hora extra desde el contrato vigente.
      * 
-     * <p>
-     * Fórmula: valorHora + (valorHora × porcentajeHoraEspecial / 100)
-     * </p>
-     * 
-     * @return Valor hora con bonificación especial, o ZERO si faltan datos
+     * @return Valor hora extra del contrato, o ZERO si no hay contrato
      */
-    @Label
-    @Money
-    @Depends("valorHora, porcentajeHoraEspecial")
+    @Transient
+    public BigDecimal getValorHoraExtra() {
+        ContratoLaboral contrato = getContratoVigente();
+        return contrato != null ? contrato.getValorHoraExtra() : BigDecimal.ZERO;
+    }
+
+    /**
+     * Obtiene el porcentaje de hora especial desde el contrato vigente.
+     * 
+     * @return Porcentaje hora especial del contrato, o null si no hay contrato
+     */
+    @Transient
+    public BigDecimal getPorcentajeHoraEspecial() {
+        ContratoLaboral contrato = getContratoVigente();
+        return contrato != null ? contrato.getPorcentajeHoraEspecial() : null;
+    }
+
+    /**
+     * Obtiene el valor de la hora especial desde el contrato vigente.
+     * 
+     * @return Valor hora especial del contrato, o ZERO si no hay contrato
+     */
+    @Transient
     public BigDecimal getValorHoraEspecial() {
-        if (valorHora != null && porcentajeHoraEspecial != null) {
-            BigDecimal adicional = valorHora.multiply(porcentajeHoraEspecial)
-                    .divide(BigDecimal.valueOf(100));
-            return valorHora.add(adicional);
-        }
-        return BigDecimal.ZERO;
+        ContratoLaboral contrato = getContratoVigente();
+        return contrato != null ? contrato.getValorHoraEspecial() : BigDecimal.ZERO;
     }
 
     /**
@@ -921,19 +899,20 @@ public class Personal extends Identifiable {
     @Transient
     @Money
     public BigDecimal getValorHoraTurno(TurnosHorarios turno) {
-        if (valorHora == null) {
+        BigDecimal vHora = getValorHora(); // Usar getter delegado
+        if (vHora == null) {
             return BigDecimal.ZERO;
         }
 
         if (turno == null || turno.getPorcentajeBonificacion() == null ||
                 turno.getPorcentajeBonificacion().compareTo(BigDecimal.ZERO) == 0) {
-            return valorHora;
+            return vHora;
         }
 
         // Mismo formato que getValorHoraExtra: dividir por 100
-        BigDecimal bonificacion = valorHora.multiply(turno.getPorcentajeBonificacion())
+        BigDecimal bonificacion = vHora.multiply(turno.getPorcentajeBonificacion())
                 .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-        return valorHora.add(bonificacion);
+        return vHora.add(bonificacion);
     }
 
     /**
@@ -1023,9 +1002,56 @@ public class Personal extends Identifiable {
     @RemoveSelectedAction("")
     @DeleteSelectedAction("")
     @RemoveAction("LiquidacionJornadas.eliminarLiquidacion")
-    @DetailAction("LiquidacionJornadas.Recalcular")
     @DetailAction("LiquidacionJornadas.CerrarLiquidacion")
+    @DetailAction("LiquidacionJornadas.Recalcular")
+    @DetailAction("LiquidacionJornadas.aplicarRedondeo")
+    @DetailAction("LiquidacionJornadas.revertirRedondeo")
     private Collection<LiquidacionJornadas> liquidaciones;
+
+    // ==================================================================================
+    // CONTRATOS LABORALES
+    // ==================================================================================
+
+    /**
+     * Colección de contratos laborales del empleado (historial).
+     * 
+     * <p>
+     * Permite mantener múltiples contratos con diferentes vigencias
+     * para registrar cambios de puesto, sueldo, categoría, etc.
+     * </p>
+     * 
+     * @see ContratoLaboral
+     */
+
+    @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ListProperties("puesto, nivelJerarquico, sueldoMensualAcordado, fechaVigenciaDesde, fechaVigenciaHasta, vigente")
+    @OrderBy("fechaVigenciaDesde desc")
+    private Collection<ContratoLaboral> contratos = new ArrayList<>();
+
+    /**
+     * Obtiene el contrato laboral vigente del empleado.
+     * 
+     * <p>
+     * Un contrato está vigente si:
+     * </p>
+     * <ul>
+     * <li>La fecha actual es >= fechaVigenciaDesde</li>
+     * <li>La fecha actual es <= fechaVigenciaHasta (o fechaVigenciaHasta es
+     * null)</li>
+     * </ul>
+     * 
+     * @return Contrato vigente o null si no hay ninguno
+     */
+    @Transient
+    public ContratoLaboral getContratoVigente() {
+        if (contratos == null || contratos.isEmpty()) {
+            return null;
+        }
+        return contratos.stream()
+                .filter(ContratoLaboral::isVigente)
+                .findFirst()
+                .orElse(null);
+    }
 
     // =============================================================================================
     /**
@@ -1319,19 +1345,56 @@ public class Personal extends Identifiable {
     @PreUpdate
     private void preGuardar() {
 
+        // === GESTIÓN DE BORRADO LÓGICO Y CONTRATOS ===
+        if (eliminado) {
+            // Forzar inactividad si está eliminado
+            this.activo = false;
+
+            // Asegurar fecha de eliminación
+            if (this.fechaEliminacion == null) {
+                this.fechaEliminacion = LocalDateTime.now();
+            }
+
+            // CERRAR CONTRATO VIGENTE
+            ContratoLaboral contrato = getContratoVigente();
+            if (contrato != null) {
+                // Solo cerrar si no tiene ya fecha de fin o si esta es futura
+                if (contrato.getFechaVigenciaHasta() == null ||
+                        contrato.getFechaVigenciaHasta().isAfter(LocalDate.now())) {
+                    contrato.setFechaVigenciaHasta(LocalDate.now());
+                    if (contrato.getMotivoFinalizacion() == null || contrato.getMotivoFinalizacion().isBlank()) {
+                        contrato.setMotivoFinalizacion("Baja automática por eliminación de empleado");
+                    }
+                    System.out.println("[Personal] Contrato cerrado automáticamente para: " + getNombreCompleto());
+                }
+            }
+        } else {
+            // Si no está eliminado (restauración o activo normal), limpiar fecha
+            // eliminación
+            this.fechaEliminacion = null;
+        }
+
+        // === VERIFICAR CONTRATO VIGENTE (Para activos no eliminados) ===
+        // Si el empleado está activo pero no tiene contrato vigente, desactivarlo
+        if (activo && !eliminado && getContratoVigente() == null) {
+            activo = false;
+            System.out.println("[Personal] " + getNombreCompleto() + " desactivado: sin contrato vigente");
+        }
+
         setUsuario(getCreaUsuario());
         setNombreCompleto(getApellidoNombre());
+
+        // Gestión de prefijo "x-" para userId
         if (Boolean.FALSE.equals(activo)) {
             if (userId != null && !userId.startsWith("x-")) {
                 userId = "x-" + userId;
             }
         } else {
-            // si userId empieza con "x-", y suponés que pertenecía a ese usuario,
-            // podés remover el prefijo:
             if (userId != null && userId.startsWith("x-")) {
                 userId = userId.substring(2);
             }
         }
+
         try {
             AsignarCoordenadasService.asignarCoordenadasSiFaltan(this.direccion);
         } catch (Exception e) {

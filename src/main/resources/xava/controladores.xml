@@ -75,6 +75,9 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         <accion nombre="IrANSES" oculta="true" clase="com.sta.biometric.acciones.AbrirUrlAnsesAccion">
         </accion>
 
+        <accion nombre="AbrirWhatsApp" oculta="true" clase="com.sta.biometric.acciones.AbrirWhatsAppAction" icono="whatsapp">
+        </accion>
+
         <accion nombre="calcularHoras" oculta="true" clase="com.sta.biometric.acciones.CalcularHorasAction" icono="clock-outline">
         </accion>
 
@@ -89,7 +92,8 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         </accion>
 
         <!-- Redefinir acciones heredadas para que las etiquetas Personal.X funcionen -->
-        <accion nombre="save" modo="detail" confirmar="true" clase="org.openxava.actions.SaveAction" icono="content-save" disponible-en-nuevo="true" por-defecto="nunca" atajo-de-teclado="Control S">
+        <!-- Acción save personalizada: verifica contrato vigente antes de guardar -->
+        <accion nombre="save" modo="detail" confirmar="true" clase="com.sta.biometric.acciones.PersonalSaveAction" icono="content-save" disponible-en-nuevo="true" por-defecto="nunca" atajo-de-teclado="Control S">
             <poner propiedad="resetAfter" valor="false"/>
         </accion>
 
@@ -144,7 +148,7 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
     </controlador>
 
     <controlador nombre="DialogoDni">
-        <accion nombre="guardarYSalir" clase="org.openxava.actions.SaveAndCloseDialogAction" icono="content-save" atajo-de-teclado="ENTER"/>
+        <accion nombre="guardarYSalir" clase="com.sta.biometric.acciones.GuardarYCerrarDialogoAction" icono="content-save" atajo-de-teclado="ENTER"/>
         <accion nombre="cancelar" clase="org.openxava.actions.CancelAction" icono="close" atajo-de-teclado="ESCAPE"/>
     </controlador>
 
@@ -194,6 +198,10 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         <accion nombre="informeDiario" oculta="true" clase="com.sta.biometric.acciones.MostrarDialogoInformeDiarioAction" modo="list">
         </accion>
 
+        <!-- Acción para redondeo individual de horas -->
+        <accion nombre="redondeoIndividual" oculta="true" clase="com.sta.biometric.acciones.MostrarDialogoRedondeoIndividualAction" icono="clock-edit-outline">
+        </accion>
+
     </controlador>
 
     <controlador nombre="FechaInformeDiario">
@@ -204,6 +212,18 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
 
     <controlador nombre="AjusteHorasPorTipo">
         <accion nombre="aplicar" clase="com.sta.biometric.acciones.AplicarAjusteHorasPorTipoAction" icono="check" atajo-de-teclado="ENTER"/>
+        <accion nombre="cancelar" clase="org.openxava.actions.CancelAction" icono="close" atajo-de-teclado="ESCAPE"/>
+    </controlador>
+
+    <!-- Controlador para diálogo de redondeo automático de horas -->
+    <controlador nombre="ConfiguracionRedondeo">
+        <accion nombre="aplicar" clase="com.sta.biometric.acciones.AplicarRedondeoMasivoAction" icono="check" atajo-de-teclado="ENTER"/>
+        <accion nombre="cancelar" clase="org.openxava.actions.CancelAction" icono="close" atajo-de-teclado="ESCAPE"/>
+    </controlador>
+
+    <!-- Controlador para diálogo de redondeo individual (desde AuditoriaRegistros) -->
+    <controlador nombre="ConfiguracionRedondeoIndividual">
+        <accion nombre="aplicar" clase="com.sta.biometric.acciones.AplicarRedondeoIndividualAction" icono="check" atajo-de-teclado="ENTER"/>
         <accion nombre="cancelar" clase="org.openxava.actions.CancelAction" icono="close" atajo-de-teclado="ESCAPE"/>
     </controlador>
 
@@ -241,6 +261,14 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
 
         <accion nombre="CerrarLiquidacion" oculta="true" clase="com.sta.biometric.acciones.CerrarLiquidacionAction" icono="lock" confirmar="true">
         </accion>
+
+        <!-- Acción para aplicar redondeo automático masivo -->
+        <accion nombre="aplicarRedondeo" oculta="true" clase="com.sta.biometric.acciones.MostrarDialogoRedondeoAction" icono="clock-edit-outline">
+        </accion>
+
+        <!-- Acción para revertir redondeo masivo -->
+        <accion nombre="revertirRedondeo" oculta="true" clase="com.sta.biometric.acciones.RevertirRedondeoMasivoAction" icono="undo" confirmar="true">
+        </accion>
     </controlador>
 
     <!-- ============================================================ -->
@@ -263,4 +291,3 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
     </controlador>
 
 </controladores>
-

@@ -24,30 +24,48 @@ public class GuardarUbicacionAction extends ViewBaseAction {
             return;
         }
 
-        // Obtener la entidad padre desde la vista anterior
-        Object entidadPadre = getPreviousView().getRoot().getEntity();
-
-        if (entidadPadre == null) {
-            addError("No se pudo acceder a la entidad padre.");
-            closeDialog();
-            return;
-        }
+        System.out.println("[GuardarUbicacion] Nueva ubicación: " + nuevaUbicacion);
 
         try {
-            // Obtener la dirección de la entidad padre
-            Method getDireccion = entidadPadre.getClass().getMethod("getDireccion");
-            Object direccionObj = getDireccion.invoke(entidadPadre);
+            // Obtener el modelo y las claves desde la vista padre
+            String modelName = getPreviousView().getRoot().getModelName();
+            java.util.Map<String, Object> keyValues = getPreviousView().getRoot().getKeyValues();
+
+            System.out.println("[GuardarUbicacion] Modelo: " + modelName + ", Keys: " + keyValues);
+
+            if (keyValues == null || keyValues.isEmpty()) {
+                addError("No se encontraron claves de la entidad padre.");
+                closeDialog();
+                return;
+            }
+
+            // Buscar la entidad en la base de datos
+            Object entidad = org.openxava.model.MapFacade.findEntity(modelName, keyValues);
+
+            if (entidad == null) {
+                addError("No se encontró la entidad en la base de datos.");
+                closeDialog();
+                return;
+            }
+
+            // Obtener la dirección y actualizarla
+            java.lang.reflect.Method getDireccion = entidad.getClass().getMethod("getDireccion");
+            Object direccionObj = getDireccion.invoke(entidad);
 
             if (direccionObj instanceof Direccion) {
                 Direccion direccion = (Direccion) direccionObj;
                 String ubicacionAnterior = direccion.getUbicacion();
 
+                System.out.println("[GuardarUbicacion] Ubicación anterior: " + ubicacionAnterior);
+
                 // Actualizar la ubicación
                 direccion.setUbicacion(nuevaUbicacion.trim());
 
-                // Persistir el cambio
-                XPersistence.getManager().merge(entidadPadre);
-                XPersistence.commit();
+                // Persistir el cambio usando merge
+                XPersistence.getManager().merge(entidad);
+                XPersistence.getManager().flush();
+
+                System.out.println("[GuardarUbicacion] Entidad persistida con merge+flush");
 
                 // Actualizar la vista padre
                 getPreviousView().setValueNotifying("direccion.ubicacion", nuevaUbicacion.trim());
@@ -57,6 +75,8 @@ public class GuardarUbicacionAction extends ViewBaseAction {
                 } else {
                     addMessage("Ubicación sin cambios.");
                 }
+            } else {
+                addError("La entidad no tiene una dirección válida.");
             }
         } catch (Exception e) {
             e.printStackTrace();
