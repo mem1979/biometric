@@ -1,7 +1,7 @@
 package com.sta.biometric.acciones;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
+
 import java.util.Map;
 
 import org.openxava.actions.ViewBaseAction;

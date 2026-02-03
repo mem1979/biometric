@@ -55,6 +55,7 @@ import lombok.*;
 @Setter
 @Table(name = "liquidacion_jornadas", uniqueConstraints = @UniqueConstraint(columnNames = { "personal_id",
         "periodo_desde", "periodo_hasta" }))
+
 @View(members = "empleado;" +
         "Periodo { periodoDesde, periodoHasta; estadoPeriodo; };" +
         "ResumenHoras { " +
@@ -65,19 +66,22 @@ import lombok.*;
         "  montoTotalNormales, montoTotalExtras, montoTotalEspeciales;" +
         "  montoGranTotal;" +
         "};" +
-        "Metadatos { fechaGeneracion, fechaUltimoRecalculo; observaciones; }")
+        "Metadatos { fechaGeneracion, fechaUltimoRecalculo, fechaModificacion; observaciones; }")
 
-// Vista unificada sin pestañas para el diálogo desde colección en Personal
-@View(name = "DetalleCompleto", members = "periodoDesde, periodoHasta, estadoPeriodo;" +
+// Vista unificada para el diálogo que incluye la colección de jornadas (usada
+// desde Personal)
+@View(name = "DetalleCompletoDialogo", members = "periodoDesde, periodoHasta, estadoPeriodo;" +
         "horasNormalesFormatted, horasExtrasFormatted, horasEspecialesFormatted, montoGranTotal;" +
         "jornadasDelPeriodo;" +
-        "Metadatos { fechaGeneracion, fechaUltimoRecalculo; observaciones; }")
+        "Metadatos { fechaGeneracion, fechaUltimoRecalculo, fechaModificacion; observaciones; }")
 
-// Vista con botón de redondeo automático
-@View(name = "DetalleConRedondeo", members = "periodoDesde, periodoHasta, estadoPeriodo;" +
-        "horasNormalesFormatted, horasExtrasFormatted, horasEspecialesFormatted, montoGranTotal;" +
-        "jornadasDelPeriodo;" +
-        "Metadatos { fechaGeneracion, fechaUltimoRecalculo; observaciones; }")
+// Vista simplificada sin la colección (para evitar conflictos en listas)
+@View(name = "DetalleCompleto", members = "Periodo { periodoDesde, periodoHasta, estadoPeriodo; " +
+        "horasNormalesFormatted, horasExtrasFormatted, horasEspecialesFormatted, montoGranTotal; };" +
+        "Metadatos { fechaGeneracion; observaciones; }")
+
+// Vista exclusiva para el diálogo de jornadas
+@View(name = "SoloJornadas", members = "jornadasDelPeriodo")
 
 @Tab(properties = "empleado.nombreCompleto, periodoDesde, periodoHasta, estadoPeriodo, horasNormalesFormatted, horasExtrasFormatted, montoGranTotal", defaultOrder = "${periodoDesde} desc, ${empleado.nombreCompleto} asc")
 public class LiquidacionJornadas extends Identifiable {
@@ -104,7 +108,8 @@ public class LiquidacionJornadas extends Identifiable {
      * Fecha de inicio del período de liquidación.
      */
     @Required
-    @Stereotype("FECHA")
+    @ReadOnly
+    @LabelFormat(value = LabelFormatType.SMALL)
     @Column(name = "periodo_desde")
     private LocalDate periodoDesde;
 
@@ -112,7 +117,8 @@ public class LiquidacionJornadas extends Identifiable {
      * Fecha de fin del período de liquidación.
      */
     @Required
-    @Stereotype("FECHA")
+    @ReadOnly
+    @LabelFormat(value = LabelFormatType.SMALL)
     @Column(name = "periodo_hasta")
     private LocalDate periodoHasta;
 
@@ -124,7 +130,12 @@ public class LiquidacionJornadas extends Identifiable {
     @Required
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
+    @ReadOnly
+    @LabelFormat(value = LabelFormatType.SMALL)
+    @Action(value = "LiquidacionJornadas.cambiarEstado", alwaysEnabled = true)
     private EstadoLiquidacion estadoPeriodo = EstadoLiquidacion.ABIERTO;
+
+    // ... (rest of the file content until abrir/cerrar methods)
 
     // ==================================================================================
     // HORAS CALCULADAS (en minutos para precisión)
@@ -237,6 +248,12 @@ public class LiquidacionJornadas extends Identifiable {
     private LocalDateTime fechaUltimoRecalculo;
 
     /**
+     * Fecha de la última modificación de estado o creación.
+     */
+    @ReadOnly
+    private LocalDateTime fechaModificacion;
+
+    /**
      * Observaciones o notas sobre la liquidación.
      */
     @TextArea
@@ -302,24 +319,8 @@ public class LiquidacionJornadas extends Identifiable {
     @Transient
     @ReadOnly
     @NoDefaultActions
-    @RowStyle(style = "estilo-gris-claro", property = "evaluacion", value = "PENDIENTE")
-    @RowStyle(style = "estilo-gris-intenso", property = "evaluacion", value = "EN_CURSO")
-    @RowStyle(style = "estilo-verde-intenso", property = "evaluacion", value = "COMPLETA")
-    @RowStyle(style = "estilo-amarillo-claro", property = "evaluacion", value = "INCOMPLETA")
-    @RowStyle(style = "estilo-rojo-intenso", property = "evaluacion", value = "AUSENTE")
-    @RowStyle(style = "estilo-naranja-intenso", property = "evaluacion", value = "SIN_ENTRADA")
-    @RowStyle(style = "estilo-naranja-intenso", property = "evaluacion", value = "SIN_SALIDA")
-    @RowStyle(style = "estilo-rojo-claro", property = "evaluacion", value = "LICENCIA")
-    @RowStyle(style = "estilo-azul-claro", property = "evaluacion", value = "FERIADO")
-    @RowStyle(style = "estilo-azul-intenso", property = "evaluacion", value = "FERIADO_TRABAJADO")
-    @RowStyle(style = "estilo-verde-claro", property = "evaluacion", value = "DIA_NO_LABORAL")
-    @RowStyle(style = "estilo-azul-intenso", property = "evaluacion", value = "DIA_NO_LABORAL_TRABAJADO")
-    @RowStyle(style = "estilo-verde-claro", property = "evaluacion", value = "SIN_TURNO_ASIGNADO")
-    @RowStyle(style = "estilo-rojo-intenso", property = "evaluacion", value = "SIN_DATOS")
-    @ListProperties("empleado.nombreCompleto, fecha, turnoPlanificado, evaluacion, " +
-            "horasTrabajadasTurno, montoTeoricoTurno+, " +
-            "horasExtras, montoTeoricoExtras+, " +
-            "horasEspeciales, montoTeoricoEspeciales+")
+    @ListAction("LiquidacionJornadas.exportarJornadasExcel")
+    @ListProperties("empleado.nombreCompleto, fecha, turnoPlanificado, horario, evaluacion, horasTrabajadasTurno, horasExtras, horasEspeciales, estadoJornada ")
     public java.util.List<AuditoriaRegistros> getJornadasDelPeriodo() {
         if (empleado == null || periodoDesde == null || periodoHasta == null) {
             return java.util.Collections.emptyList();
@@ -414,6 +415,15 @@ public class LiquidacionJornadas extends Identifiable {
      */
     public void cerrar() {
         this.estadoPeriodo = EstadoLiquidacion.CERRADO;
+        this.fechaModificacion = LocalDateTime.now();
+    }
+
+    /**
+     * Abre la liquidación, permitiendo modificaciones.
+     */
+    public void abrir() {
+        this.estadoPeriodo = EstadoLiquidacion.ABIERTO;
+        this.fechaModificacion = LocalDateTime.now();
     }
 
     /**
@@ -422,6 +432,7 @@ public class LiquidacionJornadas extends Identifiable {
     public void marcarRecalculado() {
         this.estadoPeriodo = EstadoLiquidacion.RECALCULADO;
         this.fechaUltimoRecalculo = LocalDateTime.now();
+        this.fechaModificacion = LocalDateTime.now();
     }
 
     // ==================================================================================
@@ -431,6 +442,12 @@ public class LiquidacionJornadas extends Identifiable {
     @PrePersist
     @PreUpdate
     private void antesDeGuardar() {
+        if (fechaGeneracion == null) {
+            fechaGeneracion = LocalDateTime.now();
+        }
+        if (fechaModificacion == null) {
+            fechaModificacion = LocalDateTime.now();
+        }
         // Asegurar que los montos estén calculados
         calcularMontos();
     }

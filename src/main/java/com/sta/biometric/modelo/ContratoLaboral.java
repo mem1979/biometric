@@ -11,6 +11,8 @@ import javax.validation.constraints.*;
 import org.openxava.annotations.*;
 import org.openxava.model.*;
 
+import com.sta.biometric.calculadores.*;
+
 import com.sta.biometric.anotaciones.*;
 import com.sta.biometric.auxiliares.*;
 import com.sta.biometric.embebidas.*;
@@ -55,7 +57,8 @@ import lombok.*;
 // RESUMEN: Vista rápida del contrato
 // ═══════════════════════════════════════════════════════════════════
 "Resumen [" +
-        "  tipoContrato, vigente; " +
+        "  tipoContrato," +
+        "  fechaVigenciaDesde; " +
         "  puesto; " +
         "  sueldoMensualAcordado, valorHoraEfectivo; " +
         "]; " +
@@ -84,7 +87,7 @@ import lombok.*;
         // VIGENCIA: Período y observaciones
         // ═══════════════════════════════════════════════════════════════════
         "Vigencia { " +
-        "  fechaVigenciaDesde, fechaVigenciaHasta; " +
+        "  vigente; fechaVigenciaHasta; " +
         "  motivoFinalizacion; " +
         "  observaciones; " +
         "}")
@@ -96,7 +99,7 @@ public class ContratoLaboral extends Identifiable {
     // =========================================================================
 
     /** Semanas promedio por mes (52 semanas / 12 meses) */
-    private static final BigDecimal SEMANAS_POR_MES = new BigDecimal("4.33");
+    private static final BigDecimal SEMANAS_POR_MES = new BigDecimal("4.00");
 
     // =========================================================================
     // RELACIÓN CON EMPLEADO
@@ -174,6 +177,11 @@ public class ContratoLaboral extends Identifiable {
     private BigDecimal valorHoraAjustado;
 
     /** Porcentaje adicional para horas extras (ej: 50 = 50%) */
+    @DefaultValueCalculator(value = CalculadorDefaultFromProperties.class, properties = {
+            @PropertyValue(name = "propiedad", value = "porcentaje.hora.extra.default"),
+            @PropertyValue(name = "valorPorDefecto", value = "50"),
+            @PropertyValue(name = "tipo", value = "bigdecimal")
+    })
     @Digits(integer = 3, fraction = 1)
     @Min(0)
     @Max(200)
@@ -181,6 +189,11 @@ public class ContratoLaboral extends Identifiable {
     private BigDecimal porcentajeHoraExtra;
 
     /** Porcentaje adicional para horas especiales/feriados (ej: 100 = 100%) */
+    @DefaultValueCalculator(value = CalculadorDefaultFromProperties.class, properties = {
+            @PropertyValue(name = "propiedad", value = "porcentaje.hora.especial.default"),
+            @PropertyValue(name = "valorPorDefecto", value = "100"),
+            @PropertyValue(name = "tipo", value = "bigdecimal")
+    })
     @Digits(integer = 3, fraction = 1)
     @Min(0)
     @Max(200)
@@ -194,10 +207,10 @@ public class ContratoLaboral extends Identifiable {
     /** Fecha desde la cual el contrato está vigente */
     @Required
     @Stereotype("FECHA")
+    @LabelFormat(LabelFormatType.SMALL)
     private LocalDate fechaVigenciaDesde;
 
     /** Fecha hasta la cual el contrato está vigente (null = activo) */
-    @Stereotype("FECHA")
     private LocalDate fechaVigenciaHasta;
 
     /** Motivo de finalización del contrato (si aplica) */

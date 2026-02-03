@@ -1,4 +1,5 @@
 package com.sta.biometric.calculadores;
+
 import java.util.*;
 
 import org.openxava.calculators.*;
@@ -8,19 +9,21 @@ import com.sta.biometric.servicios.*;
 import lombok.*;
 
 /**
- * Calculador unificado que obtiene un valor desde biometricConfiguracion.properties.
+ * Calculador unificado que obtiene un valor desde
+ * biometricConfiguracion.properties.
  * Soporta Integer, Boolean y String.
  */
-@Getter @Setter
+@Getter
+@Setter
 
 public class CalculadorDefaultFromProperties implements ICalculator {
 
     /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+     * 
+     */
+    private static final long serialVersionUID = 1L;
 
-	/**
+    /**
      * Clave en el archivo biometricConfiguracion.properties.
      */
     private String propiedad;
@@ -45,6 +48,8 @@ public class CalculadorDefaultFromProperties implements ICalculator {
                 return Integer.parseInt(valor);
             case "boolean":
                 return Boolean.parseBoolean(valor);
+            case "bigdecimal":
+                return new java.math.BigDecimal(valor);
             case "string":
             default:
                 return valor;

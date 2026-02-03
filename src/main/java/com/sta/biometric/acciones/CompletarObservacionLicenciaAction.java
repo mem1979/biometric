@@ -1,7 +1,5 @@
 package com.sta.biometric.acciones;
 
-
-
 import java.math.*;
 import java.time.*;
 import java.time.temporal.*;
@@ -26,27 +24,25 @@ public class CompletarObservacionLicenciaAction extends OnChangePropertyBaseActi
     public void execute() throws Exception {
 
         TipoLicenciaAR tipo = (TipoLicenciaAR) getView().getValue("tipo");
-        if (tipo == null) tipo = TipoLicenciaAR.VACACIONES;
-        
-       
-
-        
+        if (tipo == null)
+            tipo = TipoLicenciaAR.VACACIONES;
 
         Map<?, ?> clave = getView().getParent().getKeyValuesWithValue();
         Personal empleado = (Personal) MapFacade.findEntity(getView().getParent().getModelName(), clave);
 
         String keyBase = "licencia." + tipo.name();
         String descripcion = ConfiguracionesPreferencias.obtenerValor(keyBase + ".descripcion", "", String.class);
-       /* ModoComputoLicencia modoComputo =
-        	    Optional.ofNullable((ModoComputoLicencia) getView().getValue("modoComputo"))
-        	            .orElse(ConfiguracionesPreferencias.obtenerValor(
-        	                    keyBase + ".modoComputo",
-        	                    ModoComputoLicencia.DIAS_HABILES,
-        	                    ModoComputoLicencia.class)); */
-        
-     // Obtén el default desde el properties SIEMPRE
-        ModoComputoLicencia modoComputoDefault =
-            ConfiguracionesPreferencias.obtenerValor(
+        /*
+         * ModoComputoLicencia modoComputo =
+         * Optional.ofNullable((ModoComputoLicencia) getView().getValue("modoComputo"))
+         * .orElse(ConfiguracionesPreferencias.obtenerValor(
+         * keyBase + ".modoComputo",
+         * ModoComputoLicencia.DIAS_HABILES,
+         * ModoComputoLicencia.class));
+         */
+
+        // Obtén el default desde el properties SIEMPRE
+        ModoComputoLicencia modoComputoDefault = ConfiguracionesPreferencias.obtenerValor(
                 keyBase + ".modoComputo",
                 ModoComputoLicencia.DIAS_HABILES,
                 ModoComputoLicencia.class);
@@ -61,23 +57,25 @@ public class CompletarObservacionLicenciaAction extends OnChangePropertyBaseActi
         } else {
             // Cambió el propio modoComputo u otro campo: respetar la vista si tiene algo
             modoComputoASetear = (ModoComputoLicencia) Optional
-                .ofNullable(getView().getValue("modoComputo"))
-                .orElse(modoComputoDefault);
+                    .ofNullable(getView().getValue("modoComputo"))
+                    .orElse(modoComputoDefault);
         }
 
         boolean justificado = ConfiguracionesPreferencias.obtenerValor(keyBase + ".justificado", true, Boolean.class);
-        
+        boolean conGoce = ConfiguracionesPreferencias.obtenerValor(keyBase + ".conGoce", true, Boolean.class);
+
         if (!(Boolean) justificado) {
             addError("licencia_no_justificada");
         }
-        
+
         int diasPorAnio = ConfiguracionesPreferencias.obtenerValor(keyBase + ".diasPorAnio", 0, Integer.class);
 
         String observacion = descripcion;
 
-        // ---------------------- LÓGICA ESPECÍFICA POR TIPO DE LICENCIA ------------------------
+        // ---------------------- LÓGICA ESPECÍFICA POR TIPO DE LICENCIA
+        // ------------------------
 
-        if (empleado != null && empleado.getInicioActividades()!= null) {
+        if (empleado != null && empleado.getInicioActividades() != null) {
 
             // VACACIONES – cálculo escalonado por antigüedad
             if (tipo == TipoLicenciaAR.VACACIONES) {
@@ -92,21 +90,22 @@ public class CompletarObservacionLicenciaAction extends OnChangePropertyBaseActi
                 observacion += " (límite legal según antigüedad)";
             }
 
-            
-         // LICENCIA_EXTRAORDINARIA – acumulación de vacaciones no usadas (solo año anterior)
+            // LICENCIA_EXTRAORDINARIA – acumulación de vacaciones no usadas (solo año
+            // anterior)
             else if (tipo == TipoLicenciaAR.LICENCIA_EXTRAORDINARIA) {
-                int anioActual   = LocalDate.now().getYear();
+                int anioActual = LocalDate.now().getYear();
                 int anioAnterior = anioActual - 1;
-                int anioInicio   = empleado.getInicioActividades().getYear();
+                int anioInicio = empleado.getInicioActividades().getYear();
 
                 int acumulados = 0;
 
-                // Solo tiene sentido acumular si el empleado ya trabajaba durante el año anterior
+                // Solo tiene sentido acumular si el empleado ya trabajaba durante el año
+                // anterior
                 if (anioInicio <= anioAnterior) {
-                    // Días que correspondían en ese año (según antigüedad al 31/12 del año anterior)
+                    // Días que correspondían en ese año (según antigüedad al 31/12 del año
+                    // anterior)
                     int diasCorrespondientes = calcularDiasCorrespondientesPorAntiguedad(
-                        empleado, LocalDate.of(anioAnterior, 12, 31)
-                    );
+                            empleado, LocalDate.of(anioAnterior, 12, 31));
 
                     // Días efectivamente tomados como VACACIONES en ese año
                     int diasTomados = obtenerDiasTomados(empleado, TipoLicenciaAR.VACACIONES, anioAnterior);
@@ -119,36 +118,50 @@ public class CompletarObservacionLicenciaAction extends OnChangePropertyBaseActi
                 observacion += " (vacaciones no utilizadas del año " + anioAnterior + ")";
             }
 
-            
             /*
-            // LICENCIA_EXTRAORDINARIA – acumulación de vacaciones no usadas desde InicioActividades
-            else if (tipo == TipoLicenciaAR.LICENCIA_EXTRAORDINARIA) {
-                int acumulados = 0;
-                int anioActual = LocalDate.now().getYear();
-                int anioInicio = empleado.getInicioActividades().getYear();
-
-                for (int anio = anioInicio; anio < anioActual; anio++) {
-                    int diasCorrespondientes = calcularDiasCorrespondientesPorAntiguedad(empleado, LocalDate.of(anio, 12, 31));
-                    int diasTomados = obtenerDiasTomados(empleado, TipoLicenciaAR.VACACIONES, anio);
-                    int restante = diasCorrespondientes - diasTomados;
-                    if (restante > 0) acumulados += restante;
-                }
-
-                diasPorAnio = acumulados;
-                observacion += " (vacaciones no utilizadas en años anteriores)";
-            } */
+             * // LICENCIA_EXTRAORDINARIA – acumulación de vacaciones no usadas desde
+             * InicioActividades
+             * else if (tipo == TipoLicenciaAR.LICENCIA_EXTRAORDINARIA) {
+             * int acumulados = 0;
+             * int anioActual = LocalDate.now().getYear();
+             * int anioInicio = empleado.getInicioActividades().getYear();
+             * 
+             * for (int anio = anioInicio; anio < anioActual; anio++) {
+             * int diasCorrespondientes =
+             * calcularDiasCorrespondientesPorAntiguedad(empleado, LocalDate.of(anio, 12,
+             * 31));
+             * int diasTomados = obtenerDiasTomados(empleado, TipoLicenciaAR.VACACIONES,
+             * anio);
+             * int restante = diasCorrespondientes - diasTomados;
+             * if (restante > 0) acumulados += restante;
+             * }
+             * 
+             * diasPorAnio = acumulados;
+             * observacion += " (vacaciones no utilizadas en años anteriores)";
+             * }
+             */
         }
 
         // ---------------------------------------------------------------------------------------
 
-        
         int diasTomados = obtenerDiasTomados(empleado, tipo, LocalDate.now().getYear());
-        int diasRestantes = Math.max(0, diasPorAnio - diasTomados );
+        int diasRestantes = Math.max(0, diasPorAnio - diasTomados);
 
         getView().setValue("modoComputo", modoComputoASetear);
         getView().setValue("justificado", justificado);
+        getView().setValue("conGoce", conGoce);
         getView().setValue("observacion", observacion);
         getView().setValue("diasRestantes", diasRestantes);
+
+        // Configurar esParcial segun tipo de licencia
+        boolean esParcial = ConfiguracionesPreferencias.obtenerValor(keyBase + ".esParcial", false, Boolean.class);
+        getView().setValue("esParcial", esParcial);
+        getView().setEditable("horaInicio", esParcial);
+        getView().setEditable("horaFin", esParcial);
+        if (!esParcial) {
+            getView().setValue("horaInicio", null);
+            getView().setValue("horaFin", null);
+        }
 
         // Cálculo automático de días solicitados entre fechas
         LocalDate inicio = (LocalDate) getView().getValue("fechaInicio");
@@ -168,10 +181,12 @@ public class CompletarObservacionLicenciaAction extends OnChangePropertyBaseActi
                         total++;
                         break;
                     case DIAS_HABILES:
-                        if (!esFeriado && actual.getDayOfWeek().getValue() < 6) total++;
+                        if (!esFeriado && actual.getDayOfWeek().getValue() < 6)
+                            total++;
                         break;
                     case DIAS_LABORALES:
-                        if (!esFeriado && esLaboral) total++;
+                        if (!esFeriado && esLaboral)
+                            total++;
                         break;
                 }
 
@@ -184,36 +199,43 @@ public class CompletarObservacionLicenciaAction extends OnChangePropertyBaseActi
     }
 
     /**
-     * Devuelve la cantidad de días disponibles por antigüedad del empleado, para un año dado.
+     * Devuelve la cantidad de días disponibles por antigüedad del empleado, para un
+     * año dado.
      */
     private int calcularDiasCorrespondientesPorAntiguedad(Personal empleado, LocalDate fechaReferencia) {
         long diasTrabajados = ChronoUnit.DAYS.between(empleado.getInicioActividades(), fechaReferencia);
         BigDecimal antiguedadAnios = BigDecimal.valueOf(diasTrabajados)
                 .divide(BigDecimal.valueOf(365), 2, RoundingMode.HALF_UP);
 
-        if (diasTrabajados < 180) return (int) (diasTrabajados / 20);
-        if (antiguedadAnios.compareTo(BigDecimal.valueOf(5)) < 0) return 14;
-        if (antiguedadAnios.compareTo(BigDecimal.valueOf(10)) < 0) return 21;
-        if (antiguedadAnios.compareTo(BigDecimal.valueOf(20)) < 0) return 28;
+        if (diasTrabajados < 180)
+            return (int) (diasTrabajados / 20);
+        if (antiguedadAnios.compareTo(BigDecimal.valueOf(5)) < 0)
+            return 14;
+        if (antiguedadAnios.compareTo(BigDecimal.valueOf(10)) < 0)
+            return 21;
+        if (antiguedadAnios.compareTo(BigDecimal.valueOf(20)) < 0)
+            return 28;
         return 35;
     }
 
     /**
-     * Retorna la cantidad de días ya tomados por tipo de licencia en un año específico.
+     * Retorna la cantidad de días ya tomados por tipo de licencia en un año
+     * específico.
      */
     private int obtenerDiasTomados(Personal empleado, TipoLicenciaAR tipo, int anio) {
-        if (empleado == null || tipo == null) return 0;
+        if (empleado == null || tipo == null)
+            return 0;
 
         String jpql = "SELECT COALESCE(SUM(l.dias), 0) FROM Licencia l " +
-                      "WHERE l.empleado = :empleado AND l.tipo = :tipo " +
-                      "AND FUNCTION('YEAR', l.fechaInicio) = :anio";
+                "WHERE l.empleado = :empleado AND l.tipo = :tipo " +
+                "AND FUNCTION('YEAR', l.fechaInicio) = :anio";
 
         Object resultado = XPersistence.getManager()
-            .createQuery(jpql)
-            .setParameter("empleado", empleado)
-            .setParameter("tipo", tipo)
-            .setParameter("anio", anio)
-            .getSingleResult();
+                .createQuery(jpql)
+                .setParameter("empleado", empleado)
+                .setParameter("tipo", tipo)
+                .setParameter("anio", anio)
+                .getSingleResult();
 
         return ((Number) resultado).intValue();
     }

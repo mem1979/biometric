@@ -95,11 +95,9 @@ import lombok.*;
  * @see AuditoriaRegistros
  * @see Licencia
  * @see JornadaAsignada
+ * 
  */
 
-@Entity
-@Getter
-@Setter
 @View(members = "nombreCompleto, turnoActivoHoy;" +
         "InformacionPersonal { " +
         "InformacionPersonal[" +
@@ -205,6 +203,9 @@ import lombok.*;
 @Tab(name = "Eliminado", editors = "List", properties = "foto, nombreCompleto, puesto, userId, sucursal.nombre, fechaEliminacion", defaultOrder = "${fechaEliminacion} desc", baseCondition = "${eliminado} = true", rowStyles = {
         @RowStyle(style = "empleadoEliminado", property = "eliminado", value = "true") })
 
+@Entity
+@Getter
+@Setter
 public class Personal extends Identifiable {
 
     /**
@@ -973,7 +974,7 @@ public class Personal extends Identifiable {
      */
     @NoDefaultActions
     @OneToMany(mappedBy = "personal", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ListProperties("turno.codigo, turno.detalleJornadaHoras, fechaInicio, fechaFin")
+    @ListProperties("turno.codigo, turno.detalleJornadaHoras, turno.calculaTotalHoras, fechaInicio, fechaFin")
     @OrderBy("fechaInicio")
     private List<JornadaAsignada> jornadasAsignadas = new ArrayList<>();
 
@@ -995,17 +996,16 @@ public class Personal extends Identifiable {
      */
     @NoDefaultActions
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL)
-    @ListProperties("periodoDesde, periodoHasta, estadoPeriodo, horasNormalesFormatted, horasExtrasFormatted, horasEspecialesFormatted, montoGranTotal")
     @OrderBy("periodoDesde desc")
     @CollectionView("DetalleCompleto")
     @NewAction("LiquidacionJornadas.nuevaLiquidacion")
     @RemoveSelectedAction("")
-    @DeleteSelectedAction("")
-    @RemoveAction("LiquidacionJornadas.eliminarLiquidacion")
-    @DetailAction("LiquidacionJornadas.CerrarLiquidacion")
-    @DetailAction("LiquidacionJornadas.Recalcular")
+    @DeleteSelectedAction("LiquidacionJornadas.eliminarLiquidacion")
+    @RowAction("LiquidacionJornadas.verJornadas")
+    @RowAction("LiquidacionJornadas.Recalcular")
     @DetailAction("LiquidacionJornadas.aplicarRedondeo")
     @DetailAction("LiquidacionJornadas.revertirRedondeo")
+    @ListProperties("periodoDesde, periodoHasta, estadoPeriodo, fechaModificacion, horasNormalesFormatted, horasExtrasFormatted, horasEspecialesFormatted, montoGranTotal")
     private Collection<LiquidacionJornadas> liquidaciones;
 
     // ==================================================================================
@@ -1022,9 +1022,9 @@ public class Personal extends Identifiable {
      * 
      * @see ContratoLaboral
      */
-
+    @NoDefaultActions
     @OneToMany(mappedBy = "empleado", cascade = CascadeType.ALL, orphanRemoval = true)
-    @ListProperties("puesto, nivelJerarquico, sueldoMensualAcordado, fechaVigenciaDesde, fechaVigenciaHasta, vigente")
+    @ListProperties("puesto, nivelJerarquico, modalidadTrabajo, vigente, fechaVigenciaDesde")
     @OrderBy("fechaVigenciaDesde desc")
     private Collection<ContratoLaboral> contratos = new ArrayList<>();
 

@@ -15,6 +15,7 @@ import com.sta.biometric.anotaciones.*;
 import com.sta.biometric.auxiliares.*;
 import com.sta.biometric.enums.*;
 import com.sta.biometric.formateadores.*;
+import com.sta.biometric.servicios.*;
 
 import lombok.*;
 
@@ -61,6 +62,9 @@ import lombok.*;
         @RowStyle(style = "estilo-naranja-intenso", property = "evaluacion", value = "SIN_ENTRADA"),
         @RowStyle(style = "estilo-naranja-intenso", property = "evaluacion", value = "SIN_SALIDA"),
         @RowStyle(style = "estilo-rojo-claro", property = "evaluacion", value = "LICENCIA"),
+        @RowStyle(style = "estilo-naranja-claro", property = "evaluacion", value = "LICENCIA_SIN_GOCE"),
+        @RowStyle(style = "estilo-rojo-intenso", property = "evaluacion", value = "LICENCIA_NO_JUSTIFICADA"),
+        @RowStyle(style = "estilo-amarillo-claro", property = "evaluacion", value = "LICENCIA_PARCIAL"),
         @RowStyle(style = "estilo-azul-claro", property = "evaluacion", value = "FERIADO"),
         @RowStyle(style = "estilo-azul-intenso", property = "evaluacion", value = "FERIADO_TRABAJADO"),
         @RowStyle(style = "estilo-verde-claro", property = "evaluacion", value = "DIA_NO_LABORAL"),
@@ -104,6 +108,9 @@ public class AuditoriaRegistros extends Identifiable {
 
     @ReadOnly
     private int toleranciaMinutos; // Tolerancia del turno en minutos (snapshot)
+
+    @Transient
+    private String notaToleranciaAutomatica; // Info temporal de tolerancia aplicada
 
     @Column(scale = 2)
     @ReadOnly
@@ -159,6 +166,24 @@ public class AuditoriaRegistros extends Identifiable {
     private boolean feriado; // Indica si la fecha cae en un feriado persistido
 
     private boolean licencia; // Indica si el empleado tiene licencia activa persistida
+
+    /**
+     * Minutos imputados por licencia con goce de sueldo.
+     * Cuando la licencia tiene goce, se imputan los minutos esperados del turno.
+     * Esto permite que el empleado reciba el pago correspondiente sin necesidad de
+     * fichaje.
+     */
+    @Column(columnDefinition = "INTEGER DEFAULT 0")
+    @Hidden
+    private int minutosImputadosLicencia = 0;
+
+    /**
+     * Indica si la licencia activa es parcial (tiene rango horario).
+     * Cuando es true, las horas de la licencia se suman a las fichadas.
+     */
+    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @Hidden
+    private boolean licenciaParcial = false;
 
     private boolean esJornadaNocturna; // Indica si el turno cruza medianoche (ej: 22:00-06:00)
 
@@ -260,6 +285,9 @@ public class AuditoriaRegistros extends Identifiable {
         feriado = Feriados.existeParaFecha(fecha);
         licencia = Licencia.tieneLicenciaEnFecha(empleado, fecha);
 
+        // 2.1 Calcular imputación de horas por licencia con goce de sueldo
+        calcularImputacionLicencia();
+
         // 3. Calcular tiempos según fichadas
         if (registros == null || registros.isEmpty()) {
             evaluarSinRegistros();
@@ -283,6 +311,15 @@ public class AuditoriaRegistros extends Identifiable {
 
         // 5. Actualizar nota automática
         actualizarNotaSegunEvaluacion();
+
+        // 6. Agregar nota de tolerancia automática si corresponde
+        if (notaToleranciaAutomatica != null && !notaToleranciaAutomatica.isEmpty()) {
+            String notaActual = getNota();
+            if (notaActual != null) {
+                setNota(notaActual + notaToleranciaAutomatica);
+            }
+            notaToleranciaAutomatica = null; // Limpiar para próxima consolidación
+        }
     }
 
     /**
@@ -345,6 +382,12 @@ public class AuditoriaRegistros extends Identifiable {
      * correctamente.
      * Sin esto, una salida a las 00:22 quedaría antes de una entrada a las 17:50.
      * </p>
+     * <p>
+     * <b>TOLERANCIA AUTOMÁTICA:</b> Si la diferencia entre minutos trabajados y
+     * esperados está dentro de la tolerancia del turno, se ajusta automáticamente
+     * a la jornada exacta para evitar generar horas extras o descuentos por
+     * demoras/salidas anticipadas involuntarias.
+     * </p>
      */
     private void calcularDuraciones() {
         // Ordenar por fecha Y hora para manejar correctamente turnos nocturnos
@@ -358,6 +401,73 @@ public class AuditoriaRegistros extends Identifiable {
         LocalTime fin = registros.get(registros.size() - 1).getHora();
 
         minutosTrabajados = TiempoUtils.calcularMinutosLocalTime(inicio, fin);
+
+        // ==================================================================================
+        // TOLERANCIA AUTOMÁTICA: Zona de tolerancia bidireccional
+        // ==================================================================================
+        // Si la diferencia está dentro de la tolerancia, ajustar a jornada exacta
+        // para evitar generar extras/descuentos por demoras mínimas involuntarias.
+        //
+        // Ejemplo con tolerancia de 5 minutos:
+        // - Trabajó 483 min (8:03), esperados 480 min (8:00) → diferencia +3 min
+        // - Como |3| <= 5, se ajusta a 480 min → NO se generan 3 min de extras
+        // - Trabajó 477 min (7:57), esperados 480 min (8:00) → diferencia -3 min
+        // - Como |3| <= 5, se ajusta a 480 min → NO se descuentan 3 min
+        //
+        // Configurable via properties: tolerancia.automatica.habilitada y .modo
+        // ==================================================================================
+
+        int diferenciaReal = minutosTrabajados - minutosEsperados;
+        boolean toleranciaAplicada = false;
+
+        // Verificar si la tolerancia automática está habilitada (default: true)
+        boolean toleranciaHabilitada = ConfiguracionesPreferencias.obtenerValor(
+                "tolerancia.automatica.habilitada", true, Boolean.class);
+
+        if (toleranciaHabilitada && toleranciaMinutos > 0 && !esJornadaEspecial()) {
+            // Obtener modo de aplicación (default: BIDIRECCIONAL)
+            String modo = ConfiguracionesPreferencias.obtenerValor(
+                    "tolerancia.automatica.modo", "BIDIRECCIONAL", String.class);
+
+            boolean aplicarTolerancia = false;
+
+            switch (modo) {
+                case "BIDIRECCIONAL":
+                    // Aplicar tanto a excesos como a faltantes
+                    aplicarTolerancia = Math.abs(diferenciaReal) <= toleranciaMinutos;
+                    break;
+
+                case "SOLO_EXCESOS":
+                    // Solo aplicar si es un exceso pequeño (evita extras, no compensa faltantes)
+                    aplicarTolerancia = diferenciaReal > 0 && diferenciaReal <= toleranciaMinutos;
+                    break;
+
+                case "SOLO_FALTANTES":
+                    // Solo aplicar si es un faltante pequeño (evita descuentos, no elimina extras)
+                    aplicarTolerancia = diferenciaReal < 0 && Math.abs(diferenciaReal) <= toleranciaMinutos;
+                    break;
+            }
+
+            if (aplicarTolerancia) {
+                // Ajustar a jornada exacta
+                minutosTrabajados = minutosEsperados;
+                toleranciaAplicada = true;
+
+                // Guardar info de tolerancia para agregar a la nota posteriormente
+                // (la nota se genera en actualizarNotaSegunEvaluacion())
+                boolean registrarNota = ConfiguracionesPreferencias.obtenerValor(
+                        "tolerancia.automatica.registrar.nota", true, Boolean.class);
+
+                if (registrarNota) {
+                    String signo = diferenciaReal >= 0 ? "+" : "";
+                    this.notaToleranciaAutomatica = String.format(
+                            " [Tolerancia automática: %s%d min → ajustado a jornada completa]",
+                            signo, diferenciaReal);
+                }
+            }
+        }
+
+        // Calcular horas extras (ya considerando el ajuste de tolerancia si aplicó)
         minutosExtras = Math.max(0, minutosTrabajados - minutosEsperados);
     }
 
@@ -381,7 +491,19 @@ public class AuditoriaRegistros extends Identifiable {
         boolean esLaboral = turno != null && turno.esLaboral(fecha.getDayOfWeek());
 
         if (licencia) {
-            evaluacion = EvaluacionJornada.LICENCIA;
+            // Diferenciar según tipo de licencia
+            Licencia licenciaDetalle = Licencia.getLicenciaEnFecha(empleado, fecha);
+            if (licenciaDetalle != null) {
+                if (!licenciaDetalle.isJustificado()) {
+                    evaluacion = EvaluacionJornada.LICENCIA_NO_JUSTIFICADA;
+                } else if (!licenciaDetalle.isConGoce()) {
+                    evaluacion = EvaluacionJornada.LICENCIA_SIN_GOCE;
+                } else {
+                    evaluacion = EvaluacionJornada.LICENCIA;
+                }
+            } else {
+                evaluacion = EvaluacionJornada.LICENCIA;
+            }
         } else if (feriado) {
             evaluacion = EvaluacionJornada.FERIADO;
         } else if (!esLaboral) {
@@ -452,6 +574,60 @@ public class AuditoriaRegistros extends Identifiable {
     }
 
     /**
+     * Calcula los minutos a imputar por licencia con goce de sueldo.
+     * 
+     * <p>
+     * Cuando existe una licencia con goce activa para la fecha, este método
+     * asigna los minutos correspondientes según el tipo de licencia:
+     * - Licencia total: imputa todos los minutos del turno
+     * - Licencia parcial: imputa solo el rango horario especificado
+     * </p>
+     * 
+     * @see #minutosImputadosLicencia
+     * @see #licenciaParcial
+     */
+    private void calcularImputacionLicencia() {
+        // Resetear valores
+        this.minutosImputadosLicencia = 0;
+        this.licenciaParcial = false;
+
+        if (!licencia) {
+            return;
+        }
+
+        // Verificar si la imputación está habilitada en configuración
+        boolean imputacionHabilitada = ConfiguracionesPreferencias.obtenerValor(
+                "licencia.imputar.horas.goce", true, Boolean.class);
+
+        if (!imputacionHabilitada) {
+            return;
+        }
+
+        // Obtener detalles de la licencia
+        Licencia licenciaDetalle = Licencia.getLicenciaEnFecha(empleado, fecha);
+
+        if (licenciaDetalle == null) {
+            return;
+        }
+
+        // Solo imputar si la licencia tiene goce de sueldo
+        if (licenciaDetalle.isConGoce()) {
+            if (licenciaDetalle.isParcial()) {
+                // Licencia parcial: imputar solo el rango especificado
+                this.minutosImputadosLicencia = licenciaDetalle.getMinutosLicencia(minutosEsperados);
+                this.licenciaParcial = true;
+            } else {
+                // Licencia total: imputar jornada completa
+                this.minutosImputadosLicencia = minutosEsperados;
+            }
+            this.justificado = true;
+        } else {
+            // Licencia sin goce - solo justifica pero no imputa horas
+            this.justificado = licenciaDetalle.isJustificado();
+        }
+    }
+
+    /**
      * Evalúa la jornada cuando hay fichadas registradas.
      * 
      * <p>
@@ -479,7 +655,24 @@ public class AuditoriaRegistros extends Identifiable {
         boolean esJornadaPasada = fecha.isBefore(LocalDate.now());
 
         if (licencia) {
-            evaluacion = EvaluacionJornada.LICENCIA;
+            // Licencia parcial con fichajes: combinar horas
+            if (licenciaParcial) {
+                evaluacion = EvaluacionJornada.LICENCIA_PARCIAL;
+            } else {
+                // Licencia total: diferenciar según tipo
+                Licencia licenciaDetalle = Licencia.getLicenciaEnFecha(empleado, fecha);
+                if (licenciaDetalle != null) {
+                    if (!licenciaDetalle.isJustificado()) {
+                        evaluacion = EvaluacionJornada.LICENCIA_NO_JUSTIFICADA;
+                    } else if (!licenciaDetalle.isConGoce()) {
+                        evaluacion = EvaluacionJornada.LICENCIA_SIN_GOCE;
+                    } else {
+                        evaluacion = EvaluacionJornada.LICENCIA;
+                    }
+                } else {
+                    evaluacion = EvaluacionJornada.LICENCIA;
+                }
+            }
         } else if (feriado) {
             evaluacion = EvaluacionJornada.FERIADO_TRABAJADO;
         } else if (!esLaboral) {
@@ -590,11 +783,28 @@ public class AuditoriaRegistros extends Identifiable {
             String tipoDesc = licenciaDetalle.getTipo() != null
                     ? licenciaDetalle.getTipo().toString()
                     : "No especificado";
-            String justificadaStr = licenciaDetalle.isJustificado() ? "Justificada" : "No justificada";
+
+            // Mostrar estado de goce/justificación
+            String estadoStr;
+            if (licenciaDetalle.isConGoce()) {
+                estadoStr = "Con goce de sueldo";
+            } else if (licenciaDetalle.isJustificado()) {
+                estadoStr = "Justificada - Sin goce";
+            } else {
+                estadoStr = "No justificada";
+            }
+
+            // Indicar horas imputadas si corresponde
+            String imputacionStr = "";
+            if (minutosImputadosLicencia > 0) {
+                String horasImputadas = TiempoUtils.formatearMinutosComoHHMM(minutosImputadosLicencia);
+                imputacionStr = " | Se imputan " + horasImputadas + " hs";
+            }
+
             String observacion = licenciaDetalle.getObservacion() != null && !licenciaDetalle.getObservacion().isBlank()
                     ? " - " + licenciaDetalle.getObservacion()
                     : "";
-            setNota(String.format("📋 Licencia %s (%s)%s", tipoDesc, justificadaStr, observacion));
+            setNota(String.format("📋 Licencia %s (%s)%s%s", tipoDesc, estadoStr, imputacionStr, observacion));
         } else {
             setNota("📋 Licencia activa para esta fecha.");
         }
@@ -826,6 +1036,11 @@ public class AuditoriaRegistros extends Identifiable {
     /**
      * Retorna las horas trabajadas dentro del horario normal del turno.
      * 
+     * <p>
+     * Para licencias parciales, suma las horas imputadas con las trabajadas.
+     * Para licencias totales, usa solo las imputadas.
+     * </p>
+     * 
      * @return Horas normales en formato "HH:MM"
      */
     @Transient
@@ -836,10 +1051,20 @@ public class AuditoriaRegistros extends Identifiable {
         if (esJornadaEspecial())
             return "00:00";
 
-        // Minutos base:
-        // Si trabajó al menos lo esperado MENOS la tolerancia, se considera jornada
-        // completa (minutosEsperados).
-        // Si no, se toma lo trabajado real (topeado por lo esperado).
+        // Licencia parcial: sumar horas imputadas + horas trabajadas
+        if (licenciaParcial && minutosImputadosLicencia > 0) {
+            int totalCombinado = minutosImputadosLicencia + minutosTrabajados;
+            // No exceder los minutos esperados del turno
+            totalCombinado = Math.min(totalCombinado, minutosEsperados);
+            return TiempoUtils.formatearMinutosComoHHMM(totalCombinado);
+        }
+
+        // Licencia total con goce: usar solo los imputados
+        if (minutosImputadosLicencia > 0) {
+            return TiempoUtils.formatearMinutosComoHHMM(minutosImputadosLicencia);
+        }
+
+        // Lógica normal de fichajes
         int minutosNormalesBase;
         if (minutosTrabajados >= (minutosEsperados - toleranciaMinutos)) {
             minutosNormalesBase = minutosEsperados;

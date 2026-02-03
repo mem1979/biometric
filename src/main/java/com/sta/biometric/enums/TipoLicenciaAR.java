@@ -1,8 +1,10 @@
 package com.sta.biometric.enums;
+
 /**
  * Tipos de licencia laboral válidos según normativa nacional e interna.
  * Se almacena el nombre técnico en la base de datos (Ej: VACACIONES),
- * pero se presenta una descripción legible al usuario (Ej: "Vacaciones Anuales").
+ * pero se presenta una descripción legible al usuario (Ej: "Vacaciones
+ * Anuales").
  */
 public enum TipoLicenciaAR {
 
@@ -30,6 +32,8 @@ public enum TipoLicenciaAR {
     CUIDADO_FAMILIAR("Cuidado de Familiar"),
     TELETRABAJO_ESPECIAL("Teletrabajo Especial"),
     LICENCIA_ESPECIAL_PROFESIONAL("Licencia Profesional"),
+    ENTRADA_DEMORADA("Entrada Demorada"),
+    SALIDA_ANTICIPADA("Salida Anticipada"),
     OTRA("Otras Licencias");
 
     private final String descripcion;

@@ -1,8 +1,6 @@
 
 package com.sta.biometric.auxiliares;
 
-
-
 import java.time.*;
 
 import javax.persistence.*;
@@ -19,13 +17,15 @@ import com.sta.biometric.acciones.*;
 import com.sta.biometric.enums.*;
 import com.sta.biometric.formateadores.*;
 import com.sta.biometric.modelo.*;
+import com.sta.biometric.servicios.*;
 
 import lombok.*;
 
 @View(members = "tipo, modoComputo;" +
         "fechaInicio, fechaFin, dias, diasRestantes;" +
-        "certificado, justificado;" +
-        "observacion")
+        "Configuracion { justificado, conGoce;"+
+        "esParcial, horaInicio, horaFin };" +
+        "Documentacion { certificado; observacion }")
 
 @Tab(editors = "List", properties = "empleado.nombreCompleto, tipo, fechaInicio, fechaFin, dias, justificado", defaultOrder = "${empleado.nombreCompleto} asc")
 
@@ -84,6 +84,39 @@ public class Licencia extends Identifiable {
     @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean justificado;
 
+    /**
+     * Indica si la licencia tiene goce de sueldo (imputa horas para liquidación).
+     * Se establece automáticamente según el tipo de licencia seleccionado.
+     */
+   
+    @DefaultValueCalculator(TrueCalculator.class)
+    @Column(columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private boolean conGoce;
+
+    /**
+     * Indica si la licencia es parcial (cubre solo un rango horario del día).
+     * Cuando es true, habilita la edición de horaInicio y horaFin.
+     */
+    
+    @OnChange(LicenciaOnChangeParcialAction.class)
+    @DefaultValueCalculator(FalseCalculator.class)
+    @Column(columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean esParcial;
+
+    /**
+     * Hora de inicio de la licencia (opcional).
+     * Solo editable si esParcial = true.
+     */
+    @LabelFormat(LabelFormatType.SMALL)
+    private LocalTime horaInicio;
+
+    /**
+     * Hora de fin de la licencia (opcional).
+     * Solo editable si esParcial = true.
+     */
+    @LabelFormat(LabelFormatType.SMALL)
+    private LocalTime horaFin;
+
     @Stereotype("TEXT_AREA")
     @Column(length = 500)
     private String observacion;
@@ -100,6 +133,33 @@ public class Licencia extends Identifiable {
     @Hidden
     public int getAnio() {
         return fechaInicio != null ? fechaInicio.getYear() : LocalDate.now().getYear();
+    }
+
+    /**
+     * Determina si la licencia es parcial (tiene horario definido).
+     * Una licencia parcial cubre solo un rango de horas del día,
+     * permitiendo que el resto de la jornada sea evaluada con fichajes.
+     */
+    @Transient
+    public boolean isParcial() {
+        return esParcial && horaInicio != null && horaFin != null;
+    }
+
+    /**
+     * Calcula los minutos cubiertos por la licencia.
+     * - Si es parcial: devuelve la duración entre horaInicio y horaFin
+     * - Si es total: devuelve los minutos esperados del turno completo
+     * 
+     * @param minutosEsperadosTurno Minutos del turno completo
+     * @return Minutos a imputar por licencia
+     */
+    @Transient
+    public int getMinutosLicencia(int minutosEsperadosTurno) {
+        if (!isParcial()) {
+            return minutosEsperadosTurno; // Licencia total
+        }
+        // Calcular duración del rango de licencia
+        return (int) java.time.Duration.between(horaInicio, horaFin).toMinutes();
     }
 
     public static boolean tieneLicenciaEnFecha(Personal empleado, LocalDate fecha) {
@@ -180,6 +240,16 @@ public class Licencia extends Identifiable {
             throw new ValidationException(
                     XavaResources.getString("no_puede_eliminar_licencia_finalizada"));
         }
+    }
+
+    /**
+     * Recalcula los registros de asistencia cuando se crea o modifica la licencia.
+     * Esto asegura que los cambios en la licencia se reflejen inmediatamente.
+     */
+    @PostPersist
+    @PostUpdate
+    private void recalcularAsistenciasAfectadas() {
+        LicenciaRecalculacionService.recalcularPorLicencia(this);
     }
 
 }

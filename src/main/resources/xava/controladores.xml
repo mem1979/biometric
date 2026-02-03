@@ -78,10 +78,6 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         <accion nombre="AbrirWhatsApp" oculta="true" clase="com.sta.biometric.acciones.AbrirWhatsAppAction" icono="whatsapp">
         </accion>
 
-        <accion nombre="calcularHoras" oculta="true" clase="com.sta.biometric.acciones.CalcularHorasAction" icono="clock-outline">
-        </accion>
-
-
         <accion nombre="buscar" oculta="true" modo="detail" clase="com.sta.biometric.acciones.PersonalBuscarAction">
         </accion>
 
@@ -105,7 +101,7 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         <!-- ================================================================== -->
 
         <!-- delete: Eliminar desde vista de detalle (Control+D) -->
-        <accion nombre="delete" modo="detail" confirmar="true" clase="com.sta.biometric.acciones.EliminarPersonalDesdeDetalleAction" icono="delete" disponible-en-nuevo="false" atajo-de-teclado="Control D"/>
+        <accion nombre="delete" modo="detail" confirmar="true" clase="com.sta.biometric.acciones.EliminarPersonalDesdeDetalleAction" icono="delete" disponible-en-nuevo="false" por-defecto="nunca" atajo-de-teclado="Control D"/>
 
         <!-- deleteSelected: Botón "Borrar" en la barra de la lista -->
         <accion nombre="deleteSelected" modo="list" confirmar="true" procesar-elementos-seleccionados="true" icono="delete" clase="com.sta.biometric.acciones.EliminarPersonalParaPapeleraAction" atajo-de-teclado="Control D">
@@ -139,10 +135,6 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         <accion nombre="cancelar" clase="org.openxava.actions.CancelAction" icono="close" atajo-de-teclado="ESCAPE"/>
     </controlador>
 
-    <controlador nombre="DialogoCalcularHoras">
-        <accion nombre="calcular" clase="com.sta.biometric.acciones.CalcularHorasAction" atajo-de-teclado="ENTER"/>
-        <accion nombre="cancelar" clase="org.openxava.actions.CancelAction" atajo-de-teclado="ESCAPE"/>
-    </controlador>
     <controlador nombre="DialogoCerrar">
         <accion nombre="cerrar" clase="org.openxava.actions.CancelAction" atajo-de-teclado="ESCAPE"/>
     </controlador>
@@ -253,11 +245,17 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         </accion>
 
 
-        <accion nombre="eliminarLiquidacion" oculta="true" clase="org.openxava.actions.RemoveElementFromCollectionAction" confirmar="true">
+        <accion nombre="eliminarLiquidacion" modo="list" clase="org.openxava.actions.DeleteSelectedInCollectionAction" confirmar="true" icono="delete" en-cada-fila="true">
         </accion>
 
-        <accion nombre="Recalcular" oculta="true" clase="com.sta.biometric.acciones.RecalcularLiquidacionAction" icono="refresh" confirmar="true">
+        <accion nombre="Recalcular" modo="list" clase="com.sta.biometric.acciones.RecalcularLiquidacionAction" icono="refresh" confirmar="true" en-cada-fila="true">
         </accion>
+
+
+
+        <accion nombre="cambiarEstado" modo="detail" clase="com.sta.biometric.acciones.CambiarEstadoLiquidacionAction" confirmar="true"/>
+
+        <accion nombre="verJornadas" modo="list" clase="com.sta.biometric.acciones.VerJornadasLiquidacionAction" icono="eye" en-cada-fila="true"/>
 
         <accion nombre="CerrarLiquidacion" oculta="true" clase="com.sta.biometric.acciones.CerrarLiquidacionAction" icono="lock" confirmar="true">
         </accion>
@@ -268,6 +266,10 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
 
         <!-- Acción para revertir redondeo masivo -->
         <accion nombre="revertirRedondeo" oculta="true" clase="com.sta.biometric.acciones.RevertirRedondeoMasivoAction" icono="undo" confirmar="true">
+        </accion>
+
+        <!-- Acción para exportar jornadas del período a Excel (solo vista SoloJornadas) -->
+        <accion nombre="exportarJornadasExcel" oculta="true" clase="com.sta.biometric.acciones.ExportarJornadasExcelAction" icono="file-excel" modo="list">
         </accion>
     </controlador>
 

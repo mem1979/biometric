@@ -14,7 +14,9 @@ public class ConfiguracionesPreferencias {
         props = new Properties();
         try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(ARCHIVO)) {
             if (is != null) {
-                props.load(is);
+                try (Reader reader = new InputStreamReader(is, java.nio.charset.StandardCharsets.UTF_8)) {
+                    props.load(reader);
+                }
             } else {
                 System.err.println("No se encontró el archivo de configuración: " + ARCHIVO);
             }
@@ -34,17 +36,21 @@ public class ConfiguracionesPreferencias {
     /**
      * Obtiene el valor de una propiedad con conversión segura y tipo.
      */
-    
+
     @SuppressWarnings("unchecked")
     public static <T> T obtenerValor(String clave, T valorPorDefecto, Class<T> tipo) {
         String valor = getInstance().getProperties().getProperty(clave);
 
-        if (valor == null || valor.trim().isEmpty()) return valorPorDefecto;
+        if (valor == null || valor.trim().isEmpty())
+            return valorPorDefecto;
 
         try {
-            if (tipo == String.class) return (T) valor;
-            if (tipo == Integer.class) return (T) Integer.valueOf(valor);
-            if (tipo == Boolean.class) return (T) Boolean.valueOf(valor);
+            if (tipo == String.class)
+                return (T) valor;
+            if (tipo == Integer.class)
+                return (T) Integer.valueOf(valor);
+            if (tipo == Boolean.class)
+                return (T) Boolean.valueOf(valor);
             if (tipo.isEnum()) {
                 for (Object constant : tipo.getEnumConstants()) {
                     if (((Enum<?>) constant).name().equalsIgnoreCase(valor)) {

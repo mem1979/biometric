@@ -15,6 +15,8 @@ public class CrearLicenciaAction extends CreateNewElementInCollectionAction {
      // En creacion, permitimos todos los campos hasta que guarde
         setAllEditable(view, true);
         view.setEditable("diasRestantes", false);
+        view.setEditable("horaInicio", false);
+        view.setEditable("horaFin", false);
         removeActions("Licencia.ImprimirConstancia");
     }
 
