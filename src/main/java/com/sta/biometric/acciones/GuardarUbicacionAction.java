@@ -1,7 +1,5 @@
 package com.sta.biometric.acciones;
 
-import java.lang.reflect.*;
-
 import org.openxava.actions.*;
 import org.openxava.jpa.*;
 
@@ -29,6 +27,7 @@ public class GuardarUbicacionAction extends ViewBaseAction {
         try {
             // Obtener el modelo y las claves desde la vista padre
             String modelName = getPreviousView().getRoot().getModelName();
+            @SuppressWarnings("unchecked")
             java.util.Map<String, Object> keyValues = getPreviousView().getRoot().getKeyValues();
 
             System.out.println("[GuardarUbicacion] Modelo: " + modelName + ", Keys: " + keyValues);

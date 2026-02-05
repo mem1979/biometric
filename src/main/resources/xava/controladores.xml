@@ -181,6 +181,10 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
         <accion nombre="importarFichadas" clase="com.sta.biometric.acciones.AbrirImportadorAction" icono="calendar-import" modo="list">
         </accion>
 
+        <!-- Acción para reevaluar/recuperar jornadas (Offline/Importaciones incompletas) -->
+        <accion nombre="reevaluarJornadas" clase="com.sta.biometric.acciones.MostrarDialogoReevaluacionAction" icono="calendar-refresh" modo="list">
+        </accion>
+
         <accion nombre="FiltroMesActualFecha" oculta="true" clase="com.sta.biometric.acciones.FiltroMesActualFechaAction" al-iniciar="true" modo="list">
         </accion>
 
@@ -216,6 +220,12 @@ https://github.com/openxava/openxava/blob/master/openxavatest/src/main/resources
     <!-- Controlador para diálogo de redondeo individual (desde AuditoriaRegistros) -->
     <controlador nombre="ConfiguracionRedondeoIndividual">
         <accion nombre="aplicar" clase="com.sta.biometric.acciones.AplicarRedondeoIndividualAction" icono="check" atajo-de-teclado="ENTER"/>
+        <accion nombre="cancelar" clase="org.openxava.actions.CancelAction" icono="close" atajo-de-teclado="ESCAPE"/>
+    </controlador>
+
+    <!-- Controlador para diálogo de reevaluación de jornadas (Recuperación) -->
+    <controlador nombre="DialogoReevaluacionController">
+        <accion nombre="ejecutar" clase="com.sta.biometric.acciones.EjecutarReevaluacionAction" icono="check" atajo-de-teclado="ENTER"/>
         <accion nombre="cancelar" clase="org.openxava.actions.CancelAction" icono="close" atajo-de-teclado="ESCAPE"/>
     </controlador>
 

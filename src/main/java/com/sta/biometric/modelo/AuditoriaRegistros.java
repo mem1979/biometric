@@ -418,7 +418,6 @@ public class AuditoriaRegistros extends Identifiable {
         // ==================================================================================
 
         int diferenciaReal = minutosTrabajados - minutosEsperados;
-        boolean toleranciaAplicada = false;
 
         // Verificar si la tolerancia automática está habilitada (default: true)
         boolean toleranciaHabilitada = ConfiguracionesPreferencias.obtenerValor(
@@ -451,7 +450,6 @@ public class AuditoriaRegistros extends Identifiable {
             if (aplicarTolerancia) {
                 // Ajustar a jornada exacta
                 minutosTrabajados = minutosEsperados;
-                toleranciaAplicada = true;
 
                 // Guardar info de tolerancia para agregar a la nota posteriormente
                 // (la nota se genera en actualizarNotaSegunEvaluacion())

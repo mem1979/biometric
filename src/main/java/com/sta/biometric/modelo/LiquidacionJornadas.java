@@ -320,7 +320,7 @@ public class LiquidacionJornadas extends Identifiable {
     @ReadOnly
     @NoDefaultActions
     @ListAction("LiquidacionJornadas.exportarJornadasExcel")
-    @ListProperties("empleado.nombreCompleto, fecha, turnoPlanificado, horario, evaluacion, horasTrabajadasTurno, horasExtras, horasEspeciales, estadoJornada ")
+    @ListProperties("empleado.nombreCompleto, fecha, turnoPlanificado, horario, estadoJornada, horasTrabajadasTurno, horasExtras, horasEspeciales")
     public java.util.List<AuditoriaRegistros> getJornadasDelPeriodo() {
         if (empleado == null || periodoDesde == null || periodoHasta == null) {
             return java.util.Collections.emptyList();

@@ -5,15 +5,22 @@ import java.util.*;
 
 import javax.persistence.*;
 
+import org.openxava.jpa.*;
 import org.quartz.*;
 
 import com.sta.biometric.enums.*;
 import com.sta.biometric.modelo.*;
+import com.sta.biometric.servicios.GestionJornadasService;
 
 /**
- * Tarea programada para cerrar automaticamente la jornada diaria consolidando
+ * Tarea programada para cerrar automáticamente la jornada diaria consolidando
  * los registros.
- * Se ejecuta todos los dias a las 23:59 hs mediante Quartz Scheduler.
+ * Se ejecuta todos los días a las 23:55 hs mediante Quartz Scheduler.
+ * 
+ * <p>
+ * <strong>Nota JPA:</strong> Usa {@code XPersistence.createManager()} para
+ * reutilizar el EntityManagerFactory singleton de OpenXava.
+ * </p>
  */
 @DisallowConcurrentExecution
 public class CierreJornadaJob implements Job {
@@ -21,10 +28,11 @@ public class CierreJornadaJob implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         LocalDate hoy = LocalDate.now();
-        System.out.println("[CierreJornadaJob] Iniciando cierre de jornada para: " + hoy);
+        System.out.println("[CierreJornadaJob] ===== INICIO " + LocalDateTime.now() + " =====");
+        System.out.println("[CierreJornadaJob] Procesando fecha: " + hoy);
 
-        EntityManagerFactory factory = Persistence.createEntityManagerFactory("default");
-        EntityManager em = factory.createEntityManager();
+        // Usar XPersistence.createManager() para reutilizar el EMFactory singleton
+        EntityManager em = XPersistence.createManager();
 
         try {
             em.getTransaction().begin();
@@ -34,17 +42,19 @@ public class CierreJornadaJob implements Job {
                     .setParameter("fecha", hoy)
                     .getResultList();
 
+            System.out.println("[CierreJornadaJob] Jornadas encontradas: " + asistencias.size());
+
             int cerrados = 0;
             int postponed = 0;
+            int errores = 0;
 
             for (AuditoriaRegistros asistencia : asistencias) {
                 try {
                     // === SOPORTE JORNADAS NOCTURNAS ===
-                    // Skip jornadas nocturnas en curso: serán cerradas mañana a las 08:00
-                    // por CierreJornadaNocturnaJob
+                    // Skip jornadas nocturnas en curso: serán cerradas por CierreJornadaNocturnaJob
                     if (asistencia.isEsJornadaNocturna() &&
                             asistencia.getEvaluacion() == EvaluacionJornada.EN_CURSO) {
-                        System.out.println("  [⏳] Postponiendo cierre nocturno: " +
+                        System.out.println("  [⏳] Postponed (nocturna): " +
                                 (asistencia.getEmpleado() != null ? asistencia.getEmpleado().getNombreCompleto()
                                         : "Empleado desconocido"));
                         postponed++;
@@ -52,28 +62,34 @@ public class CierreJornadaJob implements Job {
                     }
                     // === FIN SOPORTE NOCTURNAS ===
 
-                    asistencia.consolidarDesdeRegistros();
-                    em.merge(asistencia);
+                    // DELEGACIÓN AL SERVICIO - Pasando EntityManager
+                    GestionJornadasService.getInstance().cerrarJornada(asistencia, em);
                     cerrados++;
+
                 } catch (Exception e) {
-                    System.err.println("[!] Error consolidando para " +
+                    errores++;
+                    System.err.println("[!] Error consolidando " +
                             (asistencia.getEmpleado() != null ? asistencia.getEmpleado().getNombreCompleto()
                                     : "Empleado desconocido")
                             + ": " + e.getMessage());
+                    e.printStackTrace();
                 }
             }
 
             em.getTransaction().commit();
-            System.out.println(
-                    "[CierreJornadaJob] Cierre: " + cerrados + " cerrados, " + postponed + " nocturnas postponed.");
+            System.out.println("[CierreJornadaJob] Resultado: " + cerrados + " cerrados, " + postponed + " postponed, "
+                    + errores + " errores.");
+            System.out.println("[CierreJornadaJob] ===== FIN " + LocalDateTime.now() + " =====");
 
         } catch (Exception e) {
-            em.getTransaction().rollback();
-            System.err.println("[!] Error general al cerrar jornada: " + e.getMessage());
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+            System.err.println("[CierreJornadaJob] ERROR GENERAL: " + e.getMessage());
             e.printStackTrace();
         } finally {
             em.close();
-            factory.close();
+            // NO cerrar XPersistence factory - es singleton compartido
         }
     }
 }

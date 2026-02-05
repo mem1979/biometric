@@ -410,8 +410,6 @@ public class InterpreteFichadasService {
             // del nocturno.
             // O podemos ser más precisos comparando con la hora de salida teórica + margen.
 
-            LocalTime salidaTeorica = turnoAyer.getSalidaParaDia(fechaAyer.getDayOfWeek());
-
             // Margen generoso: hasta 4 horas después de la salida teórica
             // O si es temprano en la mañana (antes de las 12:00)
             if (horaFichada.isBefore(LocalTime.of(14, 0))) { // Asumimos corte a las 14:00 para nocturnos
